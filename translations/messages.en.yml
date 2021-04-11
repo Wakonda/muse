@@ -1,0 +1,559 @@
+menu:
+    top:
+        AlphabetBook: "Alphabet book"
+        Authors: "Authors"
+        Collections: "Collections"
+        Countries: "Countries"
+        FamousAuthors: "Famous authors"
+        FictionalCharacters: "Fictional characters"
+        Images: "Images"
+        MainPage: "Home"
+        PoeticForms: "Poetic forms"
+        Store: "Store"
+        Works: "Works"
+        YourPoems: "Your poems"
+        YourQuotes: "Your quotes"
+        Portal: "Arts and Culture Portal"
+    left:
+        RecentPublications: "Recent publications"
+        FollowUs: "Follow us"
+        Publicity: "Ad"
+        Statistics: "Statistics"
+        MemberArea: "Member area"
+        Languages: "Other languages"
+        LogIn: "Log in"
+        CreateAccount: "Create an account"
+        NumberOfPublishedPoems: "Number of published poems"
+        NumberOfPublishedProverbs: "Number of published proverbs"
+        NumberOfPublishedQuotes: "Number of published quotes"
+        TotalAuthors: "Total authors"
+        NumberOfBooks: "Number of books"
+        MyProfile: "My profile"
+        ChangeMyPassword: "Change my password"
+        EditProfile: "Edit my profile"
+        WritePoem: "Write a poem"
+        WriteQuote: "Write a quote"
+        LogOut: "Log out"
+        Admin: "Admin"
+        HelpUs: "Help us"
+    footer:
+        About: "About"
+        ContactUs: "Contact us"
+        Version: "Version"
+        PrivacyPolicy: "Privacy policy"
+main:
+    index:
+        WonderfulWorldOfPoem: "Le<small> Monde Magique </small> de la Poésie"
+        WonderfulWorldOfProverb: "The <small> Wonderful World </small> of Proverbs"
+        WonderfulWorldOfQuote: "Le<small> Monde Magique </small> des Citations"
+        WelcomeTo: "Welcome to %domain%"
+        SearchPoem: "Search a poem"
+        SearchProverb: "Search a proverb"
+        SearchQuote: "Search a quote"
+        PoemRandomly: "Random poem"
+        ProverbRandomly: "Random proverb"
+        QuoteRandomly: "Random quote"
+        NoPoem: "No Poems added yet"
+        NoProverb: "No Proverbs added yet"
+        NoQuote: "No Quotes added yet"
+    field:
+        Title: "Title"
+        Keywords: "Keywords"
+        Author: "Author"
+        Country: "Country"
+        Collection: "Collection"
+        PoeticForm: "Poetic form"
+        ChooseAnOption: "Choose an option"
+        Search: "Search"
+        YourPoems: "Your poems"
+        GreatWriters: "Famous writers"
+publication:
+    state:
+        Published: "Published"
+        Deleted: "Deleted"
+        Draft: "Draft"
+tag:
+    table:
+        Text: "Text"
+        Country: "Country"
+biography:
+    index:
+        ByAuthors: "By authors"
+        HisPoems: "His poems"
+        HisQuotes: "His quotes"
+    field:
+        BirthDate: "Birth date"
+        DeathDate: "Death date"
+        Nationality: "Nationality"
+    table:
+        Number: "Number"
+        Author: "Author"
+        Title: "Title"
+        Collection: "Collection"
+        Photo: "Photo"
+        Read: "Read"
+        Source: "Source"
+        Action: "Action"
+        Text: "Text"
+source:
+    index:
+        BySources: "By sources"
+        Quotes: "Quotes"
+        Characters: "Characters"
+        Authors: "Authors"
+    type:
+        Book: "Book"
+        Movie: "Movie"
+        Tvseries: "TV series"
+    table:
+        Title: "Title"
+        Author: "Author"
+        Photo: "Photo"
+        Number: "Number"
+        Text: "Text"
+        Read: "Read"
+country:
+    index:
+        ByCountries: "By countries"
+    table:
+        Number: "Number"
+        Read: "Read"
+        Author: "Author"
+        Country: "Country"
+        Title: "Title"
+        Text: "Text"
+poeticForm:
+    index:
+        ByPoeticForms: "By poetic forms"
+    table:
+        PoeticForm: "Poetic form"
+        Number: "Number"
+        Title: "Title"
+store:
+    index:
+        Store: "Store"
+        Search: "Search"
+        MoreInformations: "More informations"
+        UnknownAuthor: "Unknown author"
+        NoProductFound: "No product found"
+        Buy: "Buy"
+    author:
+        Title: "Title"
+        Action: "Action"
+    read:
+        Abstract: "Abstract"
+fileManagement:
+    index:
+        FileManager: "File manager"
+    form:
+        Description: "Description"
+        Photo: "Photo"
+        Download: "Download"
+        Search: "Search"
+fictionalCharacter:
+    index:
+        ByFictionalCharacters: "By fictional characters"
+        HisQuotes: "His quotes"
+    field:
+        BirthDate: "Birth date"
+        DeathDate: "Death date"
+        Nationality: "Nationality"
+    table:
+        Number: "Number"
+        Character: "Character"
+        Text: "Text"
+        Photo: "Photo"
+        Source: "Source"
+        Read: "Read"
+yourPoems:
+    index:
+        YourPoems: "Your poems"
+    table:
+        Author: "Author"
+        Title: "Title"
+    field:
+        WritePoem: "Write a poem"
+        EditPoetry: "Edit a poem"
+        Title: "Title"
+        Text: "Text"
+        Draft: "Draft"
+        Save: "Save"
+yourQuotes:
+    index:
+        YourQuotes: "Your quotes"
+    table:
+        Author: "Author"
+        Text: "Text"
+    field:
+        WriteQuote: "Write a quote"
+        EditQuote: "Edit a quote"
+        Text: "Text"
+        Draft: "Draft"
+        Save: "Save"
+collection:
+    index:
+        ByCollections: "By collections"
+    field:
+        Author: "Author"
+        PublicationDate: "Publication date"
+        PoemsInThisCollection: "Poems in this collection"
+        BuyThisCollection: "Buy this collection"
+    table:
+        Number: "Nombre"
+        Author: "Auteur"
+        Collection: "Recueil"
+        Title: "Titre"
+    pdf:
+        TheAuthor: "The author"
+backup:
+    index:
+        File: "File"
+        Actions: "Actions"
+        No: "No backup"
+        FileDeleted: "File deleted"
+        FileGenerated: "File generated"
+user:
+    login:
+        Pseudo: "Pseudo"
+        Password: "Password"
+        RememberMe: "Remember me"
+        LogIn: "Log in"
+        LogOut: "Log out"
+        ForgottenPassword: "Forgot your password?"
+        PasswordOrUserForgotten: "Nickname or password incorect"
+        YouAreLoggedInAs: "You are already logged in as"
+        CongratulationAccountActivated: "Congratulations %username%, your account has been activated. Please enter your login to log in."
+        AccountCannotBeActivated: "Sorry %username%, your account can not be activated because the link has expired."
+    createAccount:
+        CreateAccount: "Create an account"
+        Pseudo: "Pseudo"
+        Password: "Password"
+        PasswordValidation: "Password (validation)"
+        Email: "Email"
+        Avatar: "Avatar"
+        Description: "Presentation"
+        Country: "Country"
+        Captcha: "Copy the word contained in the image"
+        CreateSave: "Create your account"
+        Save: "Save"
+        OR: "OR"
+        SelectFile: "Select a file"
+        UseGravatar: "Use a gravatar"
+        CurrentGravatar: "Current avatar:"
+        PasswordsMustMatch: "Passwords must match"
+        TheWordMustMatchThePicture: "The word must match the picture"
+        Registration: "Registration"
+        UnableToAccessThisPage: "Can not access this page"
+        UserSameUsernameEmailExists: "A user with the same username / email already exists!"
+        PasswordMustContainAtLeast: "Your password must contain at least %minLength% characters."
+        PasswordOneLetter: "Your password must include at least one letter."
+        PasswordOneNumber: "Your password must include at least one number."
+    confirmation:
+        Title: "Confirmation"
+        Text: "Your account has been created, but to be able to log in, you must activate your account by clicking on the link you received by email."
+        Email: "<p>Hello %username%, </p><p>Thank you for signing up on <b>Proverbius</b>. To be able to log in, and thus take advantage of all the features of the site, click on the confirmation link below.</p> <p><a href='%urlLogin%' alt=''> Click here to activate your account </a> </p><p><b><u> Warning: </u></b> This link will expire <i>%expiredAt% </i></p><p> See you soon on Proverbius ... </p><p>The <a href='%urlIndex%' alt=''><b>Proverbius</b> Team</p>"
+    editAccount:
+        Title: "Edit my account"
+    listUsers:
+        ListUsers: "List of our members"
+        Pseudo: "Pseudo"
+        Action: "Action"
+    myProfile:
+        User: "User"
+        MyPublications: "My publications"
+        MyComments: "My comments"
+        MyVotes: "My votes"
+        Login: "Login"
+        Country: "Country"
+        Description: "Presentation"
+        Title: "Title"
+        Action: "Action"
+        Edit: "Edit"
+        Delete: "Delete"
+        State: "State"
+        Proverb: "Proverb"
+        PublicationDate: "Publication date"
+        Vote: "Vote"
+forgottenPassword:
+    index:
+        ForgotYourPassword: "Forgot your password"
+        ResetPassword: "Reset password"
+        NewPasswordSend: "A new password will be sent to the email address entered on your user account."
+    field:
+        EmailUsername: "Email or username"
+        Captcha: "Copy the word contained in the image"
+        Send: "Reset password"
+        TheWordMustMatchThePicture: "The word must match the picture"
+        UsernameOrEmailAddressDoesNotExist: "Username or email address does not exist"
+    confirmation:
+        YourPasswordHasBeenChanged: "Your password has been changed."
+        Title: "Confirmation - Forgotten password"
+        EmailSent: "An email has been sent to you. Here you will find the procedure to be able to log in on"
+        Email: "<p>Hello %username%,</p><p>If you receive this email, you have forgotten your password. To remedy the situation, we have generated a temporary one: </p><p><b><u> Temporary password:</u></b><i>%temporaryPassword%</i></p><p><b><u>Warning:</u></b> This password is temporary. Therefore, we strongly urge you to modify it as soon as you have <a href='%urlLogin%'> connected to your account</a>. </p><p>Sincerely,</p><p>The team of <a href='%urlIndex%'> <b>Proverbius</b></a></p>"
+editPassword:
+    index:
+        EditMyPassword: "Edit my password"
+    field:
+        NewPassword: "New password"
+        PasswordValidation: "Password (Validation)"
+contact:
+    field:
+        YourMessageHasBeenSentSuccessfully: "Your message has been sent successfully!"
+        ContactUs: "Contact us"
+        Message: "Message"
+        Email: "Email"
+        Subject: "Subject"
+        Send: "Send"
+comment:
+    index:
+        Comments: "Comments"
+    field:
+        Message: "Message"
+        Send: "Send"
+        YouMustBeLoggedInToWriteAComment: "You must be logged in to write a comment"
+    list:
+        PreviousPage: "Previous page"
+        NextPage: "Next page"
+send:
+    index:
+        AutomaticallyAddedPost: "Proverb will be automatically added to your message"
+        SendFriend: "Send this proverb to a friend"
+        Infos: "Infos"
+        YourMessageHasBeenSentSuccessfully: "Your message has been sent successfully!"
+        HasBeenSentSince: "This message has been sent since "
+        HeSentYouWrittenBy: "sent you this proverb"
+        Somebody: "Quelqu'un"
+        AndEntitled: "and entitled"
+    field:
+        FirstName: "First name"
+        LastName: "Last name"
+        YourMail: "Your mail"
+        RecipientMail: "Recipient email"
+        Subject: "Subject"
+        Message: "Message"
+        Send: "Send"
+        Close: "Close"
+vote:
+    index:
+        Votes: "Votes"
+    field:
+        Error: "Error"
+        YouMustBeLoggedInToVote: "You must be logged in to vote!"
+        YouHaveAlreadyVotedForThis: "You have already voted for this proverb"
+error:
+    index:
+        Error: "Error"
+        PageNotFound: "The page you want to access does not exist!"
+        Message: "<p>An <b>error %code%</b> has occurred. If the problem persists, do not hesitate to <a href='%url%' alt=''>contact us</a> so that we can solve it as soon as possible!</p>"
+version:
+    index:
+        Version: "Version"
+        ReleaseDate: "Release date"
+        Read: "Read"
+search:
+    result:
+        Search: "Search"
+        SearchResults: "Result of your search"
+        Criteria: "Criteria:"
+        Title: "Title"
+        Text: "Text"
+        Country: "Country"
+        Author: "Author"
+        None: "None"
+poem:
+    read:
+        InPictures: "In pictures..."
+    state:
+        Published: "Published"
+        Deleted: "Deleted"
+        Draft: "Draft"
+    browsing:
+        Previous: "Previous"
+        Next: "Next"
+image:
+    index:
+        ByImages: "By images"
+proverb:
+    read:
+        InPictures: "In pictures ..."
+        Proverb: "Proverb"
+    browsing:
+        Next: "Next"
+        Previous: "Previous"
+quote:
+    read:
+        InPictures: "In pictures ..."
+        Quote: "Quote"
+    state:
+        Published: "Published"
+        Deleted: "Deleted"
+        Draft: "Draft"
+    browsing:
+        Previous: "Previous"
+        Next: "Next"
+alphabetBook:
+    index:
+        ByLetter: "By letter"
+    table:
+        Number: "Number"
+        Letter: "Letter"
+        Read: "Read"
+        Text: "Text"
+admin:
+    index:
+        Biography: "Biography"
+        Contact: "Contact"
+        PoeticForm: "Poetic form"
+        Member: "Member"
+        Page: "Page"
+        Source: "Source"
+        Country: "Country"
+        Poem: "Poem"
+        Image: "Image"
+        Collection: "Collection"
+        Version: "Version"
+        Store: "Store"
+        Quote: "Quote"
+        Proverb: "Proverb"
+        Tag: "Tag"
+        Create: "Create"
+        Read: "Read"
+        Update: "Update"
+        Add: "Add"
+        QuicklyCreation: "Quick Creation"
+        GenerateSitemap: "Generate Sitemap"
+        CurrentImage: "Current image"
+        CurrentFile: "Current file"
+        UnreadMessages: "Unread message(s)"
+        ThisEntryAlreadyExists: "This entry already exists!"
+        SentSuccessfully: "Sent successfully"
+        YouMustSelectAnImage: "You must select an image"
+        SentError: "An error has occurred"
+        AddedSuccessfully: "%numberAdded% proverb(s) added, %numberDoubloons% duplication(s)"
+        List: "List"
+        Backup: "Backup"
+        All: "All"
+        ToComplete: "To complete"
+        State: "State"
+        MultipleEdition: "Multiple edition"
+        ChangesMadeSuccessfully: "Changes made successfully"
+    error:
+        UnknownURL: "Unknown URL"
+    table:
+        Title: "Title"
+        Text: "Text"
+        Action: "Action"
+        Subject: "Subject"
+        ReadQuestion: "Read?"
+        SendingDate: "Sending date"
+        Pseudo: "Pseudo"
+        ReleaseDate: "Release date"
+        VersionNumber: "Version number"
+    main:
+        Save: "Save"
+    form:
+        Language: "Language"
+        Slug: "Slug"
+    poem:
+        Title: "Title"
+        PoeticForm: "Forme poétique"
+        Text: "Text"
+        AuthorKind: "Type d'auteur"
+        Biography: "Biography"
+        User: "User"
+        Country: "Country"
+        Collection: "Collection"
+        PublicationDate: "Publication date"
+        ProxyAddress: "Proxy address"
+        UnknownDate: "Unknown date"
+        Image: "Image"
+        RapidCreation: "Rapid creation"
+        ForSameBiography: "for same biography"
+        ForSameCollection: "for same collection"
+        Number: "Number"
+        Tags: "Tags"
+    image:
+        Image: "Image"
+        Share: "Share"
+    proverb:
+        Text: "Text"
+        Slug: "Slug"
+        Country: "Country"
+        ProxyAddress: "Proxy address"
+        ForSameCountry: "for the same country"
+        Tags: "Tags"
+    biography:
+        Title: "Titre"
+        Text: "Texte"
+        BirthDate: "Date de naissance"
+        DeathDate: "Date de décès"
+        Image: "Image"
+        Nationality: "Nationalité"
+        Country: "Pays"
+    tag:
+        Title: "Title"
+        Photo: "Photo"
+        InternationalName: "International name"
+    poeticForm:
+        Title: "Title"
+        Text: "Text"
+        Image: "Image"
+        KindOfContent: "Kind of content"
+    country:
+        Title: "Title"
+        InternationalName: "International name"
+        Flag: "Flag"
+    collection:
+        Title: "Title"
+        Text: "Text"
+        PublicationDate: "Publication date"
+        Image: "Image"
+        Biography: "Biography"
+        ProductCode: "Product code"
+        UnknownDate: "Unknown date"
+    contact:
+        Message: "Message"
+        Email: "Email"
+        DateOfDispatch: "Date sent"
+    member:
+        Pseudo: "Pseudo"
+        Roles: "Roles"
+        Email: "Email"
+        Activated: "On"
+        Activate: "Activate"
+        Desactivate: "Desactivate"
+    page:
+        Title: "Title"
+        Text: "Text"
+        InternationalName: "International name"
+        Image: "Image"
+    version:
+        VersionNumber: "Version number"
+        ReleaseDate: "Release date"
+        File: "File"
+    store:
+        Title: "Title"
+        ProductCode: "Product code"
+        Text: "Text"
+        Image: "Image"
+        Biography: "Biography"
+        EmbedCode: "Embed code"
+        Source: "Source"
+    socialNetwork:
+        AddAnImage: "Add an image"
+        Send: "Send"
+    imageGenerator:
+        GenerateAnImage: "Generate an image"
+        Text: "Text"
+        Image: "Image"
+        FontSize: "Font size"
+        InvertColors: "Invert colors"
+        Version: "Version"
+widget:
+    random:
+        IncorporateProverbsIntoYourWebsite: "Incorporate proverbs into your website"
+        AProverbAtRandom: "A proverb at random"
+        Copy: "Copy"
+        Preview: "Preview"
+        Proverb: "Proverb"
+        TheCodeHasBeenCopiedSuccessfully: "The code has been copied successfully"

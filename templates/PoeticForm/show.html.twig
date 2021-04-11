@@ -1,0 +1,31 @@
+{% extends sub_domain()~'_layout.html.twig' %}
+
+{% block head_title %}{{ 'menu.left.Admin'|trans }} - {{ 'admin.index.PoeticForm'|trans }}{% endblock %}
+{% block main_title %}{{ 'menu.left.Admin'|trans }} - {{ 'admin.index.PoeticForm'|trans }}{% endblock %}
+
+{% block main_content %}
+	<table class="table table-bordered admin_show">
+		<tr>
+			<th>{{ "admin.poeticForm.Title"|trans }}</th>
+			<td>{{ entity.title }}</td>
+		</tr>
+		<tr>
+			<th>{{ "admin.poeticForm.Text"|trans }}</th>
+			<td>{{ entity.text|raw }}</td>
+		</tr>
+		<tr>
+			<th>{{ 'admin.poeticForm.Image'|trans }}</th>
+			<td>{% if entity.fileManagement is not empty %}<p class="text-center">{{ (constant('\\App\\Entity\\PoeticForm::PATH_FILE')~entity.fileManagement.photo)|max_size_image() }}</p>{% endif %}</td>
+		</tr>
+		<tr>
+			<th>{{ "admin.form.Language"|trans }}</th>
+			<td>{{ entity.language.title }}</td>
+		</tr>
+		<tr>
+			<th>{{ "admin.form.Slug"|trans }}</th>
+			<td>{{ entity.slug }}</td>
+		</tr>
+	</table>
+	<hr>
+	<a href="{{ path('poeticformadmin_index') }}"><i class="fas fa-list"></i> {{ 'admin.index.List'|trans }}</a> - <a href="{{ path('poeticformadmin_edit', { 'id' : entity.id }) }}"><i class="fas fa-edit"></i> {{ 'admin.index.Update'|trans }}</a> - <a href="{{ path('poeticformadmin_new') }}"><i class="fas fa-plus-square"></i> {{ 'admin.index.Create'|trans }}</a>
+{% endblock %}

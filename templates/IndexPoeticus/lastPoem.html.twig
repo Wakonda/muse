@@ -1,0 +1,12 @@
+<ul>
+	{% for entity in entities %}
+		<li>
+			<a href="{{ path('app_indexpoeticus_read', {'id' : entity.id, 'slug' : entity.slug }) }}" >{{ entity.title }}</a>
+			<br>
+			{% if entity.biography is not empty %}
+				<i class="fas fa-chevron-circle-right"></i> 
+				<span class="font-weight-bold">{{ entity.biography.title }}</span>
+			{% endif %}
+		</li>
+	{% endfor %}
+</ul>

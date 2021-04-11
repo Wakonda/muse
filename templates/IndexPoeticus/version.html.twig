@@ -1,0 +1,34 @@
+{% extends 'poeticus_layout.html.twig' %}
+
+{% block head_title %}{{ 'version.index.Version'|trans }}{% endblock %}
+{% block main_title %}{{ 'version.index.Version'|trans }}{% endblock %}
+
+{% block main_content %}
+	<p class="text-center"><img src="{{ asset('photo/version.png') }}" alt="" class="medium" /></p>
+	<div>
+		<table class="table table-bordered">
+			<thead>
+				<tr class="active">
+					<th>{{ 'version.index.Version'|trans }}</th>
+					<th>{{ 'version.index.ReleaseDate'|trans }}</th>
+					<th>{{ 'version.index.Read'|trans }}</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for entity in entities %}
+				<tr>
+					<td>{{ entity.versionNumber }}</td>
+					<td>{{ date_letter(entity.releaseDate, app.request.locale) }}</td>
+					<td>
+						{% if entity.file is not empty %}
+							<a href="{{ asset(constant('\\App\\Entity\\Version::PATH_FILE')~ entity.file) }}">Lire</a>
+						{% else %}
+							-
+						{% endif %}
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+{% endblock %}

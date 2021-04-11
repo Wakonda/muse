@@ -1,0 +1,91 @@
+<style type="text/css">
+<!--
+    table.page_footer {width: 100%; border: none; background-color: #ffffff; border-top: solid 0.3mm black; padding: 2mm}
+    h1, .image
+	{
+		color: #000033;
+		text-align: center;
+	}
+    h2 {color: #000055}
+    h3 {
+		color: #000077;
+		text-decoration: underline;
+		font-size: 17px;
+	}
+	
+	p, span, .main_poem_text
+	{
+		font-size: 20px;
+		text-align: justify;
+	}
+	
+	.center {
+		text-align: center;
+	}
+	
+	.bold {
+		font-weight: bold;
+	}
+	
+	#header_title
+	{
+		font-family: "Script MT Bold", "Time New Roman", serif !important;
+	}
+
+	*
+	{
+		font-family: times;
+	}
+-->
+</style>
+
+<page backtop="14mm" backbottom="14mm" backleft="10mm" backright="10mm" style="font-size: 12pt">
+    <page_footer>
+        <table class="page_footer">
+            <tr>
+                <td style="width: 33%; text-align: left;">
+                    Poeticus
+                </td>
+                <td style="width: 34%; text-align: center">
+                    [[page_cu]]/[[page_nb]]
+                </td>
+                <td style="width: 33%; text-align: right">
+                    © Poeticus 2014 - {{ "now"|date("Y") }}
+                </td>
+            </tr>
+        </table>
+    </page_footer>
+	<h1 class="center">{{ collection.title }}</h1>
+	<p class="center">{{ (constant('\\App\\Entity\\Source::PATH_FILE')~collection.fileManagement.photo)|max_size_image([], true) }}</p>
+	<h2 class="center">{{ collection.authors.first.title|remove_control_characters }}</h2>
+	{% if collection.releasedDate is not empty %}
+		<p class="center bold">{{ collection.releasedDate }}</p>
+	{% endif %}
+</page>
+
+
+<page pageset="old">
+	<bookmark title="Sommaire" level="0" ></bookmark>
+</page>
+
+<page pageset="old">
+	<bookmark title="{{ 'collection.pdf.TheAuthor'|trans }}" level="0" ></bookmark>
+	<h1>{{ 'collection.pdf.TheAuthor'|trans }}</h1>
+	<h2 class="center">{{ biography.title|remove_control_characters }}</h2>
+	<p class="center">{{ display_file(biography, true, true) }}</p>
+	{{ biography.text|raw }}
+</page>
+
+{% for entity in entities %}
+<page pageset="old">
+    <bookmark title="{{ entity.title }}" level="0" ></bookmark>
+	<h1>{{ entity.title }}</h1>
+    <div class="main_poem_text">
+		{% if entity.poeticform is not null and entity.poeticform.typeContentPoem == constant('App\\Entity\\PoeticForm::IMAGETYPE') %}
+			{% if entity.fileManagement is not empty %}<p class="text-center">{{ (constant('\\App\\Entity\\Poem::PATH_FILE')~entity.fileManagement.photo)|max_size_image([], true) }}</p>{% endif %}
+		{% else %}
+			{{ entity.text|raw }}
+		{% endif %}
+    </div>
+</page>
+{% endfor %}

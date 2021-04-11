@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="shortcut icon" href="{{ asset('photo/favicon.ico') }}">
+		<title>Muse</title>
+
+        {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
+        {% endblock %}
+	</head>
+	<body>
+		<div class="container">
+			<div class="jumbotron p-3 p-md-4 bg-white rounded text-center">
+				<h1 class="display-4">Muse</h1>
+				<h2>{{ 'menu.top.Portal'|trans }}</h2>
+				
+				<img src="{{ asset('photo/favicon.ico') }}">
+				<hr>
+				<div class="card-group">
+					<div class="card">
+						<img class="card-img-top" src="{{ asset('photo/poeticus.jpg') }}" alt="Poéticus">
+						<div class="card-body">
+							<h5 class="card-title"><i class="fas fa-link fa-xs"></i> <a href="{{ path('app_indexpoeticus_index') }}">Poéticus</a></h5>
+						</div>
+					</div>
+					<div class="card">
+						<img class="card-img-top" src="{{ asset('photo/proverbius.jpg') }}" alt="Proverbius">
+						<div class="card-body">
+							<h5 class="card-title"><i class="fas fa-link fa-xs"></i> <a href="{{ path('app_indexproverbius_index') }}">Proverbius</a></h5>
+						</div>
+					</div>
+					<div class="card">
+						<img class="card-img-top" src="{{ asset('photo/quotus.jpg') }}" alt="Quotus">
+						<div class="card-body">
+							<h5 class="card-title"><i class="fas fa-link fa-xs"></i> <a href="{{ path('app_indexquotus_index') }}">Quotus</a></h5>
+						</div>
+					</div>
+				</div>
+				
+				<hr>
+				<p><i class="far fa-copyright fa-sm"></i> Copyright - <a href="//wakonda.guru" target="_blank">Wakonda.GURU</a></p>
+			</div>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,9 @@
+controllers:
+    resource: ../../src/Controller/
+    type: annotation
+    requirements:
+        domain: "(%domain_name%)"
+
+kernel:
+    resource: ../../src/Kernel.php
+    type: annotation

@@ -1,0 +1,58 @@
+{% extends 'generic_layout.html.twig' %}
+
+{% block head_title %}Quotus{% endblock %}
+
+{% block meta_tag_description %}Quotus est une encyclopédie regroupant les plus belles citations qui ont façonné l'univers féerique et passionnant de la littérature.{% endblock %}
+
+{% block head_keyworkds %}citation, personnalit&eacute;, fiction{% endblock %}
+
+{% block title %}Quotus{% endblock %}
+
+{% block main_title %}{{ 'main.index.WelcomeTo'|trans({'%domain%': 'Quotus'}) }}{% endblock %}
+
+{% block title_description %}{{ 'main.index.WonderfulWorldOfQuote'|trans|raw }}{% endblock %}
+
+{% block menu %}
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexquotus_index']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexquotus_index') }}"><i class="fas fa-home"></i> {{ 'menu.top.MainPage'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexquotus_byauthors', 'app_indexquotus_author']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexquotus_byauthors') }}">{{ 'menu.top.FamousAuthors'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexquotus_byfictionalcharacters', 'app_indexquotus_fictionalcharacter']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexquotus_byfictionalcharacters') }}">{{ 'menu.top.FictionalCharacters'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexquotus_bysources', 'app_indexquotus_source']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexquotus_bysources') }}">{{ 'menu.top.Works'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexquotus_byusers']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexquotus_byusers') }}">{{ 'menu.top.YourQuotes'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexquotus_store', 'app_indexquotus_readstore']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexquotus_store') }}">{{ 'menu.top.Store'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexquotus_byimages']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexquotus_byimages') }}">{{ 'menu.top.Images'|trans }}</a>
+	</li>
+{% endblock %}
+
+{% block member_area_menu %}
+	<li><a href="{{ path('app_indexquotus_quoteusernew') }}">{{ 'menu.left.WriteQuote'|trans }}</a></li>
+{% endblock %}
+
+{% block recent %}
+	<h1>{{ 'menu.left.RecentPublications'|trans }}</h1>
+	{{ render(controller('App\\Controller\\IndexQuotusController::lastAction')) }}
+{% endblock %}
+
+{% block statistic %}
+	{{ render(controller('App\\Controller\\IndexQuotusController::statAction')) }}
+{% endblock %}
+
+{% block language_selector %}
+	<a href="{{ path('app_indexquotus_changelanguage', {'locale':'fr'}) }}" title="Français"><img src="{{ asset('photo/language/fr.png') }}" alt="Fr" width="42" {{ app.request.locale == "fr" ? 'class="selected_language rounded"' : 'class="rounded"' }}></a>
+{% endblock %}
+
+{% block year_foundation %}
+	{{ ("2019" == "now"|date("Y")) ? "2019" : "2019 - " ~ "now"|date("Y") }}
+{% endblock %}

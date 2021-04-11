@@ -1,0 +1,559 @@
+menu:
+    top:
+        AlphabetBook: "Cartilha"
+        Authors: "Autores"
+        Collections: "Colecções"
+        Countries: "Países"
+        FamousAuthors: "Autores famosos"
+        FictionalCharacters: "Personagens fictícios"
+        Images: "Imagens"
+        MainPage: "Página principale"
+        PoeticForms: "Formas poéticas"
+        Store: "Loja"
+        Works: "Obras"
+        YourPoems: "Seus poemas"
+        YourQuotes: "Suas citações"
+        Portal: "Portal de Arte e Cultura"
+    left:
+        RecentPublications: "Publicações recentes"
+        FollowUs: "Sigam-nos"
+        Publicity: "Publicidade"
+        Statistics: "Estatística"
+        MemberArea: "Área de membros"
+        Languages: "Noutros idiomas"
+        LogIn: "Entrar"
+        CreateAccount: "Criar uma conta"
+        NumberOfPublishedPoems: "Número de poemas publicados"
+        NumberOfPublishedProverbs: "Número de provérbios publicados"
+        NumberOfPublishedQuotes: "Número de citações publicadas"
+        TotalAuthors: "Total de Autores"
+        NumberOfBooks: "Número de livros"
+        MyProfile: "Meu perfil"
+        ChangeMyPassword: "Alterar minha senha"
+        EditProfile: "Editar perfil"
+        WritePoem: "Escrever poesia"
+        WriteQuote: "Escreva uma citação"
+        LogOut: "Sair"
+        Admin: "Administrador"
+        HelpUs: "Ajude-nos"
+    footer:
+        About: "Sobre"
+        ContactUs: "Fale conosco"
+        Version: "Versão"
+        PrivacyPolicy: "Política de privacidade"
+main:
+    index:
+        WonderfulWorldOfPoem: "O<small> Mundo Mágico </small> da Poesia"
+        WonderfulWorldOfProverb: "O <small> Mundo Mágico </small> dos Provérbios"
+        WonderfulWorldOfQuote: "O <small> mundo mágico </small> das citações"
+        WelcomeTo: "Bem-vindo ao %domain%"
+        SearchPoem: "Procurar poesia"
+        SearchProverb: "Procurar um provérbio"
+        SearchQuote: "Procurar uma citação"
+        PoemRandomly: "Poesia ao acaso"
+        ProverbRandomly: "Provérbio aleatório"
+        QuoteRandomly: "Citação aleatória"
+        NoPoem: "Nenhuma poesie aditada"
+        NoProverb: "Nenhum provérbio adicionado ainda"
+        NoQuote: "Nenhuma citação adicionada ainda"
+    field:
+        Title: "Título"
+        Keywords: "Palavra-chave"
+        Author: "Autor"
+        Country: "País"
+        Collection: "Coleção"
+        PoeticForm: "Forma poética"
+        ChooseAnOption: "Escolha a opção"
+        Search: "Procurar"
+        YourPoems: "Seus poemas"
+        GreatWriters: "Grandes autores"
+publication:
+    state:
+        Published: "Publicado"
+        Deleted: "Excluído"
+        Draft: "Rascunho"
+tag:
+    table:
+        Title: "Título"
+        Collection: "Coleção"
+biography:
+    index:
+        ByAuthors: "Por autores"
+        HisPoems: "Seus poemas"
+        HisQuotes: "As citações dele"
+    field:
+        BirthDate: "Data de nascimento"
+        DeathDate: "Data de falecimento"
+        Nationality: "Nacionalidade"
+    table:
+        Number: "Número"
+        Author: "Autor"
+        Title: "Título"
+        Collection: "Colectânea"
+        Photo: "Foto"
+        Read: "Ler"
+        Source: "Fonte"
+        Action: "Acção"
+        Text: "Texto"
+source:
+    index:
+        BySources: "Por obras"
+        Quotes: "Cotações"
+        Characters: "Personagens"
+        Authors: "Autores"
+    type:
+        Book: "Livro"
+        Movie: "Filme"
+        Tvseries: "Programa TV"
+    table:
+        Title: "Título"
+        Author: "Autor"
+        Photo: "Foto"
+        Number: "Número"
+        Text: "Texto"
+        Read: "Ler"
+country:
+    index:
+        ByCountries: "Por países"
+    table:
+        Number: "Número"
+        Read: "Ler"
+        Author: "Autor"
+        Country: "País"
+        Title: "Título"
+        Text: "Texto"
+poeticForm:
+    index:
+        ByPoeticForms: "Por formas poéticas"
+    table:
+        PoeticForm: "Forma poética"
+        Number: "Número"
+        Title: "Título"
+store:
+    index:
+        Store: "Loja"
+        Search: "Procurar"
+        MoreInformations: "Mais informação"
+        UnknownAuthor: "Autor desconhecido"
+        NoProductFound: "Nenhum produto encontrado"
+        Buy: "Comprar"
+    author:
+        Title: "Título"
+        Action: "Acção"
+    read:
+        Abstract: "Resumo"
+fileManagement:
+    index:
+        FileManager: "Gerenciador de arquivos"
+    form:
+        Description: "Descrição"
+        Photo: "Foto"
+        Download: "Baixar"
+        Search: "Procurar"
+fictionalCharacter:
+    index:
+        ByFictionalCharacters: "Por personagens fictícios"
+        HisQuotes: "Suas citações"
+    field:
+        BirthDate: "Data de nascimento"
+        DeathDate: "Data de morte"
+        Nationality: "Nacionalidade"
+    table:
+        Number: "Número"
+        Character: "Personagem"
+        Text: "Texto"
+        Photo: "Foto"
+        Source: "Fonte"
+        Read: "Ler"
+yourPoems:
+    index:
+        YourPoems: "Seus poemas"
+    table:
+        Author: "Autor"
+        Title: "Título"
+    field:
+        WritePoetry: "Escrever um poema"
+        EditPoetry: "Modificar um poema"
+        Title: "Título"
+        Text: "Texto"
+        Draft: "Rascunho"
+        Save: "Registar"
+yourQuotes:
+    index:
+        YourQuotes: "Suas citações"
+    table:
+        Author: "Autor"
+        Text: "Texto"
+    field:
+        WriteQuote: "Escrever uma citação"
+        EditQuote: "Editar uma citação"
+        Text: "Texto"
+        Draft: "Rascunho"
+        Save: "Registar"
+collection:
+    index:
+        ByCollections: "Por coleções"
+    field:
+        Author: "Autor"
+        PublicationDate: "Data de publicação"
+        PoemsInThisCollection: "Poemas nesta coleção"
+        BuyThisCollection: "Comprar este livro"
+    table:
+        Number: "Número"
+        Author: "Autor"
+        Collection: "Colectânea"
+        Title: "Título"
+    pdf:
+        TheAuthor: "O autor"
+backup:
+    index:
+        File: "Arquivo"
+        Actions: "Estoque"
+        No: "Sem backup"
+        FileDeleted: "Arquivo excluído"
+        FileGenerated: "Arquivo gerado"
+user:
+    login:
+        Pseudo: "Nome de utilizador(a)"
+        Password: "Palavra-passe"
+        RememberMe: "Manter-me autenticado"
+        LogIn: "Entrar"
+        LogOut: "Sair"
+        ForgottenPassword: "Esqueceu-se da sua palavra-passe?"
+        PasswordOrUserForgotten: "Existem problemas com alguns dos dados introduzidos"
+        YouAreLoggedInAs: "Você já está conectado como"
+        CongratulationAccountActivated: "Parabéns %username%, sua conta foi ativada. Por favor, insira seus dados de login para fazer o login."
+        AccountCannotBeActivated: "Desculpe %username%, sua conta não pode ser ativada porque o link expirou."
+    createAccount:
+        CreateAccount: "Criar conta"
+        Pseudo: "Nome de utilizador(a)"
+        Password: "Palavra-passe"
+        PasswordValidation: "Confirme a palavra-passe"
+        Email: "Endereço de correio eletrónico"
+        Avatar: "Avatar"
+        Description: "Apresentação"
+        Country: "País"
+        Captcha: "Digite o texto que vê na imagem"
+        CreateSave: "Crie a sua conta"
+        Save: "Registro"
+        OR: "OU"
+        SelectFile: "Selecione um arquivo"
+        UseGravatar: "Use um gravatar"
+        CurrentGravatar: "Avatar atual :"
+        PasswordsMustMatch: "As palavras-passe têm de coincidir"
+        TheWordMustMatchThePicture: "A palavra deve corresponder à imagem"
+        Registration: "Inscrição"
+        UnableToAccessThisPage: "Não é possível acessar esta página"
+        UserSameUsernameEmailExists: "Já existe um usuário com o mesmo nome de usuário / email!"
+        PasswordMustContainAtLeast: "Sua senha deve conter pelo menos %minLength% caracteres."
+        PasswordOneLetter: "Sua senha deve ter pelo menos uma letra."
+        PasswordOneNumber: "Sua senha deve ter pelo menos um número."
+    confirmation:
+        Title: "Confirmação"
+        Text: "Sua conta foi criada. No entanto, para efetuar login, você deve ativar sua conta. Para fazer isso, clique no link que você recebeu por email."
+        Email: "<p>Olá %username%,</p><p>Agradecemos sua inscrição no <b>Poéticus</b>. Para poder fazer o login, e assim desfrutar de todos os recursos do site, clique no link de confirmação abaixo.</p><p><a href='%urlLogin%' alt=''>Clique aqui para ativar sua conta</a></p><p><b><u>Aviso: </u></b>este link irá expirar <i>%expiredAt%</i></p><p>Vejo você em breve em Poéticus ...</p><p>A equipe do Poéticus <a href='%urlIndex%' alt=''><b>Poéticus</b></a></p>"
+    editAccount:
+        Title: "Modificar meu perfil"
+    listUsers:
+        ListUsers: "Lista dos membros"
+        Pseudo: "Nome de utilizador(a)"
+        Action: "Acção"
+    myProfile:
+        User: "Utilizador"
+        MyPoems: "Os meus poemas"
+        MyComments: "Os meus comentários"
+        MyVotes: "Meu voto"
+        Login: "Nome de utilizador(a)"
+        Country: "País"
+        Description: "Apresentação"
+        Title: "Título"
+        Action: "Acção"
+        Edit: "Modificar"
+        Delete: "Remover"
+        State: "Estado"
+        Poem: "Poesia"
+        PublicationDate: "Data de publicação"
+        Vote: "Votação"
+forgottenPassword:
+    index:
+        ForgotYourPassword: "Esqueceu a senha"
+        ResetPassword: "Redefinir palavra-passe"
+        NewPasswordSend: "Preencha um dos campos para receber uma palavra-passe temporária por correio eletrónico."
+    field:
+        EmailUsername: "E-mail ou Nome de utilizador(a)"
+        Captcha: "Digite o texto que vê na imagem"
+        Send: "Enviar uma nova palavra-chave por e-mail"
+        TheWordMustMatchThePicture: "A palavra deve corresponder à imagem"
+        UsernameOrEmailAddressDoesNotExist: "Nome de usuário ou endereço de e-mail não existe"
+    confirmation:
+        YourPasswordHasBeenChanged: "Sua senha foi alterada."
+        Title: "Confirmação - Senha esquecida"
+        EmailSent: "Um email foi enviado para você. Você encontrará o procedimento para poder reconectar em"
+        Email: "<p>Olá %entity.username%,</p><p>Se você receber este e-mail, esqueceu sua senha. Para remediar a situação, geramos uma provisória:</p><p><b><u>Senha temporária:</u></b> <i>%temporaryPassword%</i></p><p><b><u>Attention :</u></b> Aviso: esta senha é temporária. Como resultado, pedimos que você o modifique assim que <a href='%urlLogin%'>fizer login na sua conta</a>.</p><p>Atenciosamente,</p><p>A equipe do <a href='%urlIndex%'><b>Poéticus</b></a></p>"
+editPassword:
+    index:
+        EditMyPassword: "Editar minha senha"
+    field:
+        NewPassword: "Nova senha"
+        PasswordValidation: "Senha (Validação)"
+contact:
+    field:
+        YourMessageHasBeenSentSuccessfully: "Sua mensagem foi enviada com sucesso!"
+        ContactUs: "Encontramo-nos!"
+        Message: "Mensagem"
+        Email: "E-mail"
+        Subject: "Assunto"
+        Send: "Enviar"
+comment:
+    index:
+        Comments: "Comentários"
+    field:
+        Message: "Mensagem"
+        Send: "Enviar"
+        YouMustBeLoggedInToWriteAComment: "Você precisa estar logado para escrever um comentário"
+    list:
+        PreviousPage: "Página anterior"
+        NextPage: "Página seguinte"
+send:
+    index:
+        PoemAutomaticallyAddedPost: "Poesia será automaticamente adicionada à sua mensagem"
+        SendPoemFriend: "Enviar este poema a um amigo"
+        Infos: "Informações"
+        YourMessageHasBeenSentSuccessfully: "Seu poema foi enviado com sucesso!"
+        ThisPoemHasBeenSentSince: "Este poema foi enviado desde"
+        HeSentYouThisPoemWrittenBy: "vous a envoyé ce poème écrit par"
+        Somebody: "Alguém"
+        AndEntitled: "e intitulado"
+    field:
+        FirstName: "Primeiro Nome"
+        LastName: "Nome"
+        YourMail: "Seu email"
+        RecipientMail: "E-mail do destinatário"
+        Subject: "Assunto"
+        Message: "Mensagem"
+        Send: "Enviar"
+        Close: "Fechar"
+vote:
+    index:
+        Votes: "Votações"
+    field:
+        Error: "Erro"
+        YouMustBeLoggedInToVote: "Você deve estar logado para votar!"
+        YouHaveAlreadyVotedForThis: "Você já votou neste poesia"
+error:
+    index:
+        Error: "Errore"
+        PageNotFound: "La pagina a cui vuoi accedere non esiste!"
+        Message: "<p>Ocorreu um <b>erro %code%</b>. Se o problema persistir, não hesite em <a href='%url%' alt=''>nos contatar</a> para que possamos resolvê-lo o mais rápido possível!</p>"
+version:
+    index:
+        Version: "Versão"
+        ReleaseDate: "Data de saída"
+        Read: "Ler"
+search:
+    result:
+        Search: "Pesquisar"
+        SearchResults: "Resultado da sua pesquisa"
+        Criteria: "Critérios :"
+        Title: "Título"
+        Text: "Texto"
+        Country: "País"
+        Author: "Autor"
+        None: "Nenhum"
+poem:
+    read:
+        InPictures: "Em imagens ..."
+    state:
+        Published: "Publicado"
+        Deleted: "Suprimido"
+        Draft: "Rascunho"
+    browsing:
+        Previous: "Precedente"
+        Next: "Seguinte"
+image:
+    index:
+        ByImages: "Em imagem"
+proverb:
+    read:
+        InPictures: "Em imagens ..."
+        Proverb: "Provérbio"
+    browsing:
+        Next: "Próximo"
+        Previous: "Anterior"
+quote:
+    read:
+        InPictures: "Em imagens ..."
+        Quote: "Citar"
+    state:
+        Published: "Publicado"
+        Deleted: "Suprimido"
+        Draft: "Rascunho"
+    browsing:
+        Previous: "Anterior"
+        Next: "Próximo"
+alphabetBook:
+    index:
+        ByLetter: "Cartilha"
+    table:
+        Number: "Número"
+        Letter: "Letra"
+        Read: "Ler"
+        Text: "Texto"
+admin:
+    index:
+        Biography: "Biografia"
+        Contact: "Contacto"
+        PoeticForm: "Forma poética"
+        Member: "Membro"
+        Page: "Página"
+        Source: "Fonte"
+        Country: "País"
+        Poem: "Poesia"
+        Image: "Imagem"
+        Collection: "Colectânea"
+        Version: "Versão"
+        Store: "Loja"
+        Quote: "Citar"
+        Proverb: "Provérbio"
+        Tag: "Etiqueta"
+        Create: "Criar"
+        Read: "Ler"
+        Update: "Modificar"
+        Add: "Adicionar"
+        QuicklyCreation: "Rápida criação"
+        GenerateSitemap: "Gerar o mapa do site"
+        CurrentImage: "Foto atual"
+        CurrentFile: "Ficheiro actual"
+        UnreadMessages: "Mensagens não lidas"
+        ThisEntryAlreadyExists: "Esta entrada já existe!"
+        SentSuccessfully: "Enviado com sucesso"
+        YouMustSelectAnImage: "Você deve selecionar uma imagem"
+        SentError: "Ocorreu um erro"
+        AddedSuccessfully: "%numberAdded% poemas adicionados, %numberDoubloons% duplicatas"
+        List: "Lista"
+        Backup: "Backup"
+        All: "Tudo"
+        ToComplete: "A ser completado"
+        State: "Estado"
+        MultipleEdition: "Edição Múltipla"
+        ChangesMadeSuccessfully: "Alterações feitas com sucesso"
+    error:
+        UnknownURL: "URL desconhecido"
+    table:
+        Title: "Título"
+        Text: "Texto"
+        Action: "Acção"
+        Subject: "Assunto"
+        ReadQuestion: "Leu?"
+        SendingDate: "Data de envio"
+        Pseudo: "Nome de utilizador(a)"
+        ReleaseDate: "Date de saída"
+        VersionNumber: "Número de versão"
+    main:
+        Save: "Registar"
+    form:
+        Language: "Língua"
+        Slug: "Slug"
+    poem:
+        Title: "Título"
+        PoeticForm: "Forma poética"
+        Text: "Texto"
+        AuthorKind: "Tipo de autor"
+        Biography: "Biografia"
+        User: "Usuário"
+        Country: "País"
+        Collection: "Colectânea"
+        PublicationDate: "Data de publicação"
+        ProxyAddress: "Endereço proxy"
+        UnknownDate: "Data desconhecida"
+        Image: "Imagem"
+        RapidCreation: "Rápida criação"
+        ForSameBiography: "para a mesmo autor"
+        ForSameCollection: "para a mesma coleção"
+        Number: "Número"
+        Tags: "Etiquetas"
+    image:
+        Image: "Imagem"
+        Share: "Ação"
+    proverb:
+        Text: "Texto"
+        Slug: "Slug"
+        Country: "País"
+        ProxyAddress: "Endereço proxy"
+        ForSameCountry: "para o mesmo país"
+        Tags: "Tags"
+    biography:
+        Title: "Título"
+        Text: "Texto"
+        BirthDate: "Data de nascimento"
+        DeathDate: "Data de falecimento"
+        Image: "Imagem"
+        Nationality: "Nacionalidade"
+        Country: "País"
+    tag:
+        Title: "Título"
+        Photo: "Foto"
+        InternationalName: "Denominação internacionalmente"
+    poeticForm:
+        Title: "Título"
+        Text: "Texto"
+        Image: "Imagem"
+        KindOfContent: "Tipo de conteúdo"
+    country:
+        Title: "Título"
+        InternationalName: "Denominação internacionalmente"
+        Flag: "Bandeira"
+    collection:
+        Title: "Título"
+        Text: "Texto"
+        PublicationDate: "Data de publicação"
+        Image: "Imagem"
+        Biography: "Biografia"
+        ProductCode: "Código do produto"
+        UnknownDate: "Data desconhecida"
+    contact:
+        Message: "Mensagem"
+        Email: "E-mail"
+        DateOfDispatch: "Data de envio"
+    member:
+        Pseudo: "Nome de utilizador(a)"
+        Roles: "Papéis"
+        Email: "E-mail"
+        Activated: "Activado"
+        Activate: "Activar"
+        Desactivate: "Desactivar"
+    page:
+        Title: "Título"
+        Text: "Texto"
+        InternationalName: "Denominação internacionalmente"
+        Image: "Imagem"
+    version:
+        VersionNumber: "Número de versão"
+        ReleaseDate: "Date de saída"
+        File: "Arquivo"
+    store:
+        Title: "Título"
+        ProductCode: "Código do produto"
+        Text: "Texto"
+        Image: "Imagem"
+        Biography: "Biografia"
+        EmbedCode: "Código de incorporação"
+        Source: "Fonte"
+    socialNetwork:
+        AddAnImage: "Adicione uma imagem"
+        Send: "Enviar"
+    imageGenerator:
+        GenerateAnImage: "Gere uma imagem"
+        Text: "Texto"
+        Image: "Imagem"
+        FontSize: "Tamanho da fonte"
+        InvertColors: "Cores invertidas"
+        Version: "Versão"
+widget:
+    random:
+        IncorporateProverbsIntoYourWebsite: "Integre Provérbios em seu site"
+        AProverbAtRandom: "Um provérbio aleatório"
+        Copy: "Copiar"
+        Preview: "Pré-visualizar"
+        Proverb: "Provérbio"
+        TheCodeHasBeenCopiedSuccessfully: "O código foi copiado com sucesso"

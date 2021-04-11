@@ -1,0 +1,74 @@
+<style type="text/css">
+<!--
+    table.page_footer {width: 100%; border: none; background-color: #ffffff; border-top: solid 0.3mm black; padding: 2mm}
+    h1, .image {
+		color: #000033;
+		text-align: center;
+	}
+    h2 {color: #000055}
+    h3 {
+		color: #000077;
+		text-decoration: underline;
+		font-size: 17px;
+	}
+	
+	.underline {
+		text-decoration: underline;
+	}
+	
+	.italic {
+		font-style: italic;
+	}
+	
+	p, span {
+		font-size: 20px;
+		text-align: justify;
+	}
+	
+	#header_title {
+		font-family: "Script MT Bold", "Time New Roman", serif !important;
+	}
+	
+	.text-center {
+		text-align: center;
+	}
+
+	* {
+		font-family: times;
+	}
+-->
+</style>
+
+<page backtop="14mm" backbottom="14mm" backleft="10mm" backright="10mm" style="font-size: 12pt">
+
+    <page_footer>
+        <table class="page_footer">
+            <tr>
+                <td style="width: 33%; text-align: left;">
+                    Poeticus
+                </td>
+                <td style="width: 34%; text-align: center">
+                    [[page_cu]]/[[page_nb]]
+                </td>
+                <td style="width: 33%; text-align: right">
+                    © Poeticus 2014 - {{ "now"|date("Y") }}
+                </td>
+            </tr>
+        </table>
+    </page_footer>
+</page>
+
+<h1>{{ entity.title }}</h1>
+<br />
+{% if entity.poeticform is not null and entity.poeticform.typeContentPoem == constant('App\\Entity\\PoeticForm::IMAGETYPE') %}
+	{% if entity.fileManagement is not empty %}<p class="text-center">{{ (constant('\\App\\Entity\\Poem::PATH_FILE')~entity.fileManagement.photo)|max_size_image([], true) }}</p>{% endif %}
+{% else %}
+	{{ entity.text|raw }}
+{% endif %}
+<br />
+<hr style="height: 1px"/>
+<span>{{ entity.biography.title|remove_control_characters }}</span> - <img class="flag" src="{{ constant('\\App\\Entity\\Country::PATH_FILE') }}{{ entity.country.flag }}" alt="" height="16" />
+{% if entity.collection is not null %}
+	-
+	<span class="underline italic">{{ entity.collection.title }}</span>
+{% endif %}

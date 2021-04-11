@@ -1,0 +1,38 @@
+{% extends 'quotus_layout.html.twig' %}
+
+{% block head_title %}{{ 'image.index.ByImages'|trans }}{% endblock %}
+
+{% block main_title %}{{ 'image.index.ByImages'|trans }}{% endblock %}
+
+{% block main_content %}
+	<div class="card-columns">
+    {% for image in pagination %}
+		<div class="card">
+			<a href="{{ path('app_indexquotus_read', {'id' : image.quote.id, 'slug' : image.quote.slug}) }}"><img src="{{ asset(constant('\\App\\Entity\\Quote::PATH_FILE')~image.image) }}" class="card-img-top" alt="{{ image.quote.text }}"></a>
+			<div class="card-body">
+				<p class="card-text"><i>{{ image.quote.text|raw }}</i></p>
+				{% if image.quote.isBiography %}
+					{% if image.quote.biography.isFictionalCharacter %}
+					<p class="card-text mb-0"><small class="text-muted"><b><a href="{{ path('app_indexquotus_fictionalcharacter', {'id': image.quote.biography.id, 'slug': image.quote.biography.slug}) }}">{{ image.quote.biography.title }}</a></b></small></p>
+					{% else %}
+					<p class="card-text mb-0"><small class="text-muted"><b><a href="{{ path('app_indexquotus_author', {'id': image.quote.biography.id, 'slug': image.quote.biography.slug}) }}">{{ image.quote.biography.title }}</a></b></small></p>
+					{% endif %}
+					
+					{% if image.quote.source is not empty %} 
+					<p class="card-text"><small class="text-muted"><u><i><a href="{{ path('app_indexquotus_source', {'id': image.quote.source.id, 'slug': image.quote.source.slug}) }}">{{ image.quote.source.title }}</a></i></u></small></p>
+					{% endif %}
+				{% else %}
+					<p class="card-text mb-0"><small class="text-muted"><b><a href="">{{ image.quote.user.username }}</a></b></small></p>
+				{% endif %}
+			</div>
+			<div class="card-footer text-muted text-center">
+				<a class="btn btn-outline-secondary btn-sm" target="_blank" title="Twitter" href="https://twitter.com/share?url={{ url('app_indexquotus_read', {id: image.quote.id, slug: image.quote.slug, idImage: image.id}) }}&text={{ image.quote.text }}&via=Proverbius" rel="nofollow" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=400,width=700');return false;"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+				<a class="btn btn-outline-secondary btn-sm" target="_blank" title="Facebook" href="https://www.facebook.com/sharer.php?u={{ url('app_indexquotus_read', {id: image.quote.id, slug: image.quote.slug, idImage: image.id }) }}&t={{ image.quote.text }}" rel="nofollow" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=700');return false;"><i class="fab fa-facebook" aria-hidden="true"></i></a>
+				<a class="btn btn-outline-secondary btn-sm" target="_blank" title="Linkedin" href="https://www.linkedin.com/shareArticle?mini=true&amp;url={{ url('app_indexquotus_read', {id: image.quote.id, slug: image.quote.slug, idImage: image.id }) }}" rel="nofollow" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=400,width=700');return false;"><i class="fab fa-linkedin" aria-hidden="true"></i></a>
+				<a class="btn btn-outline-secondary btn-sm" target="_blank" title="Pinterest" href="https://pinterest.com/pin/create/button/?url={{ url('app_indexquotus_read', {id: image.quote.id, slug: image.quote.slug, idImage: image.id }) }}&media={{ absolute_url(asset(constant('\\App\\Entity\\Quote::PATH_FILE')~image.image)) }}&description={{ image.quote.text }}" count-layout="horizontal" rel="nofollow" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=400,width=700');return false;"><i class="fab fa-pinterest-p" aria-hidden="true"></i></a>
+			</div>
+		</div>
+    {% endfor %}
+	</div>
+{{ knp_pagination_render(pagination) }}
+{% endblock %}

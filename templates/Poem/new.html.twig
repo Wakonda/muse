@@ -1,0 +1,169 @@
+{% extends sub_domain()~'_layout.html.twig' %}
+
+{% block head_title %}{{ 'menu.left.Admin'|trans }} - {{ 'admin.index.Poem'|trans }}{% endblock %}
+{% block main_title %}{{ 'menu.left.Admin'|trans }} - {{ 'admin.index.Poem'|trans }}{% endblock %}
+
+{% block style_additional %}
+	<link rel="stylesheet" type="text/css" href="{{ asset('js/select2/dist/css/select2.min.css') }}" media="screen" />
+	<link rel="stylesheet" type="text/css" href="{{ asset('js/jquery.ajax-combobox-master/dist/jquery.ajax-combobox.css') }}" media="screen" />
+{% endblock %}
+
+{% block script_additional %}
+	<script src="{{ asset('js/select2/dist/js/select2.full.min.js') }}" type="text/javascript"></script>
+	<script src="{{ asset('bundles/tetranzselect2entity/js/select2entity.js') }}"></script>
+	<script src="{{ asset('js/select2/dist/js/i18n/'~app.request.locale~'.js') }}" type="text/javascript"></script>
+	<script src="{{ asset('js/jquery.ajax-combobox-master/dist/jquery.ajax-combobox.js') }}"></script>
+	<script src="{{ asset('js/combobox.js') }}"></script>
+	{% import "Index/macro.html.twig" as macro %}
+	{{ macro.redactor() }}
+	<script type="text/javascript">
+		$(function()
+		{
+			$('#{{ form.author_type.vars.id }}').change(function()
+			{
+				if($(this).val() == "user")
+				{
+					$("div.user_row").show();
+					$("div.biography_row").hide();
+					$("select#{{ form.biography.vars.id }}").val("");
+				}
+				else
+				{
+					$("div.user_row").hide();
+					$("div.biography_row").show();
+					$("select#{{ form.user.vars.id }}").val("");
+				}
+			});
+			$('#{{ form.author_type.vars.id }}').change();
+			
+			$("input#{{ form.unknown_released_date.vars.id }}").click(function()
+			{
+				if($(this).is(":checked"))
+					$("#{{ form.released_date.vars.id }}").val("");
+			});
+			$("input#{{ form.unknown_released_date.vars.id }}").click();
+			
+			$("input#{{ form.released_date.vars.id }}").keyup(function()
+			{
+				if($(this).val() != "")
+					$("input#{{ form.unknown_released_date.vars.id }}").prop('checked', false);
+				else
+					$("input#{{ form.unknown_released_date.vars.id }}").prop('checked', true);
+			});
+			$("input#{{ form.released_date.vars.id }}").keyup();
+			
+			function changeBiography(val)
+			{
+				$.ajax({
+					type: "POST",
+					url: "{{ path('app_poemadmin_listselectedbiography') }}",
+					data: { "id" : val },
+					success: function(data)
+					{
+						if(data.country != "")
+							$("div.poem-country").html('<img src="{{ asset(constant('\\App\\Entity\\Country::PATH_FILE')) }}' + data.country.flag +'" class="flag" />' + ' ' + data.country.title);
+						else
+							$("div.poem-country").html("-");
+
+						var collections = data.collections;
+
+						$("#{{ form.collection.vars.id }} option").remove();
+						$("#{{ form.collection.vars.id }}").append('<option value="">{{ 'main.field.ChooseAnOption'|trans }}</option>');
+
+						if(collections != "")
+						{
+							$.each(collections, function(index, element)
+							{
+								$("#{{ form.collection.vars.id }}").append('<option value="'+ element.id +'">'+ element.title +'</option>');
+							});
+							{% set collection = app.request.attributes.get("collectionId") %}
+							{% if collection is not null %}
+								$("#{{ form.collection.vars.id }}").val("{{ collection }}");
+							{% endif %}
+						}
+					}
+				});
+			}
+			
+			changeBiography($("#{{ form.biography.vars.id }}").val());
+
+			$("#{{ form.collection.vars.id }}").change(function()
+			{
+				$.ajax({
+					type: "POST",
+					url: "{{ path('app_poemadmin_listselectedcollection') }}",
+					data: { "id" : $(this).val() },
+					success: function(data)
+					{
+						$("#{{ form.released_date.vars.id }}").val(data.releasedDate);
+
+						if(data.releasedDate != null)
+							$('input#{{ form.unknown_released_date.vars.id }}').prop('checked', false);
+						else
+							$('input#{{ form.unknown_released_date.vars.id }}').prop('checked', true);
+					}
+				});
+			});
+			
+			$("#{{ form.collection.vars.id }}").change();
+			
+			$("#{{ form.poetic_form.vars.id }}").change(function()
+			{
+				$.ajax({
+					type: "POST",
+					url: "{{ path('app_poemadmin_selectpoeticform') }}",
+					data: { "id" : $(this).val() },
+					success: function(data)
+					{
+						if(data.typeContentPoem == "{{ constant('App\\Entity\\PoeticForm::IMAGETYPE') }}") {
+							$("#text_container").hide();
+							$("#photo_container").show();
+						}
+						else {
+							$("#text_container").show();
+							$("#photo_container").hide();
+						}
+					}
+				});
+			});
+			
+			$("#{{ form.poetic_form.vars.id }}").change();
+			
+			$("select#{{ form.language.vars.id }}").change(function() {
+				var input = $(".container_{{ form.vars['id'] }}_biography > .input-group > input[type='hidden']");
+				$(input[0]).addClass('combobox full_width form-control').attr("type", "text").val("");
+				$(".container_{{ form.vars['id'] }}_biography").parent().append(input[0]);
+				$(".container_{{ form.vars['id'] }}_biography").remove();
+				setComboboxNew('{{ path("app_biographyadmin_getbiographiesbyajax") }}?locale=' + $(this).val(), 'biography', "#{{ form.biography.vars.id }}", changeBiography);
+			
+				$("#{{ form.tags.vars.id }}").empty().trigger('change');
+
+				$.ajax({
+					type: "GET",
+					url: "{{ path('app_poeticformadmin_language') }}",
+					data: { "locale" : $(this).val() },
+					success: function(data)
+					{
+						$("select#{{ form.poetic_form.vars.id }}").empty();
+						$("select#{{ form.poetic_form.vars.id }}").append('<option value="" selected="selected">{{ 'main.field.ChooseAnOption'|trans }}</option>');
+						
+						for (var i = 0; i < data.length; i++) {
+							$("select#{{ form.poetic_form.vars.id }}").append('<option value="'+ data[i].id +'">'+ data[i].name +'</option>');
+						}
+					}
+				});
+			});
+			
+			$("select#{{ form.language.vars.id }}").change();
+		});
+	</script>
+{% endblock %}
+
+{% block main_content %}
+{% form_theme form 'Form/fields.html.twig' %}
+
+{{ form_start(form, {'method' : 'post', 'action' : path('app_poemadmin_create'), 'attr': {'novalidate': 'novalidate'} }) }}
+	{% include "Poem/_form.html.twig" with {'form': form} %}
+{{ form_end(form) }}
+
+{% endblock %}

@@ -1,0 +1,76 @@
+<div class="form-group row">
+	{{ form_label(form.title, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+	<div class="col-sm-10">
+		{{ form_errors(form.title) }}{{ form_widget(form.title, {'attr':{'class':'form-control'}}) }}
+	</div>
+</div>
+<div class="form-group row">
+	{{ form_label(form.language, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+	<div class="col-sm-10">
+		{{ form_errors(form.language) }}{{ form_widget(form.language, {'attr':{'class':'form-control'}}) }}
+	</div>
+</div>
+<div class="form-group row">
+	{{ form_label(form.poetic_form, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+	<div class="col-sm-10">
+		{{ form_errors(form.poetic_form) }}{{ form_widget(form.poetic_form, {'attr':{'class':'form-control'}}) }}
+	</div>
+</div>
+<div id="photo_container" class="form-group row">
+	{{ form_label(form.fileManagement, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+	<div class="col-sm-10">
+		{{ form_row(form.fileManagement) }}
+	</div>
+</div>
+<div id="text_container" class="form-group row">
+	{{ form_label(form.text, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+	<div class="col-sm-10">
+		{{ form_errors(form.text) }}{{ form_widget(form.text) }}
+	</div>
+</div>
+<div class="form-group row">
+	{{ form_label(form.author_type, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+	<div class="col-sm-10">
+		{{ form_errors(form.author_type) }}{{ form_widget(form.author_type, {'attr':{'class':'form-control'}}) }}
+	</div>
+</div>
+<div class="form-group row user_row">
+	{{ form_label(form.user, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+	<div class="col-sm-10">
+		{{ form_errors(form.user) }}{{ form_widget(form.user, {'attr':{'class':'form-control'}}) }}
+	</div>
+</div>
+<div class="form-group row biography_row">
+	{{ form_label(form.biography, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+	<div class="col-sm-10">
+		{{ form_errors(form.biography) }}{{ form_widget(form.biography, {'attr':{'class':'combobox form-control'}}) }}
+	</div>
+</div>
+<div class="form-group row">
+	<div class="col-sm-2 col-form-label">{{ 'admin.poem.Country'|trans }}</div>
+	<div class="col-sm-10 poem-country">-</div>
+</div>
+<div class="form-group row">
+	{{ form_label(form.collection, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+	<div class="col-sm-10">
+		{{ form_errors(form.collection) }}{{ form_widget(form.collection, {'attr':{'class':'form-control'}}) }}
+	</div>
+</div>
+<div class="form-group row">
+	{{ form_label(form.released_date, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+	<div class="col-sm-2">
+		{{ form_errors(form.released_date) }}{{ form_widget(form.released_date, {'attr':{'class':'year form-control'}}) }}
+	</div>
+	<div class="col-sm-4">
+		{{ form_widget(form.unknown_released_date) }} {{ form_label(form.unknown_released_date) }}
+	</div>
+</div>
+<div class="form-group row">
+	{{ form_label(form.tags, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+	<div class="col-sm-10">
+		{{ form_errors(form.tags) }}{{ form_widget(form.tags, {'attr':{'class':'form-control'}}) }}
+	</div>
+</div>
+<hr />
+{{ form_widget(form.save, {'icon': 'fa-save'}) }}
+{{ form_rest(form) }}

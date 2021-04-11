@@ -1,0 +1,166 @@
+{% extends sub_domain()~'_layout.html.twig' %}
+
+{% block head_title %}{{ 'user.myProfile.User'|trans }} - {{ entity.username }}{% endblock %}
+{% block main_title %}{{ entity.username }}{% endblock %}
+
+{% block style_additional %}
+	<link rel="stylesheet" type="text/css" href="{{ asset('js/DataTables/DataTables-1.10.18/css/dataTables.bootstrap4.min.css') }}" media="screen" />
+	<link rel="stylesheet" type="text/css" href="{{ asset('js/DataTables/Responsive-2.2.2/css/responsive.bootstrap.min.css') }}" media="screen" />
+{% endblock %}
+{% block script_additional %}
+	<script src="{{ asset('js/DataTables/datatables.min.js') }}" type="text/javascript"></script>
+	<script src="{{ asset('js/DataTables/DataTables-1.10.18/js/dataTables.bootstrap4.min.js') }}" type="text/javascript"></script>
+	<script src="{{ asset('js/DataTables/Responsive-2.2.2/js/dataTables.responsive.min.js') }}" type="text/javascript"></script>
+	<script src="{{ asset('js/DataTables/Responsive-2.2.2/js/responsive.bootstrap.min.js') }}"></script>
+	<script src="{{ asset('js/noty-2.3.4/js/noty/packaged/jquery.noty.packaged.min.js') }}" type="text/javascript"></script>
+	<script type="text/javascript">
+		$(function ()
+		{
+			oTable = $('table.entities_user_datatables').DataTable( {
+				"oLanguage": {
+					"sUrl": "{{ asset('js/DataTables/language/dataTables.'~app.request.locale) }}.txt"
+				},
+				"bFilter": true,
+				"bInfo": true,
+				"bSort": true,
+				"bLengthChange": true,
+				"iDisplayLength": 15,
+				"bProcessing": true,
+				"bServerSide": true,
+				"sAjaxSource": "{{ path('app_user_quotesuserdatatables', { 'username' : entity.username }) }}",
+				"autoWidth": false
+			});
+			
+			$(document).on("click", ".delete_poem", function(event)
+			{
+				var id = $(this).data("id");
+				event.preventDefault();
+				var n = noty({
+					layout: 'center',
+					type: 'confirm',
+					killer: true,
+					text: 'Êtes-vous sûr de vouloir supprimer cette citation ?',
+					animation: {
+						open: {height: 'toggle'}, // jQuery animate function property object
+						close: {height: 'toggle'}, // jQuery animate function property object
+						easing: 'swing', // easing
+						speed: 500 // opening & closing animation speed
+					},
+					buttons: [
+					{
+						addClass: 'btn btn-primary', text: 'Oui', onClick: function($noty) {
+						$.ajax(
+						{
+							type: "GET",
+							url: "{{ path('app_indexquotus_quoteuserdelete') }}?id=" + id,
+							cache: false,
+							success: function(data)
+							{
+								oTable.ajax.reload();
+							}
+						});
+						$noty.close();
+					  }
+					},
+					{
+						addClass: 'btn btn-danger', text: 'Annuler', onClick: function($noty) {
+							$noty.close();
+						}
+					}
+				  ]
+				});
+			});
+
+			$('table.comments_user_datatables').dataTable( {
+				"oLanguage": {
+					"sUrl": "{{ asset('js/DataTables/language/dataTables.'~app.request.locale) }}.txt"
+				},
+				"bFilter": true,
+				"bInfo": true,
+				"bSort": true,
+				"bLengthChange": true,
+				"iDisplayLength": 15,
+				"bProcessing": true,
+				"bServerSide": true,
+				"sAjaxSource": "{{ path('app_user_commentsuserdatatables', { 'username' : entity.username }) }}",
+				"autoWidth": false
+			});
+			
+			$('table.votes_user_datatables').dataTable( {
+				"oLanguage": {
+					"sUrl": "{{ asset('js/DataTables/language/dataTables.'~app.request.locale) }}.txt"
+				},
+				"bFilter": true,
+				"bInfo": true,
+				"bSort": true,
+				"bLengthChange": true,
+				"iDisplayLength": 15,
+				"bProcessing": true,
+				"bServerSide": true,
+				"sAjaxSource": "{{ path('app_user_votesuserdatatables', { 'username' : entity.username }) }}",
+				"autoWidth": false
+			});
+		});
+	</script>
+{% endblock %}
+
+{% block main_content %}
+	{% for message in app.session.getFlashBag.get('new_password') %}
+		<div class="success">{{ message }}</div>
+	{% endfor %}
+	
+	<p class="text-center">
+	{% if entity.avatar is null %}
+		<img src="{{ entity.gravatar }}" alt="" id="gravatar" />
+	{% else %}
+		{{ (constant('\\App\\Entity\\User::PATH_FILE')~entity.avatar)|max_size_image() }}
+	{% endif %}
+	</p>
+	<table class="table table-sm table-bordered text-center">
+		<tr>
+			<th class="table-active w-25">{{ 'user.myProfile.Login'|trans }}</th>
+			<td>{{ entity.username }}</td>
+		</tr>
+		<tr>
+			<th class="table-active w-25">{{ 'user.myProfile.Country'|trans }}</th>
+			<td><span>{{ entity.country.title }} <img class="flag" src="{{ asset(constant('\\App\\Entity\\Country::PATH_FILE')~entity.country.flag) }}" alt="" /></span></td>
+		</tr>
+		<tr>
+			<th class="table-active w-25">{{ 'user.myProfile.Description'|trans }}</th>
+			<td>{{ entity.presentation|raw }}</td>
+		</tr>
+	</table>
+	<h2 class="subtitle_show_user">{{ 'user.myProfile.MyPublications'|trans }}</h2>
+	<hr class="show_user_separator">
+	<table class="entities_user_datatables table table-striped table-bordered dt-responsive">
+		<thead>
+			<th>{{ 'user.myProfile.Publication'|trans }}</th>
+			{% if is_granted("IS_AUTHENTICATED_REMEMBERED") and entity.username == app.user.username %}
+				<th>{{ 'user.myProfile.State'|trans }}</th>
+				<th>{{ 'user.myProfile.Action'|trans }}</th>
+			{% endif %}
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+	<h2 class="subtitle_show_user">{{ 'user.myProfile.MyComments'|trans }}</h2>
+	<hr class="show_user_separator">
+	<table class="comments_user_datatables table table-striped table-bordered dt-responsive">
+		<thead>
+			<th>{{ 'user.myProfile.Publication'|trans }}</th>
+			<th>{{ 'user.myProfile.PublicationDate'|trans }}</th>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+	<h2 class="subtitle_show_user">{{ 'user.myProfile.MyVotes'|trans }}</h2>
+	<hr class="show_user_separator">
+	<table class="votes_user_datatables table table-striped table-bordered dt-responsive">
+		<thead>
+			<th>{{ 'user.myProfile.Publication'|trans }}</th>
+			<th>{{ 'user.myProfile.Vote'|trans }}</th>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+{% endblock %}

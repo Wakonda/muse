@@ -1,0 +1,76 @@
+{% macro redactor(upload_path) %}
+	<script src="{{ asset('js/tinymce/js/tinymce/tinymce.min.js') }}" type="text/javascript"></script>
+	<script type="text/javascript">
+	{% if upload_path is not null %}
+		$("body").append('<iframe id="form_target" name="form_target" style="display:none"></iframe>');
+		$("#form_target").after('<form id="my_form" action="" target="form_target" method="post" enctype="multipart/form-data" style="width:0px;height:0;overflow:hidden"><input name="image" type="file"></form>');
+	{% endif %}
+
+	tinymce.init({
+		selector:'.redactor',
+		height: 300,
+		menubar: false,
+		language: "fr_FR",
+		statusbar: false,
+        force_br_newlines : true,
+        force_p_newlines : false,
+        forced_root_block : '',
+		plugins: [
+			'lists link image charmap textcolor media code'
+		],
+		toolbar: 'bold italic underline | forecolor backcolor | alignleft aligncenter alignright alignjustify | link image | undo redo | code',
+		setup: function (editor) {
+			editor.on('change', function () {
+				tinymce.triggerSave();
+			});
+		},
+		{% if upload_path is not null %}
+			file_picker_types: 'image',
+			relative_urls: false,
+			image_class_list: [
+				{title: 'Responsive', value: 'img-fluid'},
+				{title: 'Normale', value: ''},
+			],
+			file_picker_callback: function(callback, value, meta) {
+				// Provide image and alt text for the image dialog
+				document.querySelector("form#my_form input").click();
+				handler = function() {
+					var form = document.querySelector("form#my_form");
+					var action = form.getAttribute("action");
+					action = "{{ path(upload_path) }}";
+					form.setAttribute("action", action)
+					form.submit();
+					document.querySelector("form#my_form input").removeEventListener('change', handler, false);
+				};
+
+				document.querySelector("form#my_form input").addEventListener('change', handler, false);
+			}
+		{% endif %}
+	});
+	</script>
+{% endmacro %}
+
+{% macro light_redactor() %}
+	<script src="{{ asset('js/tinymce/js/tinymce/tinymce.min.js') }}" type="text/javascript"></script>
+	<script type="text/javascript">
+	tinymce.init({
+		selector:'.redactor',
+		height: 200,
+		menubar: false,
+		language: "fr_FR",
+		statusbar: false,
+        force_br_newlines : true,
+        force_p_newlines : false,
+        forced_root_block : '',
+		plugins: [
+			'lists link charmap code'
+		],
+		toolbar: 'bold italic underline | link | undo redo | code',
+		setup: function (editor) {
+			editor.on('change', function () {
+				tinymce.triggerSave();
+			});
+		}
+	});
+	</script>
+{% endmacro %}

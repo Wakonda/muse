@@ -1,0 +1,61 @@
+{% extends 'proverbius_layout.html.twig' %}
+
+{% block head_title %}{{ 'store.index.Store'|trans }}{% endblock %}
+{% block main_title %}{{ 'store.index.Store'|trans }}{% endblock %}
+
+{% block meta_tag_description %}{% endblock %}
+
+{% block main_content %}
+	{% if pagination|length > 0 %}
+		<form method="post" action="{{ path('app_indexproverbius_store') }}" name="search_form">
+		<div class="row">
+			<div class="col-lg-6">
+				<div class="input-group">
+					<input type="text" class="form-control" name="query" value="{{ query }}" placeholder="{{ 'store.index.Search'|trans }} ...">
+					<div class="input-group-append">
+						<button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
+					</div>
+				</div>
+			</div>
+		</div>
+		</form>
+		<br>
+	{% endif %}
+	
+	{% if pagination|length > 0 %}
+	<div class="row mb-4">
+		{% for entity in pagination %}
+			<div class="col-sm-6 col-lg-4 py-2">
+				<div class="card  h-100 mb-4">
+					<div class="card-header">
+						<h5><a href="{{ path('app_indexproverbius_readstore', {'id': entity.id, 'slug': entity.slug}) }}">{{ entity.title }}</a></h5>
+					</div>
+					<div class="card-body">
+						<div class="article_infos">
+							<span><i class="fas fa-chevron-circle-right"></i> <span class="font-weight-bold">{% if entity.biography is not empty %}{{ entity.biography.title }}{% else %}{{ "store.index.UnknownAuthor"|trans }}{% endif %}</span></span><br>
+						</div>
+						<hr>
+						<div class="center-iframe text-center">
+							{{ entity.embedCode|raw }}
+						</div>
+					</div>
+					<div class="card-footer text-muted">
+						{% if entity.amazonCode %}
+							<a href="{{ entity.externalStoreLink }}" rel="nofollow" class="float-left btn btn-dark" target="_blank"><span class="text-warning"><i class="fas fa-shopping-cart"></i> {{ "store.index.Buy"|trans }}</span></a>
+						{% endif %}
+						<span class="float-right btn"><a href="{{ path('app_indexproverbius_readstore', {'id': entity.id, 'slug': entity.slug}) }}" class="text-info"><i class="fas fa-plus" aria-hidden="true"></i> {{ "store.index.MoreInformations"|trans }}</a></span>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+	{% else %}
+		<div class="alert alert-danger text-center">
+			<i class="fas fa-exclamation-triangle" aria-hidden="true"></i> {{ 'store.index.NoProductFound'|trans }}
+		</div>
+	{% endif %}
+
+	{% if pagination|length > 0 %}
+		{{ knp_pagination_render(pagination) }}
+	{% endif %}
+{% endblock %}

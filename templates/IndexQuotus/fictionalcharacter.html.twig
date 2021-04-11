@@ -1,0 +1,100 @@
+{% extends 'quotus_layout.html.twig' %}
+
+{% block head_title %}{{ entity.title }}{% endblock %}
+{% block main_title %}{{ entity.title }}{% endblock %}
+
+{% block style_additional %}
+	<link rel="stylesheet" type="text/css" href="{{ asset('js/DataTables/DataTables-1.10.18/css/dataTables.bootstrap4.min.css') }}" media="screen" />
+	<link rel="stylesheet" type="text/css" href="{{ asset('js/DataTables/Responsive-2.2.2/css/responsive.bootstrap.min.css') }}" media="screen" />
+{% endblock %}
+{% block script_additional %}
+	<script src="{{ asset('js/DataTables/datatables.min.js') }}" type="text/javascript"></script>
+	<script src="{{ asset('js/DataTables/DataTables-1.10.18/js/dataTables.bootstrap4.min.js') }}" type="text/javascript"></script>
+	<script src="{{ asset('js/DataTables/Responsive-2.2.2/js/dataTables.responsive.min.js') }}" type="text/javascript"></script>
+	<script src="{{ asset('js/DataTables/Responsive-2.2.2/js/responsive.bootstrap.min.js') }}"></script>
+	
+	<script type="text/javascript">
+		$(function ()
+		{
+			$('table.index_directories').DataTable({
+				"oLanguage": {
+					"sUrl": "{{ asset('js/DataTables/language/dataTables.'~app.request.locale) }}.txt"
+				}, 
+				"bFilter": true,
+				"bInfo": false,
+				"bSort": true,
+				"bLengthChange": true,
+				"iDisplayLength": 15,
+				"bProcessing": true,
+				"bServerSide": true,
+				"sAjaxSource": "{{ path('app_indexquotus_fictionalcharacterdatatables', {'biographyId' : entity.id }) }}",
+				"autoWidth": false
+			});
+
+			$('table.index_author_store').dataTable( {
+				{% if app.request.locale != 'en' %}
+				"oLanguage": {
+					"sUrl": "{{ asset('js/DataTables/language/dataTables.'~app.request.locale) }}.txt"
+				},
+				{% endif %}
+				"bFilter": false,
+				"bInfo": false,
+				"bSort": true,
+				"bPaginate": false,
+				"autoWidth": false,
+				"bLengthChange": false
+			});
+		});
+	</script>
+{% endblock %}
+
+{% block main_content %}
+	<p class="text-center">{{ (constant('\\App\\Entity\\Biography::PATH_FILE')~entity.fileManagement.photo)|max_size_image() }}</p>
+	<br>
+	<p>{{ entity.text|raw }}</p>
+	<table class="show">
+		{% if entity.dayBirth is not null or entity.monthBirth is not null or entity.yearBirth is not null %}
+			<tr>
+			<th><span class="font-weight-bold">{{ 'fictionalCharacter.field.BirthDate'|trans }} : </span></th>
+			<td>
+			{% if entity.dayBirth is not null and entity.monthBirth is not null and entity.yearBirth is not null %}
+				{{ date_biography_letter(entity.yearBirth, entity.monthBirth, entity.dayBirth, app.request.locale) }}
+			{% elseif entity.monthBirth is not null and entity.yearBirth is not null %}
+				{{ text_month(entity.yearBirth, entity.monthBirth, app.request.locale) }}
+			{% else %}
+				{{ entity.yearBirth }}
+			{% endif %}
+			</td>
+			</tr>
+		{% endif %}
+		{% if entity.dayDeath is not null or entity.monthDeath is not null or entity.yearDeath is not null %}
+			<tr>
+			<th><span class="font-weight-bold">{{ 'fictionalCharacter.field.DeathDate'|trans }} : </span></th>
+			<td>
+			{% if entity.dayDeath is not null and entity.monthDeath is not null and entity.yearDeath is not null %}
+				{{ date_biography_letter(entity.yearDeath, entity.monthDeath, entity.dayDeath, app.request.locale) }}
+			{% elseif entity.monthDeath is not null and entity.yearDeath is not null %}
+				{{ text_month(entity.yearDeath, entity.monthDeath, app.request.locale) }}
+			{% else %}
+				{{ entity.yearDeath }}
+			{% endif %}
+			</td>
+			</tr>
+		{% endif %}
+		
+		{% if entity.country is not empty %}
+			<tr><th><span class="font-weight-bold">{{ 'fictionalCharacter.field.Nationality'|trans }} : </span></th><td><img class="flag" src="{{ asset(constant('\\App\\Entity\\Country::PATH_FILE')~entity.country.flag) }}" /> {{ entity.country.title }}</td></tr>
+		{% endif %}
+	</table>
+	<hr>
+	<h3>{{ 'fictionalCharacter.index.HisQuotes'|trans }}</h3>
+	<table class="index_directories table table-striped table-bordered dt-responsive">
+		<thead>
+			<th>{{ 'fictionalCharacter.table.Text'|trans }}</th>
+			<th>{{ 'fictionalCharacter.table.Source'|trans }}</th>
+			<th class="phone">{{ 'fictionalCharacter.table.Read'|trans }}</th>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+{% endblock %}

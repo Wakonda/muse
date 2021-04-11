@@ -1,0 +1,166 @@
+{% extends 'form_div_layout.html.twig' %}
+
+{% block button_widget -%}
+    {% set attr = attr|merge({class: (attr.class|default('') ~ ' btn')|trim}) %}
+    {% if label is empty -%}
+        {%- if label_format is not empty -%}
+            {% set label = label_format|replace({
+                '%name%': name,
+                '%id%': id,
+            }) %}
+        {%- else -%}
+            {% set label = name|humanize %}
+        {%- endif -%}
+    {%- endif -%}
+    {% if icon|default %}
+        {% set iconHtml = '<i class="fa ' ~ icon ~ '"></i> ' %}
+    {% else %}
+        {% set iconHtml = '' %}
+    {% endif %}
+    <button type="{{ type|default('button') }}" {{ block('button_attributes') }}>{{ iconHtml|raw }}{{ label|trans({}, translation_domain) }}</button>
+{%- endblock button_widget %}
+
+{% block form_errors -%}
+    {%- if errors|length > 0 -%}
+        <span class="{% if form is not rootform %}invalid-feedback{% else %}alert alert-danger{% endif %} d-block">
+            {%- for error in errors -%}
+                <span class="d-block">
+                    <span class="form-error-icon badge badge-danger text-uppercase">{{ 'Error'|trans({}, 'validators') }}</span> <span class="form-error-message">{{ error.message }}</span>
+                </span>
+            {%- endfor -%}
+        </span>
+    {%- endif %}
+{%- endblock form_errors %}
+
+{% block file_widget -%}
+    <{{ element|default('div') }} class="custom-file">
+        {%- set type = type|default('file') -%}
+        {{- block('form_widget_simple') -}}
+        {%- set label_attr = label_attr|merge({ class: (label_attr.class|default('') ~ ' custom-file-label text-truncate')|trim }) -%}
+
+		<label for="{{ form.vars.id }}" {% with { attr: label_attr } %}{{ block('attributes') }}{% endwith %}>
+            {%- if attr.placeholder is defined and attr.placeholder is not none -%}
+                {{- translation_domain is same as(false) ? attr.placeholder : attr.placeholder|trans({}, translation_domain) -}}
+            {%- endif -%}
+        </label>
+    </{{ element|default('div') }}>
+{% endblock %}
+
+{% block file_selector_row %}
+	{{ form_errors(form.children.name) }}
+	<div class="input-group" id="{{ form.vars.id }}">
+		<div class="input-group-prepend">
+			<button class="btn btn-secondary upload active"><i class="fas fa-upload"></i></button>
+			<button class="btn btn-secondary link"><i class="fas fa-link"></i></button>
+		</div>
+		{{ form_widget(form.children.file, {attr: {class: "upload_file"}}) }}
+		{{ form_widget(form.children.name, {attr: {class: "name_file form-control"}}) }}
+
+		{% if current_file is not empty %}
+			<div class="input-group-append">
+				<a href="#" class="btn btn-secondary upload active" data-toggle="modal" data-target="#display_current_image"><i class="fas fa-file-image" aria-hidden="true"></i></a>
+			</div>
+		{% endif %}
+	</div>
+
+	<!-- Modal -->
+	<div class="modal fade" id="display_current_image" tabindex="-1" role="dialog" aria-labelledby="currentImageLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">{{ 'admin.index.CurrentImage'|trans }}</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<p class="text-center">{{ (path_file~current_file)|max_size_image() }}</p>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		$(function() {
+			if($("#{{ form.children.name.vars.id }}").val() != "") {
+				$("#{{ form.vars.id }} .custom-file").hide();
+				$("#{{ form.vars.id }} .link").addClass("active");
+				$("#{{ form.vars.id }} .upload").removeClass("active");
+			} else
+				$("#{{ form.vars.id }} .name_file").hide();
+
+			$("#{{ form.vars.id }} .upload").click(function(e) {
+				e.preventDefault();
+				$(this).addClass("active");
+				$("#{{ form.vars.id }} .link").removeClass("active");
+				$("#{{ form.vars.id }} .name_file").hide();
+				$("#{{ form.vars.id }} .custom-file").show();
+			});
+			$("#{{ form.vars.id }} .link").click(function(e) {
+				e.preventDefault();
+				$(this).addClass("active");
+				$("#{{ form.vars.id }} .upload").removeClass("active");
+				$("#{{ form.vars.id }} .custom-file").hide();
+				$("#{{ form.vars.id }} .name_file").show();
+			});
+			
+            $('#{{ form.children.file.vars.id }}').on('change',function(e){
+				if(typeof e.target.files[0] === "undefined")
+					$('.custom-file-label').html("");
+				else {
+					var fileName = e.target.files[0].name;
+					$('.custom-file-label').html(fileName);
+				}
+            })
+		});
+	</script>
+{% endblock %}
+
+{% block file_management_selector_row %}
+	{{ form_errors(form.children.id) }}
+	<div class="input-group">
+		<input type="text" readonly id="{{ form.children.id.vars.id }}_filename" class="form-control" value="{{ (form.vars.value is not empty) ? form.vars.value.filename : '' }}" />
+		{{ form_widget(form.children.id, {'attr':{'class':'form-control d-none'}}) }}
+		<div class="input-group-append">
+			<span class="input-group-text"><a href="#" id="file_manager_button_{{ form.children.id.vars.id }}"><i class="far fa-hand-pointer"></i></a></span>
+		</div>
+	</div>
+	<script>
+		function onMyFrameLoad() {
+			$("#iframe_loader_{{ form.children.id.vars.id }}").hide();
+			$("#iframe_container_{{ form.children.id.vars.id }}").show();
+		}
+	</script>
+	<!-- Modal -->
+	<div class="modal fade" id="media_management" tabindex="-1" role="dialog" aria-labelledby="mediaManagementLabel">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">{{ "fileManagement.index.FileManager"|trans }}</h5>
+					<button class="btn btn-danger btn-sm float-right" data-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
+				</div>
+				<div class="modal-body">
+					<div class="text-center text-primary" id="iframe_loader_{{ form.children.id.vars.id }}"><i class="fas fa-spinner fa-pulse fa-3x"></i></div>
+					<div class="embed-responsive embed-responsive-16by9" id="iframe_container_{{ form.children.id.vars.id }}">
+						<iframe id="iframe_{{ form.children.id.vars.id }}" class="embed-responsive-item" src="" allowfullscreen onload="onMyFrameLoad(this)"></iframe>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+			
+	<script>
+	$(function() {
+		$("#file_manager_button_{{ form.children.id.vars.id }}").click(function(e) {
+			e.preventDefault();
+			$("#iframe_container_{{ form.children.id.vars.id }}").hide();
+			$("#iframe_loader_{{ form.children.id.vars.id }}").show();
+			document.getElementById('iframe_{{ form.children.id.vars.id }}').src = "{{ path('app_filemanagementadmin_media', {idForm: form.children.id.vars.id, folder: form.vars.folder, id: form.children.id.vars.value}) }}";
+			$('#media_management').modal('show');
+		});
+		
+		window.closeModal = function(){
+			document.getElementById('iframe_{{ form.children.id.vars.id }}').src = "";
+			$('#media_management').modal('hide');
+		};
+	});
+	</script>
+{% endblock %}

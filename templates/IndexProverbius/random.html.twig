@@ -1,0 +1,47 @@
+<div id="random_container">
+	<h2>{{ 'main.index.ProverbRandomly'|trans }}{% if random is not null %} <a href="{{ path('app_indexproverbius_read', {'id' : random.id, 'slug' : random.slug}) }}" class="btn btn-primary btn-sm"><i class="fas fa-info fa-fw" aria-hidden="true"></i></a> <button class="btn btn-warning btn-sm" id="generate_random"><i class="fas fa-sync fa-fw"></i></a>{% endif %}</h2>
+
+	{% if random is not null %}
+		{% set ri = random_image(random) %}
+		{% if ri is not null %}
+			<div class="text-center">
+				<img src="{{ asset(constant('\\App\\Entity\\Proverb::PATH_FILE')~ri) }}" class="text-center" alt="">
+			</div>
+		{% else %}
+			<div>
+				<blockquote>{{ random.text|raw }}</blockquote>
+			</div>
+		{% endif %}
+		<hr>
+		<p>
+		<a href="{{ path('app_indexproverbius_country', {'id' : random.country.id, 'slug' : random.country.slug }) }}" alt=""><img class="flag" src="{{ asset(constant('\\App\\Entity\\Country::PATH_FILE')~random.country.flag) }}" alt="" height="8" /> Proverbe - {{ random.country.title }}</a>
+		</p>
+	{% else %}
+		<div class="alert alert-danger text-center" role="alert">{{ 'main.index.NoProverb'|trans }}</div>
+	{% endif %}
+
+	<script type="text/javascript">
+		$(function()
+		{
+			$("#generate_random").on("click", function() {
+				var svg = $("svg", this);
+				var button = $(this);
+
+				$.ajax({
+					type: "GET",
+					url: "{{ path('app_indexproverbius_random') }}",
+					beforeSend: function(xhr)
+					{
+					console.log($(this))
+						button.attr("disabled", true);
+						svg.addClass("fa-spin");
+					},
+					success: function(data)
+					{
+						$("#random_container").html(data);
+					}
+				});
+			});
+		});
+	</script>
+</div>

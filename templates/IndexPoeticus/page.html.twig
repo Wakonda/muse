@@ -1,0 +1,11 @@
+{% extends 'poeticus_layout.html.twig' %}
+
+{% block head_title %}{{ (entity is not null) ? entity.title : '' }}{% endblock %}
+{% block main_title %}{{ (entity is not null) ? entity.title : '' }}{% endblock %}
+
+{% block main_content %}
+	{% if entity is not null %}
+		{{ display_file(entity) }}
+		{{ entity.text|raw }}
+	{% endif %}
+{% endblock %}

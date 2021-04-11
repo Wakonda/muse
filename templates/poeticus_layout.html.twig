@@ -1,0 +1,63 @@
+{% extends 'generic_layout.html.twig' %}
+
+{% block head_title %}Poéticus{% endblock %}
+
+{% block meta_tag_description %}Poéticus est une encyclopédie francophone regroupant les plus beaux poèmes qui ont façonné l'univers féerique et passionnant de la littérature.{% endblock %}
+
+{% block head_keyworkds %}po&eacute;sie, po&egrave;me, litt&eacute;rature, vers, prose, po&egrave;te, recueil, ha&iuml;ku, art po&eacute;tique{% endblock %}
+
+{% block title %}Poéticus{% endblock %}
+
+{% block main_title %}{{ 'main.index.WelcomeTo'|trans({'%domain%': 'Poéticus'}) }}{% endblock %}
+
+{% block title_description %}{{ 'main.index.WonderfulWorldOfPoem'|trans()|raw }}{% endblock %}
+
+{% block menu %}
+	<li class="nav-item  {{ app.request.get('_route') in ['app_indexpoeticus_index']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexpoeticus_index') }}"><i class="fas fa-home"></i> {{ 'menu.top.MainPage'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexpoeticus_byauthors', 'app_indexpoeticus_author']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexpoeticus_byauthors') }}">{{ 'menu.top.Authors'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexpoeticus_bycollections', 'app_indexpoeticus_collection']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexpoeticus_bycollections') }}">{{ 'menu.top.Collections'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexpoeticus_bycountries', 'app_indexpoeticus_country']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexpoeticus_bycountries') }}">{{ 'menu.top.Countries'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexpoeticus_bypoeticforms', 'app_indexpoeticus_poeticform']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexpoeticus_bypoeticforms') }}">{{ 'menu.top.PoeticForms'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexpoeticus_bypoemusers']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexpoeticus_bypoemusers') }}">{{ 'menu.top.YourPoems'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexpoeticus_store', 'app_indexpoeticus_readstore']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexpoeticus_store') }}">{{ 'menu.top.Store'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexpoeticus_byimages']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexpoeticus_byimages') }}">{{ 'menu.top.Images'|trans }}</a>
+	</li>
+{% endblock %}
+
+{% block member_area_menu %}
+	<li><a href="{{ path('app_indexpoeticus_poemusernew') }}">{{ 'menu.left.WritePoem'|trans }}</a></li>
+{% endblock %}
+
+{% block recent %}
+	<h1>{{ 'menu.left.RecentPublications'|trans }}</h1>
+	{{ render(controller('App\\Controller\\IndexPoeticusController::lastAction')) }}
+{% endblock %}
+
+{% block statistic %}
+	{{ render(controller('App\\Controller\\IndexPoeticusController::statAction')) }}
+{% endblock %}
+
+{% block language_selector %}
+	<a href="{{ path('app_indexpoeticus_changelanguage', {'locale':'fr'}) }}" title="Français"><img src="{{ asset('photo/language/fr.png') }}" alt="Fr" width="42" {{ app.request.locale == "fr" ? 'class="selected_language rounded"' : 'class="rounded"' }}></a>
+	| <a href="{{ path('app_indexpoeticus_changelanguage', {'locale':'it'}) }}" title="Italiano"><img src="{{ asset('photo/language/it.png') }}" alt="It" width="42" {{ app.request.locale == "it" ? 'class="selected_language rounded"' : 'class="rounded"' }}></a>
+	| <a href="{{ path('app_indexpoeticus_changelanguage', {'locale':'pt'}) }}" title="Português"><img src="{{ asset('photo/language/pt.png') }}" alt="Pt" width="42" {{ app.request.locale == "pt" ? 'class="selected_language rounded"' : 'class="rounded"' }}></a>
+{% endblock %}
+
+{% block year_foundation %}
+	{{ ("2014" == "now"|date("Y")) ? "2014" : "2014 - " ~ "now"|date("Y") }}
+{% endblock %}

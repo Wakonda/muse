@@ -1,0 +1,26 @@
+{% extends 'proverbius_layout.html.twig' %}
+
+{% block head_title %}{{ 'image.index.ByImages'|trans }}{% endblock %}
+
+{% block main_title %}{{ 'image.index.ByImages'|trans }}{% endblock %}
+
+{% block main_content %}
+	<div class="card-columns">
+    {% for image in pagination %}
+		<div class="card">
+			<a href="{{ path('app_indexproverbius_read', {'id' : image.proverb.id, 'slug' : image.proverb.slug}) }}"><img src="{{ asset(constant('\\App\\Entity\\Proverb::PATH_FILE')~image.image) }}" class="card-img-top" alt="{{ image.proverb.text }}"></a>
+			<div class="card-body">
+				<p class="card-text"><i>{{ image.proverb.text|raw }}</i></p>
+				<p class="card-text"><small class="text-muted"><a href="{{ path('app_indexproverbius_country', {'id' : image.proverb.country.id, 'slug' : image.proverb.country.slug }) }}" alt=""><img class="flag" src="{{ asset(constant('\\App\\Entity\\Country::PATH_FILE')~image.proverb.country.flag) }}" alt="" height="8" /> {{ 'proverb.read.Proverb'|trans }} - {{ image.proverb.country.title }}</a></small></p>
+			</div>
+			<div class="card-footer text-muted text-center">
+				<a class="btn btn-outline-secondary btn-sm" target="_blank" title="Twitter" href="https://twitter.com/share?url={{ url('app_indexproverbius_read', {id: image.proverb.id, slug: image.proverb.slug, idImage: image.id}) }}&text={{ image.proverb.text }}&via=Proverbius" rel="nofollow" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=400,width=700');return false;"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+				<a class="btn btn-outline-secondary btn-sm" target="_blank" title="Facebook" href="https://www.facebook.com/sharer.php?u={{ url('app_indexproverbius_read', {id: image.proverb.id, slug: image.proverb.slug, idImage: image.id }) }}&t={{ image.proverb.text }}" rel="nofollow" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=700');return false;"><i class="fab fa-facebook" aria-hidden="true"></i></a>
+				<a class="btn btn-outline-secondary btn-sm" target="_blank" title="Linkedin" href="https://www.linkedin.com/shareArticle?mini=true&amp;url={{ url('app_indexproverbius_read', {id: image.proverb.id, slug: image.proverb.slug, idImage: image.id }) }}" rel="nofollow" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=400,width=700');return false;"><i class="fab fa-linkedin" aria-hidden="true"></i></a>
+				<a class="btn btn-outline-secondary btn-sm" target="_blank" title="Pinterest" href="https://pinterest.com/pin/create/button/?url={{ url('app_indexproverbius_read', {id: image.proverb.id, slug: image.proverb.slug, idImage: image.id }) }}&media={{ absolute_url(asset(constant('\\App\\Entity\\Proverb::PATH_FILE')~image.image)) }}&description={{ image.proverb.text }}" count-layout="horizontal" rel="nofollow" onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=400,width=700');return false;"><i class="fab fa-pinterest-p" aria-hidden="true"></i></a>
+			</div>
+		</div>
+    {% endfor %}
+	</div>
+	{{ knp_pagination_render(pagination) }}
+{% endblock %}

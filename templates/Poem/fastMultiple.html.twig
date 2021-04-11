@@ -1,0 +1,194 @@
+{% extends sub_domain()~'_layout.html.twig' %}
+
+{% block head_title %}{{ 'menu.left.Admin'|trans }} - {{ 'admin.index.Poem'|trans }}{% endblock %}
+{% block main_title %}{{ 'menu.left.Admin'|trans }} - {{ 'admin.index.Poem'|trans }}{% endblock %}
+
+{% block style_additional %}
+	<link rel="stylesheet" type="text/css" href="{{ asset('js/jquery.ajax-combobox-master/dist/jquery.ajax-combobox.css') }}" media="screen" />
+{% endblock %}
+
+{% block script_additional %}
+	<script src="{{ asset('js/jquery.ajax-combobox-master/dist/jquery.ajax-combobox.js') }}"></script>
+	<script src="{{ asset('js/combobox.js') }}"></script>
+	<script type="text/javascript">
+		$(function()
+		{
+			$("input#{{form.unknownReleasedDate.vars.id }}").click(function()
+			{
+				if($(this).is(":checked"))
+					$("#{{form.releasedDate.vars.id }}").val("");
+			});
+			$("input#{{form.unknownReleasedDate.vars.id }}").click();
+			
+			$("input#{{form.releasedDate.vars.id }}").keyup(function()
+			{
+				if($(this).val() != "")
+					$("input#{{ form.unknownReleasedDate.vars.id }}").prop('checked', false);
+				else
+					$("input#{{ form.unknownReleasedDate.vars.id }}").prop('checked', true);
+			});
+			$("input#{{ form.releasedDate.vars.id }}").keyup();
+			
+			function changeBiography(val)
+			{
+				$.ajax({
+					type: "POST",
+					url: "{{ path('app_poemadmin_listselectedbiography') }}",
+					data: { "id" : val },
+					success: function(data)
+					{
+						if(data.country != "")
+							$("div.poem-country").html('<img src="{{ asset(constant('\\App\\Entity\\Country::PATH_FILE')) }}' + data.country.flag +'" class="flag" />' + ' ' + data.country.title);
+						else
+							$("div.poem-country").html("-");
+
+						var collections = data.collections;
+						$("#{{ form.collection.vars.id }} option").remove();
+						$("#{{ form.collection.vars.id }}").append('<option value="">{{ 'main.field.ChooseAnOption'|trans }}</option>');
+
+						$.each(collections, function(index, element)
+						{
+							$("#{{ form.collection.vars.id }}").append('<option value="'+ element.id +'">'+ element.title +'</option>');
+						});
+						{% if form.collection.vars.value is not null %}
+							$("#{{ form.collection.vars.id }}").val("{{ form.collection.vars.value }}");
+						{% endif %}
+					}
+				});
+			}
+			
+			changeBiography($("#{{ form.biography.vars.id }}").val());
+			
+			$("#{{ form.collection.vars.id }}").change(function()
+			{
+				$.ajax({
+					type: "POST",
+					url: "{{ path('app_poemadmin_listselectedcollection') }}",
+					data: { "id" : $(this).val() },
+					success: function(data)
+					{
+						$("#{{ form.releasedDate.vars.id }}").val(data.releasedDate);
+						
+						if(data.releasedDate != null)
+							$('input#{{ form.unknownReleasedDate.vars.id }}').prop('checked', false);
+						else
+							$('input#{{ form.unknownReleasedDate.vars.id }}').prop('checked', true);
+					}
+				});
+			});
+
+			$("select#{{ form.language.vars.id }}").change(function() {
+				var input = $(".container_{{ form.biography.vars.id }} > .input-group > input[type='hidden']");
+				$(input[0]).addClass('combobox full_width form-control').attr("type", "text").val("");
+				$(".container_{{ form.biography.vars.id }}").parent().append(input[0]);
+				$(".container_{{ form.biography.vars.id }}").remove();
+				setComboboxNew('{{ path("app_biographyadmin_getbiographiesbyajax") }}?locale=' + $(this).val(), 'biography', "#{{ form.biography.vars.id }}", changeBiography);
+			
+				$.ajax({
+					type: "GET",
+					url: "{{ path('app_poemadmin_getpoeticformsbylanguage') }}",
+					data: { "locale" : $(this).val() },
+					success: function(data)
+					{
+						$("select#{{ form.poetic_form.vars.id }}").empty();
+						$("select#{{ form.poetic_form.vars.id }}").append('<option value="" selected="selected">{{ 'main.field.ChooseAnOption'|trans }}</option>');
+						
+						for (var i = 0; i < data.length; i++) {
+							$("select#{{ form.poetic_form.vars.id }}").append('<option value="'+ data[i].id +'">'+ data[i].name +'</option>');
+						}
+					}
+				});
+			});
+			
+			$("select#{{ form.language.vars.id }}").change();
+		});
+	</script>
+{% endblock %}
+
+{% block main_content %}
+	{% if authorizedURLMultiples|length > 0 %}
+		<div id="accordionSource">
+			<div class="card">
+				<div class="card-header" id="headingOne">
+					<a href="#" role="button" data-toggle="collapse" data-target="#collapseSource" aria-expanded="true" aria-controls="collapseSource"><i class="fas fa-fire-extinguisher" aria-hidden="true"></i> URL</a>
+				</div>
+
+				<div id="collapseSource" class="collapse" aria-labelledby="headingOne" data-parent="#accordionSource">
+					<div class="card-body">
+						<ul>
+						{% for authorizedURLMultiple in authorizedURLMultiples %}
+							<li><a href="//{{ authorizedURLMultiple|base64_decode }}" target="_blank">{{ authorizedURLMultiple|base64_decode }}</a></li>
+						{% endfor %}
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		<hr>
+	{% endif %}
+
+	{% form_theme form 'Form/fields.html.twig' %}
+	<form action="{{ path('app_poemadmin_addfastmultiple') }}" method="post" novalidate>
+		<div class="form-group row">
+			{{ form_label(form.ipProxy, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+			<div class="col-sm-10">
+				{{ form_errors(form.ipProxy) }}{{ form_widget(form.ipProxy, {'attr':{'class':'form-control'}}) }}
+			</div>
+		</div>
+		<div class="form-group row">
+			{{ form_label(form.language, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+			<div class="col-sm-10">
+				{{ form_errors(form.language) }}{{ form_widget(form.language, {'attr':{'class':'form-control'}}) }}
+			</div>
+		</div>
+		<div class="form-group row">
+			{{ form_label(form.poetic_form, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+			<div class="col-sm-10">
+				{{ form_errors(form.poetic_form) }}{{ form_widget(form.poetic_form, {'attr':{'class':'form-control'}}) }}
+			</div>
+		</div>
+		<div class="form-group row">
+			{{ form_label(form.url, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+			<div class="col-sm-10">
+				{{ form_errors(form.url) }}{{ form_widget(form.url, {'attr':{'class':'form-control'}}) }}
+			</div>
+		</div>
+		<div class="form-group row biography_row">
+			{{ form_label(form.biography, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+			<div class="col-sm-10">
+				{{ form_errors(form.biography) }}{{ form_widget(form.biography, {'attr':{'class':'combobox form-control'}}) }}
+			</div>
+		</div>
+		<div class="form-group row">
+			<div class="col-sm-2">
+				{{ 'admin.poem.Country'|trans }}
+			</div>
+			<div class="col-sm-10 poem-country">
+			</div>
+		</div>
+		<div class="form-group row">
+			{{ form_label(form.collection, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+			<div class="col-sm-10">
+				{{ form_errors(form.collection) }}{{ form_widget(form.collection, {'attr':{'class':'form-control'}}) }}
+			</div>
+		</div>
+		<div class="form-group row">
+			{{ form_label(form.releasedDate, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+			<div class="col-sm-2">
+				{{ form_errors(form.releasedDate) }}{{ form_widget(form.releasedDate, {'attr':{'class':'year form-control'}}) }}
+			</div>
+			<div class="col-sm-4">
+				{{ form_widget(form.unknownReleasedDate) }} {{ form_label(form.unknownReleasedDate) }}
+			</div>
+		</div>
+		<div class="form-group row">
+			{{ form_label(form.number, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+			<div class="col-sm-10">
+				{{ form_errors(form.number) }}{{ form_widget(form.number, {'attr':{'class':'form-control'}}) }}
+			</div>
+		</div>
+		<hr />
+		{{ form_widget(form.save, {'icon': 'fa-save'}) }}
+		{{ form_rest(form) }}
+	</form>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'generic_layout.html.twig' %}
+
+{% block head_title %}Proverbius{% endblock %}
+
+{% block meta_tag_description %}Proverbius est une encyclopédie francophone regroupant les plus beaux proverbes français.{% endblock %}
+
+{% block head_keyworkds %}proverbes, proverbe, dicton{% endblock %}
+
+{% block title %}Proverbius{% endblock %}
+
+{% block main_title %}{{ 'main.index.WelcomeTo'|trans({'%domain%': 'Proverbius'}) }}{% endblock %}
+
+{% block title_description %}{{ 'main.index.WonderfulWorldOfProverb'|trans|raw }}{% endblock %}
+
+{% block menu %}
+	<li class="nav-item  {{ app.request.get('_route') in ['app_indexproverbius_index']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexproverbius_index') }}"><i class="fas fa-home"></i> {{ 'menu.top.MainPage'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexproverbius_bycountries', 'app_indexproverbius_country']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexproverbius_bycountries') }}">{{ 'menu.top.Countries'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexproverbius_byletters', 'app_indexproverbius_letter']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexproverbius_byletters') }}">{{ 'menu.top.AlphabetBook'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexproverbius_store', 'app_indexproverbius_readstore']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexproverbius_store') }}">{{ 'menu.top.Store'|trans }}</a>
+	</li>
+	<li class="nav-item {{ app.request.get('_route') in ['app_indexproverbius_byimages']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_indexproverbius_byimages') }}">{{ 'menu.top.Images'|trans }}</a>
+	</li>
+{% endblock %}
+
+{% block recent %}
+	<h1>{{ 'menu.left.RecentPublications'|trans }}</h1>
+	{{ render(controller('App\\Controller\\IndexProverbiusController::lastAction')) }}
+{% endblock %}
+
+{% block statistic %}
+	{{ render(controller('App\\Controller\\IndexProverbiusController::statAction')) }}
+{% endblock %}
+
+{% block language_selector %}
+	<a href="{{ path('app_indexproverbius_changelanguage', {'locale':'fr'}) }}" title="Français"><img src="{{ asset('photo/language/fr.png') }}" alt="Fr" width="42" {{ app.request.locale == "fr" ? 'class="selected_language rounded"' : 'class="rounded"' }}></a>
+	| <a href="{{ path('app_indexproverbius_changelanguage', {'locale':'en'}) }}" title="English"><img src="{{ asset('photo/language/en.png') }}" alt="En" width="42" {{ app.request.locale == "en" ? 'class="selected_language rounded"' : 'class="rounded"' }}></a>
+{% endblock %}
+
+{% block year_foundation %}
+	{{ ("2017" == "now"|date("Y")) ? "2017" : "2017 - " ~ "now"|date("Y") }}
+{% endblock %}

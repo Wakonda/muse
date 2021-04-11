@@ -1,0 +1,59 @@
+{% extends 'quotus_layout.html.twig' %}
+
+{% block head_title %}Quotus{% endblock %}
+
+{% block script_additional %}
+	<script src="{{ asset('js/jquery-ui-1.11.0/jquery-ui.min.js') }}"></script>	
+	<script src="{{ asset('js/tag-it-master/js/tag-it.min.js') }}"></script>
+
+	<script type="text/javascript">
+		$(function()
+		{
+			$(".tagit").tagit({
+				allowSpaces: true
+			});
+		});
+	</script>
+{% endblock %}
+
+{% block style_additional %}
+	<link rel="stylesheet" type="text/css" href="{{ asset('js/jquery-ui-1.11.0/jquery-ui.min.css') }}" />
+	<link rel="stylesheet" type="text/css" href="{{ minify_file('js/tag-it-master/css/jquery.tagit.css') }}" />
+{% endblock %}
+
+{% block main_content %}
+	<h2>{{ 'main.index.SearchQuote'|trans }}</h2>
+	{% form_theme form 'Form/fields.html.twig' %}
+	{{ form_start(form, {'method' : 'post', 'action' : path('app_indexquotus_search') , 'attr': {'novalidate': 'novalidate'} }) }}
+		<div class="form-group row">
+			{{ form_label(form.text, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+			<div class="col-sm-10">
+				{{ form_errors(form.text) }}{{ form_widget(form.text) }}
+			</div>
+		</div>
+		<div class="form-group row">
+			{{ form_label(form.type, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+			<div class="col-sm-10">
+				{{ form_errors(form.type) }}{{ form_widget(form.type, {'attr':{'class':'form-control'}}) }}
+			</div>
+		</div>
+		<div class="form-group row">
+			{{ form_label(form.source, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+			<div class="col-sm-10">
+				{{ form_errors(form.source) }}{{ form_widget(form.source, {'attr':{'class':'form-control'}}) }}
+			</div>
+		</div>
+		<div class="form-group row">
+			{{ form_label(form.biography, null, {'label_attr': {'class': 'col-sm-2 col-form-label'}}) }}
+			<div class="col-sm-10">
+				{{ form_errors(form.biography) }}{{ form_widget(form.biography, {'attr':{'class':'form-control'}}) }}
+			</div>
+		</div>
+		<br>
+		{{ form_widget(form.search, {'icon': 'fa-search'}) }}
+		{{ form_rest(form) }}
+	{{ form_end(form) }}
+
+	<hr class="flare">
+	{% include "IndexQuotus/random.html.twig" with {'random' : random} %}
+{% endblock %}
