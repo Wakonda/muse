@@ -1,11 +1,11 @@
-{% extends 'poeticus_layout.html.twig' %}
+{% extends sub_domain()~'_layout.html.twig' %}
 
 {% block head_title %}{{ (entity is not null) ? entity.title : '' }}{% endblock %}
 {% block main_title %}{{ (entity is not null) ? entity.title : '' }}{% endblock %}
 
 {% block main_content %}
 	{% if entity is not null %}
-		{{ display_file(entity) }}
+		<div class="mb-4">{{ display_file(entity) }}</div>
 		{{ entity.text|raw }}
 	{% endif %}
 {% endblock %}

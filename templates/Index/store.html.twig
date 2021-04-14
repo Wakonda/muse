@@ -1,4 +1,4 @@
-{% extends 'quotus_layout.html.twig' %}
+{% extends sub_domain()~'_layout.html.twig' %}
 
 {% block head_title %}{{ 'store.index.Store'|trans }}{% endblock %}
 {% block main_title %}{{ 'store.index.Store'|trans }}{% endblock %}
@@ -7,7 +7,7 @@
 
 {% block main_content %}
 	{% if pagination|length > 0 %}
-		<form method="post" action="{{ path('app_indexquotus_store') }}" name="search_form">
+		<form method="post" action="{{ path('app_index_store') }}" name="search_form">
 		<div class="row">
 			<div class="col-lg-6">
 				<div class="input-group">
@@ -28,7 +28,7 @@
 			<div class="col-sm-6 col-lg-4 py-2">
 				<div class="card  h-100 mb-4">
 					<div class="card-header">
-						<h5><a href="{{ path('app_indexquotus_readstore', {'id': entity.id, 'slug': entity.slug}) }}">{{ entity.title }}</a></h5>
+						<h5><a href="{{ path('app_index_readstore', {'id': entity.id, 'slug': entity.slug}) }}">{{ entity.title }}</a></h5>
 					</div>
 					<div class="card-body">
 						<div class="article_infos">
@@ -43,7 +43,7 @@
 						{% if entity.amazonCode %}
 							<a href="{{ entity.externalStoreLink }}" rel="nofollow" class="float-left btn btn-dark" target="_blank"><span class="text-warning"><i class="fas fa-shopping-cart"></i> {{ "store.index.Buy"|trans }}</span></a>
 						{% endif %}
-						<span class="float-right btn"><a href="{{ path('app_indexquotus_readstore', {'id': entity.id, 'slug': entity.slug}) }}" class="text-info"><i class="fas fa-plus" aria-hidden="true"></i> {{ "store.index.MoreInformations"|trans }}</a></span>
+						<span class="float-right btn"><a href="{{ path('app_index_readstore', {'id': entity.id, 'slug': entity.slug}) }}" class="text-info"><i class="fas fa-plus" aria-hidden="true"></i> {{ "store.index.MoreInformations"|trans }}</a></span>
 					</div>
 				</div>
 			</div>

@@ -28,7 +28,7 @@ use App\Service\GenericFunction;
 class CommentController extends AbstractController
 {
     /**
-     * @Route("/{id}")
+     * @Route("/{id}", requirements={"id"="\d+"})
      */
     public function indexAction(Request $request, $id)
     {
@@ -39,7 +39,7 @@ class CommentController extends AbstractController
     }
 
     /**
-     * @Route("/create/{id}")
+     * @Route("/create/{id}", requirements={"id"="\d+"})
      */
 	public function createAction(Request $request, TokenStorageInterface $tokenStorage, TranslatorInterface $translator, $id)
 	{
@@ -58,7 +58,6 @@ class CommentController extends AbstractController
 
 		if($form->isValid())
 		{
-			// dump($entityManager->getRepository($mainEntity)->find($id));die;
 			$entity->setUser($user);
 			$entity->setEntity($entityManager->getRepository($mainEntity)->find($id));
 
@@ -76,7 +75,7 @@ class CommentController extends AbstractController
 	}
 
     /**
-     * @Route("/load/{id}")
+     * @Route("/load/{id}", requirements={"id"="\d+"})
      */
 	public function loadAction(Request $request, $id)
 	{

@@ -106,7 +106,7 @@ class PoemAdminController extends AbstractController
 	}
 
     /**
-     * @Route("/new/{biographyId}/{collectionId}", defaults={"biographyId": null, "collectionId": null})
+     * @Route("/new/{biographyId}/{collectionId}", defaults={"biographyId": null, "collectionId": null}, requirements={"biographyId"="\d+", "collectionId"="\d+"})
      */
     public function newAction(Request $request, $biographyId, $collectionId)
     {
@@ -298,7 +298,7 @@ class PoemAdminController extends AbstractController
 	}
 
     /**
-     * @Route("/new_fast/{biographyId}/{collectionId}", defaults={"biographyId": null, "collectionId": null})
+     * @Route("/new_fast/{biographyId}/{collectionId}", defaults={"biographyId": null, "collectionId": null}, requirements={"biographyId"="\d+", "collectionId"="\d+"})
      */
 	public function newFastAction(Request $request, $biographyId, $collectionId)
 	{

@@ -22,8 +22,8 @@
 	<li class="nav-item {{ app.request.get('_route') in ['app_indexproverbius_byletters', 'app_indexproverbius_letter']  ? 'active' : '' }}">
 		<a class="nav-link" href="{{ path('app_indexproverbius_byletters') }}">{{ 'menu.top.AlphabetBook'|trans }}</a>
 	</li>
-	<li class="nav-item {{ app.request.get('_route') in ['app_indexproverbius_store', 'app_indexproverbius_readstore']  ? 'active' : '' }}">
-		<a class="nav-link" href="{{ path('app_indexproverbius_store') }}">{{ 'menu.top.Store'|trans }}</a>
+	<li class="nav-item {{ app.request.get('_route') in ['app_index_store', 'app_index_readstore']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_index_store') }}">{{ 'menu.top.Store'|trans }}</a>
 	</li>
 	<li class="nav-item {{ app.request.get('_route') in ['app_indexproverbius_byimages']  ? 'active' : '' }}">
 		<a class="nav-link" href="{{ path('app_indexproverbius_byimages') }}">{{ 'menu.top.Images'|trans }}</a>

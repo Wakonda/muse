@@ -1,4 +1,4 @@
-{% extends 'proverbius_layout.html.twig' %}
+{% extends sub_domain()~'_layout.html.twig' %}
 
 {% block head_title %}{{ entity.title }}{% endblock %}
 {% block main_title %}{{ entity.title }}{% endblock %}
@@ -13,7 +13,7 @@
 		{{ entity.embedCode|raw }}
 		</div>
 	{% endif %}
-
+	
 	{% if entity.amazonCode %}
 		<br>
 		<div class="text-center">
@@ -31,10 +31,10 @@
 	<hr>
 	<p>
 	{% if entity.biography is not empty %}
-		<a href="{{ path('app_indexproverbius_author', {'id' : entity.biography.id, 'slug' : entity.biography.slug }) }}" alt="" class="font-weight-bold">{{ entity.biography.title }}</a>
+		<a href="{{ path('app_index_author', {'id' : entity.biography.id, 'slug' : entity.biography.slug }) }}" alt="" class="font-weight-bold">{{ entity.biography.title }}</a>
 		{% if entity.biography.country is not empty %}
 		-
-		<a href="{{ path('app_indexproverbius_country', {'id' : entity.biography.country.id, 'slug' : entity.biography.country.slug }) }}" alt=""><img class="flag" src="{{ asset(constant('\\App\\Entity\\Country::PATH_FILE')~entity.biography.country.flag) }}" alt="" height="8" /></a>
+		<a href="{{ path('app_index_country', {'id' : entity.biography.country.id, 'slug' : entity.biography.country.slug }) }}" alt=""><img class="flag" src="{{ asset(constant('\\App\\Entity\\Country::PATH_FILE')~entity.biography.country.flag) }}" alt="" height="8" /></a>
 		{% endif %}
 	{% else %}
 		<span class="font-weight-bold">{{ "store.index.UnknownAuthor"|trans }}</span>

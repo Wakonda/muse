@@ -103,7 +103,7 @@ class QuoteAdminController extends AbstractController
 	}
 
     /**
-     * @Route("/new/{biographyId}/{sourceId}", defaults={"biographyId": null, "sourceId": null})
+     * @Route("/new/{biographyId}/{sourceId}", defaults={"biographyId": null, "sourceId": null}, requirements={"biographyId"="\d+", "sourceId"="\d+"})
      */
     public function newAction(Request $request, $biographyId, $sourceId)
     {

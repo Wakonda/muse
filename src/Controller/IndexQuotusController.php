@@ -674,39 +674,6 @@ class IndexQuotusController extends AbstractController
 		return $response;
 	}
 
-    /**
-     * @Route("/store/{page}", defaults={"page": 1})
-     */
-    public function storeAction(Request $request, PaginatorInterface $paginator, $page)
-    {
-		$entityManager = $this->getDoctrine()->getManager();
-		$querySearch = $request->request->get("query", null);
-		$query = $entityManager->getRepository(Store::class)->getProducts($querySearch, $request->getLocale());
-
-		$pagination = $paginator->paginate(
-			$query, /* query NOT result */
-			$page, /*page number*/
-			10 /*limit per page*/
-		);
-
-		$pagination->setCustomParameters(['align' => 'center']);
-		
-		return $this->render('IndexQuotus/store.html.twig', ['pagination' => $pagination, "query" => $querySearch]);
-    }
-
-    /**
-     * @Route("/read_store/{id}/{slug}", defaults={"slug": null})
-     */
-	public function readStoreAction($id)
-	{
-		$em = $this->getDoctrine()->getManager();
-		$entity = $em->getRepository(Store::class)->find($id);
-		
-		return $this->render('IndexQuotus/readStore.html.twig', [
-			'entity' => $entity
-		]);
-	}
-
 	public function lastAction(Request $request)
     {
 		$entityManager = $this->getDoctrine()->getManager();

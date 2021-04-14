@@ -31,8 +31,8 @@
 	<li class="nav-item {{ app.request.get('_route') in ['app_indexpoeticus_bypoemusers']  ? 'active' : '' }}">
 		<a class="nav-link" href="{{ path('app_indexpoeticus_bypoemusers') }}">{{ 'menu.top.YourPoems'|trans }}</a>
 	</li>
-	<li class="nav-item {{ app.request.get('_route') in ['app_indexpoeticus_store', 'app_indexpoeticus_readstore']  ? 'active' : '' }}">
-		<a class="nav-link" href="{{ path('app_indexpoeticus_store') }}">{{ 'menu.top.Store'|trans }}</a>
+	<li class="nav-item {{ app.request.get('_route') in ['app_index_store', 'app_index_readstore']  ? 'active' : '' }}">
+		<a class="nav-link" href="{{ path('app_index_store') }}">{{ 'menu.top.Store'|trans }}</a>
 	</li>
 	<li class="nav-item {{ app.request.get('_route') in ['app_indexpoeticus_byimages']  ? 'active' : '' }}">
 		<a class="nav-link" href="{{ path('app_indexpoeticus_byimages') }}">{{ 'menu.top.Images'|trans }}</a>

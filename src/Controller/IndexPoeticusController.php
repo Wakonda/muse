@@ -992,26 +992,6 @@ class IndexPoeticusController extends AbstractController
 	}
 
     /**
-     * @Route("/store/{page}", defaults={"page": 1})
-     */
-    public function storeAction(Request $request, PaginatorInterface $paginator, $page)
-    {
-		$entityManager = $this->getDoctrine()->getManager();
-		$querySearch = $request->request->get("query", null);
-		$query = $entityManager->getRepository(Store::class)->getProducts($querySearch, $request->getLocale());
-
-		$pagination = $paginator->paginate(
-			$query, /* query NOT result */
-			$page, /*page number*/
-			10 /*limit per page*/
-		);
-
-		$pagination->setCustomParameters(['align' => 'center']);
-		
-		return $this->render('IndexPoeticus/store.html.twig', ['pagination' => $pagination, "query" => $querySearch]);
-    }
-
-    /**
      * @Route("/download_image/{fileName}")
      */
 	public function downloadImageAction($fileName)
@@ -1019,19 +999,6 @@ class IndexPoeticusController extends AbstractController
 		$response = new BinaryFileResponse(Poem::PATH_FILE.$fileName);
 		$response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $fileName);
 		return $response;
-	}
-
-    /**
-     * @Route("/read_store/{id}/{slug}", defaults={"slug": null})
-     */
-	public function readStoreAction($id)
-	{
-		$em = $this->getDoctrine()->getManager();
-		$entity = $em->getRepository(Store::class)->find($id);
-		
-		return $this->render('IndexPoeticus/readStore.html.twig', [
-			'entity' => $entity
-		]);
 	}
 
 	private function createFormIndexSearch($locale, $entity)

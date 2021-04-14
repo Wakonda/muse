@@ -21,7 +21,7 @@ use App\Service\GenericFunction;
 class SendController extends AbstractController
 {
     /**
-     * @Route("/{id}")
+     * @Route("/{id}", requirements={"id"="\d+"})
      */
     public function indexAction(Request $request, $id)
     {
@@ -31,11 +31,10 @@ class SendController extends AbstractController
     }
 
     /**
-     * @Route("/send/{id}")
+     * @Route("/send/{id}", requirements={"id"="\d+"})
      */
 	public function sendAction(Request $request, \Swift_Mailer $mailer, $id)
 	{
-		// dump($this->selectEntity()); die;
 		list($className, $subDomain) = $this->selectEntity();
 		parse_str($request->request->get('form'), $form_array);
 

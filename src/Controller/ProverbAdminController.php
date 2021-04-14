@@ -98,7 +98,7 @@ class ProverbAdminController extends AbstractController
 	}
 
     /**
-     * @Route("/new/{countryId}", defaults={"countryId": null})
+     * @Route("/new/{countryId}", defaults={"countryId": null}, requirements={"countryId"="\d+"})
      */
     public function newAction(Request $request, $countryId)
     {
