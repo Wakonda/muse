@@ -12,7 +12,7 @@ use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 
-class QuotusExtension extends AbstractExtension
+class MuseExtension extends AbstractExtension
 {
 	private $em;
 	
@@ -36,12 +36,14 @@ class QuotusExtension extends AbstractExtension
 			new TwigFunction('sub_domain', array($this, 'getSubDomain')),
 			new TwigFunction('captcha', array($this, 'generateCaptcha')),
 			new TwigFunction('gravatar', array($this, 'generateGravatar')),
+			new TwigFunction('number_version', array($this, 'getCurrentVersion')),
 			new TwigFunction('minify_file', array($this, 'minifyFile')),
 			new TwigFunction('count_unread_messages', array($this, 'countUnreadMessagesFunction')),
 			new TwigFunction('code_by_language', array($this, 'getCodeByLanguage')),
 			new TwigFunction('random_image', array($this, 'randomImage')),
 			new TwigFunction('text_month', array($this, 'textMonth')),
 			new TwigFunction('date_biography_letter', array($this, 'dateBiographyLetter'), array('is_safe' => array('html'))),
+			new TwigFunction('date_letter', array($this, 'dateLetter'), array('is_safe' => array('html'))),
 			new TwigFunction('display_file', array($this, 'displayFileManagement'), array('is_safe' => array('html')))
 		);
 	}
@@ -96,6 +98,18 @@ class QuotusExtension extends AbstractExtension
 		return ltrim($day, "0")." ".$month." ".($year < 0 ? abs($year)." ".$arrayBCYear[$locale] : $year);
 	}
 
+	public function dateLetter(\DateTime $date, $locale)
+	{
+		list($arrayBCYear, $arrayMonth) = $this->formatDateByLocale();
+		$month = $arrayMonth[$locale]["months"][$date->format("m") - 1];
+		$day = $date->format("d");
+		$year = $date->format("Y");
+		
+		$day = ($day == 1) ? $day.((!empty($arrayMonth[$locale]["sup"])) ? "<sup>".$arrayMonth[$locale]["sup"]."</sup>" : "") : $day;
+		
+		return ltrim($day, "0")." ".$month." ".($year < 0 ? abs($year)." ".$arrayBCYear[$locale] : $year);
+	}
+	
 	public function removeControlCharactersFilter($string)
 	{
 		return preg_replace("/[^a-zA-Z0-9 .\-_;!:?äÄöÖüÜß<>='\"]/", "", $string);
@@ -151,10 +165,14 @@ class QuotusExtension extends AbstractExtension
 		return $imageArray[array_rand($imageArray)];
 	}
 	
-	public function getCodeByLanguage($locale)
+	public function getCodeByLanguage($locale): String
 	{
 		switch($locale)
 		{
+			case "it":
+				return "it";
+			case "pt":
+				return "pt_PT";
 			case "en":
 				return "en_GB";
 			default:
@@ -200,17 +218,24 @@ class QuotusExtension extends AbstractExtension
 		return (new GenericFunction())->getSubDomain();
 	}
 	
+	public function getCurrentVersion()
+	{
+		return $this->em->getRepository("App\Entity\Version")->getCurrentVersion();
+	}
+
 	private function formatDateByLocale()
 	{
 		$arrayMonth = array();
 		$arrayMonth['fr'] = array("sup" => "er", "separator" => " ", "months" => array("janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"));
 		$arrayMonth['it'] = array("sup" => "°", "separator" => " ", "months" => array("gennaio", "febbraio", "marzo", "aprile", "maggio", "guigno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"));
 		$arrayMonth['pt'] = array("sup" => null, "separator" => " de ", "months" => array("janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"));
+		$arrayMonth['en'] = array("sup" => "st", "separator" => " ", "months" => array("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"));
 	
 		$arrayBCYear = [];
 		$arrayBCYear["fr"] = "av. J.-C.";
 		$arrayBCYear["it"] = "a.C.";
 		$arrayBCYear["pt"] = "a.C.";
+		$arrayBCYear["en"] = "BC";
 
 		return [$arrayBCYear, $arrayMonth];
 	}

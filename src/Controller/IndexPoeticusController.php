@@ -23,7 +23,6 @@ use App\Entity\Language;
 use App\Entity\Country;
 use App\Entity\PoeticForm;
 use App\Entity\Source;
-use App\Entity\Version;
 use App\Entity\Tag;
 
 use App\Form\Type\PoemUserType;
@@ -857,18 +856,6 @@ class IndexPoeticusController extends AbstractController
 		}
 
 		return new JsonResponse($output);
-	}
-
-    /**
-     * @Route("/version")
-     */
-	public function versionAction(Request $request)
-	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$language = $entityManager->getRepository(Language::class)->findOneBy(['abbreviation' => $request->getLocale()]);
-		$entities = $entityManager->getRepository(Version::class)->findBy(["language" => $language]);
-
-		return $this->render('IndexPoeticus/version.html.twig', array('entities' => $entities));
 	}
 
     /**

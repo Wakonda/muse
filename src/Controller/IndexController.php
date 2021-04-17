@@ -11,6 +11,7 @@ use App\Service\Gravatar;
 use App\Entity\Page;
 use App\Entity\Language;
 use App\Entity\Store;
+use App\Entity\Version;
 use App\Service\GenericFunction;
 
 use Symfony\Component\Routing\Annotation\Route;
@@ -100,5 +101,17 @@ class IndexController extends AbstractController
 		return $this->render('Index/readStore.html.twig', [
 			'entity' => $entity
 		]);
+	}
+
+    /**
+     * @Route("/version")
+     */
+	public function versionAction(Request $request)
+	{
+		$entityManager = $this->getDoctrine()->getManager();
+		$language = $entityManager->getRepository(Language::class)->findOneBy(['abbreviation' => $request->getLocale()]);
+		$entities = $entityManager->getRepository(Version::class)->findBy(["language" => $language]);
+
+		return $this->render('Index/version.html.twig', array('entities' => $entities));
 	}
 }

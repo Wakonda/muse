@@ -25,6 +25,7 @@ use App\Entity\QuoteImage;
 use App\Entity\Proverb;
 use App\Entity\ProverbImage;
 use App\Entity\Page;
+use App\Entity\Version;
 
 class DatasCommand extends Command
 {
@@ -68,6 +69,26 @@ class DatasCommand extends Command
 
 		$this->em->flush();
 		
+		// -- Version
+		foreach($dbh->query("SELECT p.*, l.abbreviation FROM Version p
+					LEFT JOIN language l ON p.language_id = l.id") as $data) {
+			
+			$language = $this->em->getRepository(Language::class)->findOneBy(["abbreviation" => $this->encodingString($data["abbreviation"])]);
+			$newEntity = $this->em->getRepository(Version::class)->findOneBy(["versionNumber" => $this->encodingString($data["version_number"]), "language" => $language]);
+			
+			if(empty($newEntity))
+				$newEntity = new Version();
+
+			$newEntity->setFile($this->encodingString($data["file"]));
+			$newEntity->setVersionNumber($this->encodingString($data["version_number"]));
+			$newEntity->setReleaseDate(new \DateTime($data["release_date"]));
+			$newEntity->setLanguage($language);
+			
+			$this->em->persist($newEntity);
+		}
+
+		$this->em->flush();
+		die("oj");
 		// -- Page
 		foreach($dbh->query("SELECT p.*, l.abbreviation FROM Page p
 					LEFT JOIN language l ON p.language_id = l.id") as $data) {
