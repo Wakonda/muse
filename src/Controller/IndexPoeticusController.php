@@ -80,8 +80,8 @@ class IndexPoeticusController extends AbstractController
 	public function searchAction(Request $request, TranslatorInterface $translator)
 	{
 		$entityManager = $this->getDoctrine()->getManager();
-		$search = $request->request->get("index_search", []);
-		
+		$search = $request->request->get("index_poeticus_search", []);
+
 		unset($search["_token"]);
 
 		$criteria = $search;

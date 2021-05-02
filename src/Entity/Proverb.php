@@ -38,7 +38,7 @@ class Proverb
     protected $country;
 	
    /**
-    * ORM\OneToMany(targetEntity=ProverbImage::class, cascade={"persist", "remove"}, mappedBy="proverb", orphanRemoval=true)
+    * @ORM\OneToMany(targetEntity=ProverbImage::class, cascade={"persist", "remove"}, mappedBy="proverb", orphanRemoval=true)
     */
     protected $images;
 
@@ -123,11 +123,6 @@ class Proverb
 	{
 		$this->language = $language;
 	}
-
-    public function getProverbImages()
-    {
-        return $this->proverbImages;
-    }
      
     public function addImage(ProverbImage $image)
     {

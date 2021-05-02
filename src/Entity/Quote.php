@@ -45,7 +45,7 @@ class Quote
     protected $country;
 
    /**
-    * ORM\OneToMany(targetEntity=QuoteImage::class, cascade={"persist", "remove"}, mappedBy="quote", orphanRemoval=true)
+    * @ORM\OneToMany(targetEntity=QuoteImage::class, cascade={"persist", "remove"}, mappedBy="quote", orphanRemoval=true)
     */
     protected $images;
 	
@@ -144,6 +144,7 @@ class Quote
 
     public function __construct()
     {
+        $this->quoteImages = new ArrayCollection();
         $this->images = new ArrayCollection();
 		$this->authorType = self::BIOGRAPHY_AUTHORTYPE;
 		$this->state = self::PUBLISHED_STATE;
@@ -214,26 +215,26 @@ class Quote
 		$this->language = $language;
 	}
 
-    public function getQuoteImages()
-    {
-        return $this->quoteImages;
-    }
-     
-    public function addImage(QuoteImage $image)
-    {
-        $this->images->add($image);
-        $image->setQuote($this);
-    }
-	
-    public function removeImage(QuoteImage $image)
-    {
-        $image->setQuote(null);
-        $this->images->removeElement($image);
-    }
-
     public function getImages()
     {
         return $this->images;
+    }
+
+    public function setImages($images)
+    {
+        $this->images = $images;
+    }
+     
+    public function addImage(QuoteImage $quoteImage)
+    {
+        $this->images->add($quoteImage);
+        $quoteImage->setQuote($this);
+    }
+	
+    public function removeImage(QuoteImage $quoteImage)
+    {
+        $quoteImage->setQuote(null);
+        $this->images->removeElement($quoteImage);
     }
 
     public function getBiography()

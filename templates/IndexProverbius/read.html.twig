@@ -119,7 +119,7 @@
 	<div id="myCarousel" class="carousel slide mb-4" data-ride="carousel">
 		<!-- Indicators -->
 		<ol class="carousel-indicators hidden_print">
-			{% for i in 0..entity.proverbImages|length - 1 %}
+			{% for i in 0..entity.images|length - 1 %}
 				<li data-target="#myCarousel" data-slide-to="{{ i }}" {{ i == 0 ? 'class="active"' : '' }}></li>
 			{% endfor %}
 		</ol>
@@ -127,7 +127,7 @@
 		<!-- Wrapper for slides -->
 		<div class="carousel-inner">
 			{% set i = 0 %}
-			{% for proverbImage in entity.proverbImages %}
+			{% for proverbImage in entity.images %}
 				<div class="carousel-item {{ i == 0 ? 'active' : '' }}">
 					<img src="{{ asset(constant('\\App\\Entity\\Proverb::PATH_FILE')~proverbImage.image) }}" class="text-center" alt="">
 					<div class="carousel-caption hidden_print">

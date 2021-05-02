@@ -73,7 +73,7 @@ class IndexProverbiusController extends AbstractController
      */
 	public function searchAction(Request $request, TranslatorInterface $translator)
 	{
-		$search = $request->request->get("index_search", []);
+		$search = $request->request->get("index_proverbius_search", []);
 		$entityManager = $this->getDoctrine()->getManager();
 		$search['country'] = (empty($search['country'])) ? null : $search['country'];
 		

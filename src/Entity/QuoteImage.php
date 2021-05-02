@@ -19,7 +19,7 @@ class QuoteImage
     protected $id;
 
     /**
-    * @ORM\ManyToOne(targetEntity=Quote::class)
+    * @ORM\ManyToOne(targetEntity=Quote::class, inversedBy="images", cascade={"persist"})
     */
     protected $quote;
 

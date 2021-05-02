@@ -128,7 +128,7 @@ class GenericFunction
 	}
 	
 	public function getSubDomain(): String {
-		return explode(".", parse_url($_SERVER["HTTP_HOST"])["host"])[0];
+		return explode(".", parse_url("//".$_SERVER["HTTP_HOST"])["host"])[0];
 	}
 
 	private static function removeAccents($str) {

@@ -40,15 +40,15 @@
 		<tr>
 			<th>{{ 'admin.imageGenerator.Image'|trans }}</th>
 			<td>
-				{% if entity.quoteImages is not empty %}
-					{% for quoteImage in entity.quoteImages %}
+				{% if entity.images is not empty %}
+					{% for quoteImage in entity.images %}
 						<div>
 							{{ (constant('\\App\\Entity\\Quote::PATH_FILE')~quoteImage.image)|max_size_image() }}
 							&nbsp;
 							<a class="btn btn-danger" href="{{ path('app_quoteadmin_removeimage', {'id' : entity.id, 'quoteImageId': quoteImage.id}) }}"><i class="fas fa-trash" aria-hidden="true"></i></a>
 						</div>
 						<div class="input-group mt-3">
-							<input class="form-control" id="url_image_{{ quoteImage.id }}" value="{{ url('read', {id: quoteImage.quote.id, slug: quoteImage.quote.slug, idImage: quoteImage.id}) }}">
+							<input class="form-control" id="url_image_{{ quoteImage.id }}" value="{{ url('app_indexquotus_read', {id: quoteImage.quote.id, slug: quoteImage.quote.slug, idImage: quoteImage.id}) }}">
 							<div class="input-group-append">
 								<button class="btn btn-outline-secondary copy" type="button" data-clipboard-target="#url_image_{{ quoteImage.id }}">
 								<i class="fas fa-clipboard" aria-hidden="true"></i>
@@ -61,6 +61,7 @@
 			</td>
 		</tr>
 	</table>
+	
 	<hr>
 	{% form_theme imageGeneratorForm 'Form/fields.html.twig' %}
 	<div class="card">
@@ -115,7 +116,7 @@
 				<form action="{{ path('app_quoteadmin_twitter', {'id': entity.id}) }}" method="post">
 					<label for="addImage"> <input type="checkbox" id="addImage"> {{ 'admin.socialNetwork.AddAnImage'|trans }}</label>
 					<div class="row d-none mb-3" id="image_container">
-						{% for quoteImage in entity.quoteImages %}
+						{% for quoteImage in entity.images %}
 							<div class="col-md-4 mb-10"><div class="thumbnail" role="button"><img src="{{ absolute_url(asset(constant('\\App\\Entity\\Quote::PATH_FILE')~quoteImage.image)) }}" data-id="{{ quoteImage.id }}"></div></div>
 						{% endfor %}
 					</div>
@@ -128,7 +129,7 @@
 		</div>
 	</div>
 
-	{% if entity.quoteImages is not empty %}
+	{% if entity.images is not empty %}
 	<div class="card mt-2">
 		<div class="card-header" role="tab" id="headingPinterest">
 			<a href="#" role="button" data-toggle="collapse" data-target="#collapsePinterest" aria-expanded="true" aria-controls="collapseOne">
@@ -139,7 +140,7 @@
 			<div class="card-body">
 				<form action="{{ path('app_quoteadmin_pinterest', {'id': entity.id}) }}" method="post">
 					<div class="row mb-3">
-						{% for quoteImage in entity.quoteImages %}
+						{% for quoteImage in entity.images %}
 							<div class="col-md-4 mb-10"><div class="thumbnail" role="button"><img src="{{ absolute_url(asset(constant('\\App\\Entity\\Quote::PATH_FILE')~quoteImage.image)) }}" data-id="{{ quoteImage.id }}"></div></div>
 						{% endfor %}
 					</div>
@@ -151,32 +152,9 @@
 			</div>
 		</div>
 	</div>
-
-	<div class="card mt-2">
-		<div class="card-header role="tab" id="headingFacebook">
-			<a href="#" role="button" data-toggle="collapse" data-target="#collapseFacebook" aria-expanded="true" aria-controls="collapseOne">
-			<i class="fab fa-facebook-square" aria-hidden="true"></i> Facebook
-			</a>
-		</div>
-		<div id="collapseFacebook" class="collapse" aria-labelledby="headingFacebook" aria-expanded="true">
-			<div class="card-body">
-				<form action="{{ path('app_quoteadmin_facebook', {'id': entity.id}) }}" method="post">
-					<div class="row mb-3">
-						{% for quoteImage in entity.quoteImages %}
-							<div class="col-md-4 mb-10"><div class="thumbnail" role="button"><img src="{{ absolute_url(asset(constant('\\App\\Entity\\Quote::PATH_FILE')~quoteImage.image)) }}" data-id="{{ quoteImage.id }}"></div></div>
-						{% endfor %}
-					</div>
-					<input type="hidden" name="image_id_facebook" id="image_facebook">
-					<textarea id="twitter_area" name="facebook_area" rows="3" cols="70" class="form-control">{{ entity.text|raw }} #quotee</textarea>
-					<br>
-					<input value="{{ 'admin.socialNetwork.Send'|trans }}" id="tweet" type="submit" class="btn btn-outline-secondary">
-				</form>
-			</div>
-		</div>
-	</div>
 	{% endif %}
 	<hr>
-	<a href="{{ path('app_quoteadmin_index') }}"><i class="fas fa-list"></i> {{ 'admin.index.List'|trans }}</a> - <a href="{{ path('quoteadmin_edit', { 'id' : entity.id }) }}"><i class="fas fa-edit"></i> {{ 'admin.index.Update'|trans }}</a> - <a href="{{ path('quoteadmin_new') }}"><i class="fas fa-plus-square"></i> {{ 'admin.index.Create'|trans }}</a>
+	<a href="{{ path('app_quoteadmin_index') }}"><i class="fas fa-list"></i> {{ 'admin.index.List'|trans }}</a> - <a href="{{ path('app_quoteadmin_edit', { 'id' : entity.id }) }}"><i class="fas fa-edit"></i> {{ 'admin.index.Update'|trans }}</a> - <a href="{{ path('app_quoteadmin_new') }}"><i class="fas fa-plus-square"></i> {{ 'admin.index.Create'|trans }}</a>
 	 | 
 	<a href="{{ path('app_quoteadmin_new', {'biographyId' : entity.biography.id}) }}">
 		{{ 'admin.quote.ForSameBiography'|trans }}

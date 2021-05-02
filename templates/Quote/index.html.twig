@@ -29,7 +29,7 @@
 				"iDisplayLength": 15,
 				"bProcessing": true,
 				"bServerSide": true,
-				"sAjaxSource": "{{ path('app_quoteadmin_datatables') }}",
+				"sAjaxSource": "{{ path('app_quoteadmin_indexdatatables') }}",
 				"rowCallback": function( row, data ) {
 					if ( $.inArray(data.DT_RowId, selected) !== -1 ) {
 						$(row).addClass('selected');

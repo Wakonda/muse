@@ -92,7 +92,7 @@ class Poem
 	protected $language;
 
     /**
-     * ORM\OneToMany(targetEntity=PoemImage::class, cascade={"persist", "remove"}, mappedBy="poem", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=PoemImage::class, cascade={"persist", "remove"}, mappedBy="poem", orphanRemoval=true)
      */
     protected $images;
 

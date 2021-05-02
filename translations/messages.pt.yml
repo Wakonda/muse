@@ -67,6 +67,11 @@ main:
         Search: "Procurar"
         YourPoems: "Seus poemas"
         GreatWriters: "Grandes autores"
+        Type: "Tipo"
+        Source: "Fonte"
+    type:
+        Author: "Autor"
+        FictionalCharacter: "Personagem fictício"
 publication:
     state:
         Published: "Publicado"
@@ -482,6 +487,21 @@ admin:
         ProxyAddress: "Endereço proxy"
         ForSameCountry: "para o mesmo país"
         Tags: "Tags"
+    quote:
+        Title: "Título"
+        Text: "Texto"
+        Source: "Fonte"
+        Biography: "Biografia"
+        AuthorKind: "Tipo de autor"
+        ProxyAddress: "Endereço proxy"
+        User: "Usuário"
+        Image: "Imagem"
+        RapidCreation: "Criação rápida"
+        Number: "Número"
+        Tags: "Tags"
+        ForSameBiography: "para o mesmo autor"
+        ForSameSource: "para a mesma fonte"
+        ForSameBiographyAndSameSource: "para o mesmo autor e mesma fonte"
     biography:
         Title: "Título"
         Text: "Texto"

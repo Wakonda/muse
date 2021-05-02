@@ -155,12 +155,12 @@ class MuseExtension extends AbstractExtension
 	
 	public function randomImage($entity) {
 		$imageArray = [];
-
-		if(empty($imageArray))
-			return $entity->getImages();
-
+		
 		foreach($entity->getImages() as $image)
 			$imageArray[] = $image->getImage();
+
+		if(empty($imageArray))
+			return null;
 		
 		return $imageArray[array_rand($imageArray)];
 	}

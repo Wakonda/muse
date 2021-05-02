@@ -39,7 +39,6 @@
 					url: "{{ path('app_indexquotus_random') }}",
 					beforeSend: function(xhr)
 					{
-					console.log($(this))
 						button.attr("disabled", true);
 						svg.addClass("fa-spin");
 					},

@@ -67,6 +67,8 @@ main:
         Search: "Search"
         YourPoems: "Your poems"
         GreatWriters: "Famous writers"
+        Type: "Kind"
+        Source: "Source"
 publication:
     state:
         Published: "Published"
@@ -95,6 +97,9 @@ biography:
         Source: "Source"
         Action: "Action"
         Text: "Text"
+    type:
+        Author: "Author"
+        FictionalCharacter: "Fictional character"
 source:
     index:
         BySources: "By sources"
@@ -482,14 +487,29 @@ admin:
         ProxyAddress: "Proxy address"
         ForSameCountry: "for the same country"
         Tags: "Tags"
-    biography:
+    quote:
         Title: "Titre"
-        Text: "Texte"
-        BirthDate: "Date de naissance"
-        DeathDate: "Date de décès"
+        Text: "Text"
+        Source: "Source"
+        Biography: "Biography"
+        AuthorKind: "Type d'auteur"
+        ProxyAddress: "Proxy address"
+        User: "User"
         Image: "Image"
-        Nationality: "Nationalité"
-        Country: "Pays"
+        RapidCreation: "Quick creation"
+        Number: "Number"
+        Tags: "Tags"
+        ForSameBiography: "for same author"
+        ForSameSource: "for same source"
+        ForSameBiographyAndSameSource: "for same author and same source"
+    biography:
+        Title: "Title"
+        Text: "Text"
+        BirthDate: "Birth date"
+        DeathDate: "Death date"
+        Image: "Image"
+        Nationality: "Nationality"
+        Country: "Country"
     tag:
         Title: "Title"
         Photo: "Photo"

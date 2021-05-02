@@ -88,7 +88,7 @@ class DatasCommand extends Command
 		}
 
 		$this->em->flush();
-		die("oj");
+
 		// -- Page
 		foreach($dbh->query("SELECT p.*, l.abbreviation FROM Page p
 					LEFT JOIN language l ON p.language_id = l.id") as $data) {
