@@ -70,7 +70,7 @@ class QuoteType extends AbstractType
 				'multiple' => false,
 				'remote_route' => 'app_biographyadmin_getbiographiesbyajax',
 				'class' => Biography::class,
-				'req_params' => ['source' => 'parent.children[source]'],
+				'req_params' => ['source' => 'parent.children[source]', 'language' => 'parent.children[language]'],
 				'page_limit' => 10,
 				'primary_key' => 'id',
 				'text_property' => 'title',
@@ -109,7 +109,7 @@ class QuoteType extends AbstractType
 	{
 		$resolver->setDefaults(array(
 			"data_class" => Quote::class,
-			"locale" => null
+			"locale" => "fr"
 		));
 	}
 	

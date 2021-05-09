@@ -180,13 +180,16 @@ class BiographyAdminController extends AbstractController
      */
 	public function getBiographiesByAjaxAction(Request $request)
 	{
-		$locale = $request->query->get("locale");
+		$rq = $request->getMethod() == Request::METHOD_GET ? $request->query : $request->request;
+
 		$entityManager = $this->getDoctrine()->getManager();
+		$locale = $rq->get("language");
+		
 		$rsp = new Response();
 		$rsp->headers->set('Content-Type', 'application/json');
-		
-		if($request->query->has("pkey_val")) {
-			$pkeyVal = $request->query->has("pkey_val");
+
+		if($rq->has("pkey_val")) {
+			$pkeyVal = $rq->has("pkey_val");
 			
 			if(empty($pkeyVal))
 			{
@@ -194,7 +197,7 @@ class BiographyAdminController extends AbstractController
 				return $rsp;
 			}
 
-			$parameters = array("pkey_val" => $request->query->get("pkey_val"));
+			$parameters = array("pkey_val" => $rq->get("pkey_val"));
 			$response =  $entityManager->getRepository(Biography::class)->getDatasCombobox($parameters, $locale);
 
 			$resObj = new \stdClass();
@@ -205,34 +208,46 @@ class BiographyAdminController extends AbstractController
 			return $rsp;
 		}
 
-		$parameters = array(
-		  'db_table'     => $request->query->get('db_table'),
-		  'page_num'     => $request->query->get('page_num'),
-		  'per_page'     => $request->query->get('per_page'),
-		  'and_or'       => $request->query->get('and_or'),
-		  'order_by'     => $request->query->get('order_by'),
-		  'search_field' => $request->query->get('search_field'),
-		  'q_word'       => $request->query->get('q_word')
-		);
-
-		$parameters['offset']  = ($parameters['page_num'] - 1) * $parameters['per_page'];
+		if($rq->has("q_word")) {
+			$parameters = array(
+			  'page_num'     => $rq->get('page_num'),
+			  'per_page'     => $rq->get('per_page'),
+			  'q_word'       => $rq->get('q_word')
+			);
+		} else {
+			$parameters = array(
+			  'page_num'     => 1,
+			  'per_page'     => $rq->get('page_limit'),
+			  'q_word'       => $rq->get('q')
+			);
+		}
 
 		$response =  $entityManager->getRepository(Biography::class)->getDatasCombobox($parameters, $locale);
 		$count =  $entityManager->getRepository(Biography::class)->getDatasCombobox($parameters, $locale, true);
 
-		$results = array();
+		if($rq->has("q_word")) {
+			$results = [];
 
-		foreach($response as $res) {
-			$obj = new \stdClass();
-			$obj->id = $res['id'];
-			$obj->name = $res['title'];
-			
-			$results[] = $obj;
+			foreach($response as $res) {
+				$obj = new \stdClass();
+				$obj->id = $res['id'];
+				$obj->name = $res['title'];
+				
+				$results[] = $obj;
+			}
+
+			$resObj = new \stdClass();
+			$resObj->result = $results;
+			$resObj->cnt_whole = $count;
+		} else {
+			$resObj = [];
+			foreach($response as $res) {
+				$resObj["results"][] = [
+					"id" => $res['id'],
+					"text" => $res['title']
+				];
+			}
 		}
-
-		$resObj = new \stdClass();
-		$resObj->result = $results;
-		$resObj->cnt_whole = $count;
 
 		$rsp->setContent(json_encode($resObj));
 		return $rsp;

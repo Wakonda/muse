@@ -161,58 +161,7 @@ class QuoteAdminController extends AbstractController
 	{
 		$entityManager = $this->getDoctrine()->getManager();
 		$entity = $entityManager->getRepository(Quote::class)->find($id);
-		
-		
-		/////////////////////////////
-		/*$images = $entityManager->getRepository(QuoteImage::class)->findBy(["quote" => $entity]);
-		
-		foreach($images as $image) {
-			$entity->removeQuoteImage($image);
-			$image->setQuote(null);
-			$entityManager->persist($image);
-			$entityManager->persist($entity);
-		}	
-		
-		$entityManager->flush();
-		
-		foreach($images as $image) {
-			$entity->addQuoteImage($image);
-			$image->setQuote($entity);
-			$entityManager->persist($image);
-			$entityManager->persist($entity);
-		}
-		
-		$entityManager->flush();
-		dump($entity->getQuoteImages());die;
-		dump($images);die;*/
-		
-		// $images = $entityManager->getRepository(QuoteImage::class)->findBy(["quote" => $entity]);
-		
-		// foreach($images as $image) {
-			// $entity->removeImage($image);
-			// $entityManager->persist($image);
-			// $entityManager->persist($entity);
-		// }	
-		
-		// $entityManager->flush();
-		
-		// foreach($images as $image) {
-			// $entity->addImage($image);
-			// $entityManager->persist($image);
-			// $entityManager->persist($entity);
-		// }
-		
-		// $entity->setImages($images);
-		// $entityManager->flush();
-		// dump($entity);
-		
-		// $entity = $entityManager->getRepository(Quote::class)->find(1119);
-		
-		// dump($entity);
-		// die;
-		// dump($images);die;
-		/////////////////////////////
-		
+
 		$imageGeneratorForm = $this->createForm(ImageGeneratorType::class);
 	
 		return $this->render('Quote/show.html.twig', array('entity' => $entity, 'imageGeneratorForm' => $imageGeneratorForm->createView()));

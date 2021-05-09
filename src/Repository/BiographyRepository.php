@@ -131,7 +131,7 @@ class BiographyRepository extends ServiceEntityRepository implements iRepository
 
 	// Combobox
 	public function getDatasCombobox($params, $locale, $count = false)
-	{
+	{//dump($params);die;
 		$qb = $this->createQueryBuilder("b");
 
 		if(!empty($locale))
@@ -150,23 +150,23 @@ class BiographyRepository extends ServiceEntityRepository implements iRepository
 		
 		$params['offset']  = ($params['page_num'] - 1) * $params['per_page'];
 
+		$qWord = is_array($params['q_word']) ? implode(' ', $params['q_word']) : $params['q_word'];
+
 		$qb->select("b.id, b.title")
 		   ->andWhere("b.title LIKE :title")
-		   ->setParameter("title", "%".implode(' ', $params['q_word'])."%")
+		   ->setParameter("title", "%".$qWord."%")
 		   ->setMaxResults($params['per_page'])
-		   ->setFirstResult($params['offset'])
-		   ;
+		   ->setFirstResult($params['offset']);
 		
 		if($count)
 		{
 			$qb->select("COUNT(b.id)")
 			   ->andWhere("b.title LIKE :title")
-			   ->setParameter("title", "%".implode(' ', $params['q_word'])."%")
-			   ;
+			   ->setParameter("title", "%".$qWord."%");
 			   
 			return $qb->getQuery()->getSingleScalarResult();
 		}
-
+// die($qb->getQuery()->getSQL());
 		return $qb->getQuery()->getResult();
 	}
 }

@@ -13,8 +13,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use App\Repository\CountryRepository;
 
-use Tetranz\Select2EntityBundle\Form\Type\Select2EntityType;
-
 use App\Entity\Biography;
 use App\Entity\Country;
 use App\Entity\Source;

@@ -4,7 +4,11 @@ namespace App\Controller;
 
 use App\Entity\PoemImage;
 use App\Entity\ProverbImage;
-use App\Entity\QuoteImage;
+use App\Entity\QuoteImage;
+
+use App\Entity\Poem;
+use App\Entity\Proverb;
+use App\Entity\Quote;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,7 +35,7 @@ class ImageAdminController extends AbstractController
      */
 	public function indexDatatablesAction(Request $request, TranslatorInterface $translator, String $domainName)
 	{
-		$imageClass = $this->selectEntity($domainName);
+		list($imageClass, $path, $method) = $this->selectEntity($domainName);
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 		$sSearch = $request->query->get('sSearch');
@@ -62,21 +66,21 @@ class ImageAdminController extends AbstractController
 		foreach($entities as $entity)
 		{
 			$row = [];
-			$row[] = "<img class='mx-auto d-block' src='/".Quote::PATH_FILE.$entity->getImage()."'>";
+			$row[] = "<img class='mx-auto d-block' src='/".$path.$entity->getImage()."'>";
 			
 			$socialNetworkArray = [];
-			
+
 			if(!empty($entity->getSocialNetwork()))
 			{
-				$ocialNetworks = array_unique($entity->getSocialNetwork());
+				$socialNetworks = array_unique(json_decode($entity->getSocialNetwork()));
 				
-				foreach ($ocialNetworks as $sn) {
+				foreach ($socialNetworks as $sn) {
 					$socialNetworkArray[] = '<span class="badge badge-secondary"><i class="fab fa-'.strtolower($sn).'" aria-hidden="true"></i></span>';
 				}
 			}
 			
 			$row[] = empty($sn = $socialNetworkArray) ? "-" : implode(" ", $socialNetworkArray);
-			$show = $this->generateUrl('app_quoteadmin_show', array('id' => $entity->getQuote()->getId()));
+			$show = $this->generateUrl('app_quoteadmin_show', array('id' => $entity->$method()->getId()));
 			$row[] = '<a href="'.$show.'" alt="Show">'.$translator->trans('admin.index.Read').'</a>';
 			
 			$output['aaData'][] = $row;
@@ -85,14 +89,14 @@ class ImageAdminController extends AbstractController
 		return new JsonResponse($output);
 	}
 	
-	private function selectEntity(String $domainName): ?String {
+	private function selectEntity(String $domainName): ?Array {
 		switch($domainName) {
 			case "poeticus":
-				return PoemImage::class;
+				return [PoemImage::class, Poem::PATH_FILE, "getPoem"];
 			case "proverbius":
-				return ProverbImage::class;
+				return [ProverbImage::class, Proverb::PATH_FILE, "getProverb"];
 			case "quotus":
-				return QuoteImage::class;
+				return [QuoteImage::class, Quote::PATH_FILE, "getQuote"];
 		}
 		
 		return null;
