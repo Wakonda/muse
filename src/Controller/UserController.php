@@ -41,7 +41,7 @@ class UserController extends AbstractController
     /**
      * @Route("/login")
      */
-    public function loginAction(Request $request, AuthenticationUtils $authenticationUtils)
+    public function loginAction(AuthenticationUtils $authenticationUtils)
     {
         // get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
@@ -49,10 +49,11 @@ class UserController extends AbstractController
         $lastUsername = $authenticationUtils->getLastUsername();
 
 		return $this->render('User/login.html.twig', array(
-				'error'         => $authenticationUtils->getLastAuthenticationError(),
-				'last_username' => $authenticationUtils->getLastUsername()
+				'error'         => $error,
+				'last_username' => $lastUsername
 		));
     }
+
     /**
      * @Route("/logout", methods={"GET"})
      */

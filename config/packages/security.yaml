@@ -19,6 +19,7 @@ security:
             provider: our_db_provider
             anonymous: ~
             form_login:
+                csrf_token_generator: security.csrf.token_manager
                 login_path: app_user_login
                 check_path: app_user_login
             remember_me:

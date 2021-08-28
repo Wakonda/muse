@@ -27,13 +27,13 @@
 				"iDisplayLength": 15,
 				"bProcessing": true,
 				"bServerSide": true,
-				"sAjaxSource": "{{ path('app_sourceadmin_datatables') }}",
+				"sAjaxSource": "{{ path('app_sourceadmin_indexdatatables') }}",
 				"autoWidth": false
 			});
 			
 			$("select#selected_state").change(function()
 			{
-				oTable.ajax.url("{{ path('app_sourceadmin_datatables') }}?state=" + $(this).val()).load();
+				oTable.ajax.url("{{ path('app_sourceadmin_indexdatatables') }}?state=" + $(this).val()).load();
 			});
 		});
 	</script>

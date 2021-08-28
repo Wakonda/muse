@@ -75,8 +75,8 @@ class SourceAdminController extends AbstractController
 			$row[] = $entity->getTitle();
 			$row[] = $entity->getLanguage()->getTitle();
 			
-			$show = $this->generateUrl('sourceadmin_show', array('id' => $entity->getId()));
-			$edit = $this->generateUrl('sourceadmin_edit', array('id' => $entity->getId()));
+			$show = $this->generateUrl('app_sourceadmin_show', array('id' => $entity->getId()));
+			$edit = $this->generateUrl('app_sourceadmin_edit', array('id' => $entity->getId()));
 			
 			$row[] = '<a href="'.$show.'" alt="Show">'.$translator->trans('admin.index.Read').'</a> - <a href="'.$edit.'" alt="Edit">'.$translator->trans('admin.index.Update').'</a>';
 
@@ -123,7 +123,7 @@ class SourceAdminController extends AbstractController
 			$entityManager->persist($entity);
 			$entityManager->flush();
 
-			$redirect = $this->generateUrl('sourceadmin_show', array('id' => $entity->getId()));
+			$redirect = $this->generateUrl('app_sourceadmin_show', array('id' => $entity->getId()));
 
 			return $this->redirect($redirect);
 		}
@@ -175,7 +175,7 @@ class SourceAdminController extends AbstractController
 			$entityManager->persist($entity);
 			$entityManager->flush();
 
-			return $this->redirect($this->generateUrl('sourceadmin_show', array('id' => $entity->getId())));
+			return $this->redirect($this->generateUrl('app_sourceadmin_show', array('id' => $entity->getId())));
 		}
 	
 		return $this->render('Source/edit.html.twig', array('form' => $form->createView(), 'entity' => $entity));

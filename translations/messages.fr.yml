@@ -510,6 +510,13 @@ admin:
         Image: "Image"
         Nationality: "Nationalité"
         Country: "Pays"
+    source:
+        Title: "Titre"
+        Text: "Texte"
+        FictionalCharacters: "Personnages de fiction"
+        Authors: "Auteurs"
+        Photo: "Photo"
+        Type: "Type"
     tag:
         Title: "Titre"
         Photo: "Photo"

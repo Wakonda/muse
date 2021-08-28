@@ -41,10 +41,10 @@
 						<div>
 							{{ (constant('\\App\\Entity\\Proverb::PATH_FILE')~proverbImage.image)|max_size_image() }}
 							&nbsp;
-							<a class="btn btn-danger" href="{{ path('app_proverbadmin_remove_image', {'id' : entity.id, 'proverbImageId': proverbImage.id}) }}"><i class="fas fa-trash" aria-hidden="true"></i></a>
+							<a class="btn btn-danger" href="{{ path('app_proverbadmin_removeimage', {'id' : entity.id, 'proverbImageId': proverbImage.id}) }}"><i class="fas fa-trash" aria-hidden="true"></i></a>
 						</div>
 						<div class="input-group mt-3">
-							<input class="form-control" id="url_image_{{ proverbImage.id }}" value="{{ url('read', {id: proverbImage.proverb.id, slug: proverbImage.proverb.slug, idImage: proverbImage.id}) }}">
+							<input class="form-control" id="url_image_{{ proverbImage.id }}" value="{{ url('app_indexproverbius_read', {id: proverbImage.proverb.id, slug: proverbImage.proverb.slug, idImage: proverbImage.id}) }}">
 							<div class="input-group-append">
 								<button class="btn btn-outline-secondary copy" type="button" data-clipboard-target="#url_image_{{ proverbImage.id }}">
 								<i class="fas fa-clipboard" aria-hidden="true"></i>
