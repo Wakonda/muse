@@ -92,6 +92,9 @@ class SourceType extends AbstractType
 					 Source::TV_SERIES_CANONICAL => Source::TV_SERIES
 				],
 			])
+			->add('releasedDate', IntegerType::class, array(
+                'label' => 'admin.source.ReleasedDate', "required" => false
+            ))
 			->add('fileManagement', FileManagementSelectorType::class, ["label" => "admin.source.Photo", "required" => false, "folder" => Source::FOLDER])
             ->add('save', SubmitType::class, array('label' => 'admin.main.Save', 'attr' => array('class' => 'btn btn-success')));
     }

@@ -510,6 +510,7 @@ admin:
         Image: "Image"
         Nationality: "Nationalité"
         Country: "Pays"
+        Type: "Type"
     source:
         Title: "Titre"
         Text: "Texte"
@@ -517,6 +518,7 @@ admin:
         Authors: "Auteurs"
         Photo: "Photo"
         Type: "Type"
+        ReleasedDate: "Date de publication"
     tag:
         Title: "Titre"
         Photo: "Photo"

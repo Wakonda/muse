@@ -316,14 +316,8 @@ class QuoteAdminController extends AbstractController
 			else {
 				switch(base64_encode($url_array['host']))
 				{
-					case 'Y2l0YXRpb24tY2VsZWJyZS5sZXBhcmlzaWVuLmZy':
-						if(!isset($req["biography"]) or empty($req["biography"]))
-							$form->get("biography")->addError(new FormError($translator->trans((new Assert\NotBlank())->message, [], 'validators')));
-
-						// if(!isset($req["source"]) or empty($req["source"]))
-							// $form->get("source")->addError(new FormError($translator->trans((new Assert\NotBlank())->message, [], 'validators')));
-						break;
 					case 'ZXZlbmUubGVmaWdhcm8uZnI=':
+					case 'Y2l0YXRpb24tY2VsZWJyZS5sZXBhcmlzaWVuLmZy':
 						if(!isset($req["biography"]) or empty($req["biography"]))
 							$form->get("biography")->addError(new FormError($translator->trans((new Assert\NotBlank())->message, [], 'validators')));
 						break;
@@ -345,7 +339,7 @@ class QuoteAdminController extends AbstractController
 
 			$dom = new \simple_html_dom();
 			$dom->load($html);
-
+die("ok");
 			switch(base64_encode($url_array['host']))
 			{
 				case 'Y2l0YXRpb24tY2VsZWJyZS5sZXBhcmlzaWVuLmZy':

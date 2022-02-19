@@ -85,7 +85,7 @@ class Source
 		return $this->title;
 	}
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -111,9 +111,9 @@ class Source
         return $this->slug;
     }
 
-    public function setSlug()
+    public function setSlug(bool $forceReload = false)
     {
-		if(empty($this->slug))
+		if(empty($this->slug) or $forceReload)
 			$this->slug = GenericFunction::slugify($this->title);
     }
 

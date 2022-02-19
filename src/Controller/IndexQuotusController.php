@@ -46,6 +46,7 @@ class IndexQuotusController extends AbstractController
      */
     public function indexAction(Request $request)
     {
+		dd($GLOBALS);
 		$entityManager = $this->getDoctrine()->getManager();
 
 		$form = $this->createFormIndexSearch($request->getLocale(), null);

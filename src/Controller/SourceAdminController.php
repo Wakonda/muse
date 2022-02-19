@@ -168,6 +168,7 @@ class SourceAdminController extends AbstractController
 		$form = $this->genericCreateForm($language->getAbbreviation(), $entity);
 		$form->handleRequest($request);
 		
+		$entity->setSlug(true);
 		$this->checkForDoubloon($translator, $entity, $form);
 
 		if($form->isValid())

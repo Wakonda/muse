@@ -64,6 +64,7 @@ class BiographyType extends AbstractType
 				'placeholder' => 'main.field.ChooseAnOption'
 			))
 			->add('type', ChoiceType::class, [
+				'label' => 'admin.biography.Type',
 				'required' => true,
 				'choices'  => [
 					Biography::AUTHOR_CANONICAL => Biography::AUTHOR,
