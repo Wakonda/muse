@@ -157,7 +157,7 @@
 		</div>
 	</div>
 	
-	{% if entity.images is not empty %}
+	{#{% if entity.images is not empty %}
 	<div class="card mt-2">
 		<div class="card-header" role="tab" id="headingPinterest">
 			<a href="#" role="button" data-toggle="collapse" data-target="#collapsePinterest" aria-expanded="true" aria-controls="collapseOne">
@@ -180,7 +180,7 @@
 			</div>
 		</div>
 	</div>
-	{% endif %}
+	{% endif %}#}
 	<hr>
 	<a href="{{ path('app_poemadmin_index') }}"><i class="fas fa-list"></i> {{ 'admin.index.List'|trans }}</a> - 
 	<a href="{{ path('app_poemadmin_edit', { 'id' : entity.id }) }}">

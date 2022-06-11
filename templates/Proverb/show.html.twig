@@ -124,30 +124,6 @@
 		</div>
 	</div>
 
-	{% if entity.images is not empty %}
-	<div class="card mt-2">
-		<div class="card-header" role="tab" id="headingPinterest">
-			<a href="#" role="button" data-toggle="collapse" data-target="#collapsePinterest" aria-expanded="true" aria-controls="collapseOne">
-			<i class="fab fa-pinterest" aria-hidden="true"></i> Pinterest
-			</a>
-		</div>
-		<div id="collapsePinterest" class="collapse" aria-labelledby="headingTwitter" aria-expanded="true">
-			<div class="card-body">
-				<form action="{{ path('app_proverbadmin_pinterest', {'id': entity.id}) }}" method="post">
-					<div class="row mb-3">
-						{% for proverbImage in entity.images %}
-							<div class="col-md-4 mb-10"><div class="thumbnail" role="button"><img src="{{ absolute_url(asset(constant('\\App\\Entity\\Proverb::PATH_FILE')~proverbImage.image)) }}" data-id="{{ proverbImage.id }}"></div></div>
-						{% endfor %}
-					</div>
-					<input type="hidden" name="image_id_pinterest" id="image_pinterest">
-					<textarea id="pinterest_area" name="pinterest_area" rows="3" cols="70" class="form-control">{{ entity.text|raw }} #{{ ('admin.index.Proverb'|trans)|lower }} #{{ entity.country.title|replace({'-': '', ' ':''}) }}</textarea>
-					<br>
-					<input value="{{ 'admin.socialNetwork.Send'|trans }}" id="tweet" type="submit" class="btn btn-outline-secondary">
-				</form>
-			</div>
-		</div>
-	</div>
-
 	<div class="card mt-2">
 		<div class="card-header role="tab" id="headingFacebook">
 			<a href="#" role="button" data-toggle="collapse" data-target="#collapseFacebook" aria-expanded="true" aria-controls="collapseOne">
@@ -170,7 +146,31 @@
 			</div>
 		</div>
 	</div>
-	{% endif %}
+
+	{#{% if entity.images is not empty %}
+	<div class="card mt-2">
+		<div class="card-header" role="tab" id="headingPinterest">
+			<a href="#" role="button" data-toggle="collapse" data-target="#collapsePinterest" aria-expanded="true" aria-controls="collapseOne">
+			<i class="fab fa-pinterest" aria-hidden="true"></i> Pinterest
+			</a>
+		</div>
+		<div id="collapsePinterest" class="collapse" aria-labelledby="headingTwitter" aria-expanded="true">
+			<div class="card-body">
+				<form action="{{ path('app_proverbadmin_pinterest', {'id': entity.id}) }}" method="post">
+					<div class="row mb-3">
+						{% for proverbImage in entity.images %}
+							<div class="col-md-4 mb-10"><div class="thumbnail" role="button"><img src="{{ absolute_url(asset(constant('\\App\\Entity\\Proverb::PATH_FILE')~proverbImage.image)) }}" data-id="{{ proverbImage.id }}"></div></div>
+						{% endfor %}
+					</div>
+					<input type="hidden" name="image_id_pinterest" id="image_pinterest">
+					<textarea id="pinterest_area" name="pinterest_area" rows="3" cols="70" class="form-control">{{ entity.text|raw }} #{{ ('admin.index.Proverb'|trans)|lower }} #{{ entity.country.title|replace({'-': '', ' ':''}) }}</textarea>
+					<br>
+					<input value="{{ 'admin.socialNetwork.Send'|trans }}" id="tweet" type="submit" class="btn btn-outline-secondary">
+				</form>
+			</div>
+		</div>
+	</div>
+	{% endif %}#}
 	<hr>
 	<a href="{{ path('app_proverbadmin_index') }}"><i class="fas fa-list"></i> {{ 'admin.index.List'|trans }}</a> - <a href="{{ path('app_proverbadmin_edit', { 'id' : entity.id }) }}"><i class="fas fa-edit"></i> {{ 'admin.index.Update'|trans }}</a> - <a href="{{ path('app_proverbadmin_new') }}"><i class="fas fa-plus-square"></i> {{ 'admin.index.Create'|trans }}</a> | <a href="{{ path('app_proverbadmin_new', {countryId: entity.country.id}) }}"> {{ 'admin.proverb.ForSameCountry'|trans }}</a>
 {% endblock %}

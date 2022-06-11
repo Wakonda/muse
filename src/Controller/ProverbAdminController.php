@@ -476,7 +476,7 @@ class ProverbAdminController extends AbstractController
 		$i = 0;
 
 		foreach($boards as $board) {
-			if($pinterestBoards[$board["name"]] == $entity->getLanguage()->getAbbreviation()) {
+			if(!isset($pinterestBoards[$board["name"]]) or $pinterestBoards[$board["name"]] == $entity->getLanguage()->getAbbreviation()) {
 				break;
 			}
 			$i++;
@@ -490,7 +490,7 @@ class ProverbAdminController extends AbstractController
 			return $this->redirect($this->generateUrl("app_proverbadmin_show", array("id" => $id)));
 		}
 			
-		$bot->pins->create($request->getUriForPath('/'.Proverb::PATH_FILE.$proverbImage->getImage()), $boards[$i]['id'], $request->request->get("pinterest_area"), $this->generateUrl("read", ["id" => $entity->getId(), "slug" => $entity->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL));
+		$bot->pins->create($request->getUriForPath('/'.Proverb::PATH_FILE.$proverbImage->getImage()), $boards[$i]['id'], $request->request->get("pinterest_area"), $this->generateUrl("app_indexproverbius_read", ["id" => $entity->getId(), "slug" => $entity->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL));
 		
 		if(empty($bot->getLastError())) {
 			$session->getFlashBag()->add('message', "Pinterest - ".$translator->trans("admin.index.SentSuccessfully"));
@@ -512,17 +512,26 @@ class ProverbAdminController extends AbstractController
 	{
 		$entityManager = $this->getDoctrine()->getManager();
 		
-		$proverbImage = $entityManager->getRepository(ProverbImage::class)->find($request->request->get("image_id_facebook"));
-		$url = $this->generateUrl("app_indexproverbius_read", ["id" => $id, "slug" => $proverbImage->getProverb()->getSlug(), "idImage" => $proverbImage->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+		$proverbImage = null;
+
+		if(!empty($request->request->get("image_id_facebook"))) {
+			$proverbImage = $entityManager->getRepository(ProverbImage::class)->find($request->request->get("image_id_facebook"));
+			$url = $this->generateUrl("app_indexproverbius_read", ["id" => $id, "slug" => $proverbImage->getProverb()->getSlug(), "idImage" => $proverbImage->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+		} else {
+			$proverb = $entityManager->getRepository(Proverb::class)->find($id);
+			$url = $this->generateUrl("app_indexproverbius_read", ["id" => $id, "slug" => $proverb->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL);
+		}
 		
 		$res = json_decode($facebook->postMessage($url, $request->request->get("facebook_area")));
 		
 		if(property_exists($res, "error")) {
 			$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentError")." (".$res->error->message.")");
 		} else {
-			$proverbImage->addSocialNetwork("Facebook");
-			$entityManager->persist($proverbImage);
-			$entityManager->flush();
+			if(!empty($proverbImage)) {
+				$proverbImage->addSocialNetwork("Facebook");
+				$entityManager->persist($proverbImage);
+				$entityManager->flush();	
+			}
 
 			$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentSuccessfully"));
 		}

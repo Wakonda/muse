@@ -535,17 +535,26 @@ die("ok");
 	{
 		$entityManager = $this->getDoctrine()->getManager();
 		
-		$quoteImage = $entityManager->getRepository(QuoteImage::class)->find($request->request->get("image_id_facebook"));
-		$url = $this->generateUrl("app_indexquotus_read", ["id" => $id, "slug" => $quoteImage->getQuote()->getSlug(), "idImage" => $quoteImage->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+		$quoteImage = null;
+
+		if(!empty($request->request->get("image_id_facebook"))) {
+			$quoteImage = $entityManager->getRepository(QuoteImage::class)->find($request->request->get("image_id_facebook"));
+			$url = $this->generateUrl("app_indexquotus_read", ["id" => $id, "slug" => $quoteImage->getQuote()->getSlug(), "idImage" => $quoteImage->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+		} else {
+			$quote = $entityManager->getRepository(Quote::class)->find($id);
+			$url = $this->generateUrl("app_indexquotus_read", ["id" => $id, "slug" => $quote->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL);
+		}
 
 		$res = json_decode($facebook->postMessage($url, $request->request->get("facebook_area")));
 		
 		if(property_exists($res, "error")) {
 			$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentError")." (".$res->error->message.")");
 		} else {
-			$quoteImage->addSocialNetwork("Facebook");
-			$entityManager->persist($quoteImage);
-			$entityManager->flush();
+			if(!empty($quoteImage)) {
+				$quoteImage->addSocialNetwork("Facebook");
+				$entityManager->persist($quoteImage);
+				$entityManager->flush();
+			}
 
 			$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentSuccessfully"));
 		}
