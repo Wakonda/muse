@@ -163,7 +163,7 @@
 						{% endfor %}
 					</div>
 					<input type="hidden" name="image_id_facebook" id="image_facebook">
-					<textarea id="twitter_area" name="facebook_area" rows="3" cols="70" class="form-control">{{ entity.text|raw }} #proverbe #{{ entity.country.title|replace({'-': '', ' ':''}) }} </textarea>
+					<textarea id="twitter_area" name="facebook_area" rows="3" cols="70" class="form-control">{{ entity.text|raw }} #{{ ('admin.index.Proverb'|trans)|lower }} #{{ entity.country.title|replace({'-': '', ' ':''}) }} </textarea>
 					<br>
 					<input value="{{ 'admin.socialNetwork.Send'|trans }}" id="tweet" type="submit" class="btn btn-outline-secondary">
 				</form>

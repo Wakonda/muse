@@ -20,28 +20,64 @@
 		tarteaucitronForceLanguage = "{{ app.request.locale }}";
 		
         tarteaucitron.init({
-    	  "privacyUrl": "", /* Privacy policy url */
+			"privacyUrl": "", /* Privacy policy url */
+			"bodyPosition": "bottom", /* or top to bring it as first element for accessibility */
 
-    	  "hashtag": "#tarteaucitron", /* Open the panel with this hashtag */
-    	  "cookieName": "tarteaucitron", /* Cookie name */
-    
-    	  "orientation": "middle", /* Banner position (top - bottom) */
-    	  "showAlertSmall": true, /* Show the small banner on bottom right */
-    	  "cookieslist": true, /* Show the cookie list */
+			"hashtag": "#tarteaucitron", /* Open the panel with this hashtag */
+			"cookieName": "tarteaucitron", /* Cookie name */
 
-    	  "adblocker": false, /* Show a Warning if an adblocker is detected */
-    	  "AcceptAllCta" : true, /* Show the accept all button when highPrivacy on */
-    	  "highPrivacy": true, /* Disable auto consent */
-    	  "handleBrowserDNTRequest": false, /* If Do Not Track == 1, disallow all */
+			"orientation": "middle", /* Banner position (top - bottom - middle - popup) */
 
-    	  "removeCredit": false, /* Remove credit link */
-    	  "moreInfoLink": true, /* Show more info link */
-    	  "useExternalCss": false, /* If false, the tarteaucitron.css file will be loaded */
-    	  "readmoreLink": "/cookiespolicy" /* Change the default readmore link */
+			"groupServices": false, /* Group services by category */
+
+			"showAlertSmall": false, /* Show the small banner on bottom right */
+			"cookieslist": false, /* Show the cookie list */
+
+			"showIcon": true, /* Show cookie icon to manage cookies */
+			// "iconSrc": "", /* Optionnal: URL or base64 encoded image */
+			"iconPosition": "BottomRight", /* Position of the icon between BottomRight, BottomLeft, TopRight and TopLeft */
+
+			"adblocker": true, /* Show a Warning if an adblocker is detected */
+
+			"DenyAllCta" : true, /* Show the deny all button */
+			"AcceptAllCta" : true, /* Show the accept all button when highPrivacy on */
+			"highPrivacy": true, /* HIGHLY RECOMMANDED Disable auto consent */
+
+			"handleBrowserDNTRequest": false, /* If Do Not Track == 1, disallow all */
+
+			"removeCredit": false, /* Remove credit link */
+			"moreInfoLink": true, /* Show more info link */
+			"useExternalCss": false, /* If false, the tarteaucitron.css file will be loaded */
+
+			"readmoreLink": "/cookiespolicy", /* Change the default readmore link */
+
+			"mandatory": true /* Show a message about mandatory cookies */
         });
         </script>
         <script type="text/javascript">
         (tarteaucitron.job = tarteaucitron.job || []).push('adsense');
+
+		
+		document.addEventListener("adsense_added", function(e) {
+    console.log(e);let cookie = document.cookie.split(';').reduce((cookieObject, cookieString) => {
+   		let splitCookie = cookieString.split('=')
+   		try {
+   		  cookieObject[splitCookie[0].trim()] = decodeURIComponent(splitCookie[1])
+   		} catch (error) {
+   			cookieObject[splitCookie[0].trim()] = splitCookie[1]
+   		}
+   		return cookieObject
+   	}, [])
+    console.log(cookie);
+	
+	console.log(parseCookie(document.cookie))
+});
+		document.addEventListener("adsense_allowed", function(e) {
+    console.log(e);
+});
+		document.addEventListener("adsense_disallowed", function(e) {
+    console.log(e);
+});
         </script>
 		<!-- end GDPR -->
 

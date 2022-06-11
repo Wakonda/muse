@@ -27,6 +27,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Abraham\TwitterOAuth\TwitterOAuth;
 use seregazhuk\PinterestBot\Factories\PinterestBot;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Service\Facebook;
 
 require_once __DIR__.'/../../vendor/simple_html_dom.php';
 
@@ -507,47 +508,23 @@ class ProverbAdminController extends AbstractController
     /**
      * @Route("/facebook/{id}")
      */
-	public function facebookAction(Request $request, TranslatorInterface $translator, $id)
-	{		
-		if($_ENV["FACEBOOK_APP_ENV"] == "dev")
-		{
-			// TEST FACEBOOK
-			$fb = new \Facebook\Facebook([
-			  'app_id' => $_ENV["FACEBOOK_DEV_APP_ID"],
-			  'app_secret' => $_ENV["FACEBOOK_DEV_APP_SECRET"],
-			  'default_graph_version' => 'v2.10'
-			]);
-			
-			$userId = $_ENV["FACEBOOK_DEV_USER_ID"];
-			$token = $_ENV["FACEBOOK_DEV_TOKEN"];
-			$pageId = $_ENV["FACEBOOK_DEV_PAGE_ID"];
-			
-			$response = $fb->get("/".$pageId."?fields=access_token", $token);
-			
-			$accessTokenPage = $response->getDecodedBody()['access_token'];
-			
-			$entityManager = $this->getDoctrine()->getManager();
-			
-			$proverbImage = $entityManager->getRepository(ProverbImage::class)->find($request->request->get("image_id_facebook"));
-			
-			$data = [
-				'caption' => $request->request->get("facebook_area"),
-				'url' => $request->getUriForPath('/'.Proverb::PATH_FILE.$proverbImage->getImage())
-			];
-			
-			try {
-				$response = $fb->post('/'.$pageId.'/photos', $data, $accessTokenPage);
+	public function facebookAction(Request $request, TranslatorInterface $translator, Facebook $facebook, SessionInterface $session, $id)
+	{
+		$entityManager = $this->getDoctrine()->getManager();
+		
+		$proverbImage = $entityManager->getRepository(ProverbImage::class)->find($request->request->get("image_id_facebook"));
+		$url = $this->generateUrl("app_indexproverbius_read", ["id" => $id, "slug" => $proverbImage->getProverb()->getSlug(), "idImage" => $proverbImage->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+		
+		$res = json_decode($facebook->postMessage($url, $request->request->get("facebook_area")));
+		
+		if(property_exists($res, "error")) {
+			$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentError")." (".$res->error->message.")");
+		} else {
+			$proverbImage->addSocialNetwork("Facebook");
+			$entityManager->persist($proverbImage);
+			$entityManager->flush();
 
-				$proverbImage->addSocialNetwork("Facebook");
-				$entityManager->persist($proverbImage);
-				$entityManager->flush();
-				
-				$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentSuccessfully"));
-			} catch(Facebook\Exceptions\FacebookResponseException $e) {
-				$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentError"));
-			} catch(Facebook\Exceptions\FacebookSDKException $e) {
-				$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentError"));
-			}
+			$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentSuccessfully"));
 		}
 
 		return $this->redirect($this->generateUrl("app_proverbadmin_show", ["id" => $id]));

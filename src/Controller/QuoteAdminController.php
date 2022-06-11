@@ -31,6 +31,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Abraham\TwitterOAuth\TwitterOAuth;
 use seregazhuk\PinterestBot\Factories\PinterestBot;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Service\Facebook;
 
 require_once __DIR__.'/../../vendor/simple_html_dom.php';
 
@@ -525,6 +526,31 @@ die("ok");
 			$session->getFlashBag()->add('message', $bot->getLastError());
 	
 		return $this->redirect($this->generateUrl("app_quoteadmin_show", array("id" => $id)));
+	}
+
+    /**
+     * @Route("/facebook/{id}")
+     */
+	public function facebookAction(Request $request, TranslatorInterface $translator, Facebook $facebook, SessionInterface $session, $id)
+	{
+		$entityManager = $this->getDoctrine()->getManager();
+		
+		$quoteImage = $entityManager->getRepository(QuoteImage::class)->find($request->request->get("image_id_facebook"));
+		$url = $this->generateUrl("app_indexquotus_read", ["id" => $id, "slug" => $quoteImage->getQuote()->getSlug(), "idImage" => $quoteImage->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+
+		$res = json_decode($facebook->postMessage($url, $request->request->get("facebook_area")));
+		
+		if(property_exists($res, "error")) {
+			$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentError")." (".$res->error->message.")");
+		} else {
+			$quoteImage->addSocialNetwork("Facebook");
+			$entityManager->persist($quoteImage);
+			$entityManager->flush();
+
+			$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentSuccessfully"));
+		}
+
+		return $this->redirect($this->generateUrl("app_quoteadmin_show", ["id" => $id]));
 	}
 
     /**

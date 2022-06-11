@@ -32,7 +32,7 @@ use MatthiasMullie\Minify;
 
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
-
+use Symfony\Component\Routing\Generator\UrlGenerator;
 /**
  * @Route(
  *     host="quotus.wakonda.{domain}",
@@ -46,7 +46,6 @@ class IndexQuotusController extends AbstractController
      */
     public function indexAction(Request $request)
     {
-		dd($GLOBALS);
 		$entityManager = $this->getDoctrine()->getManager();
 
 		$form = $this->createFormIndexSearch($request->getLocale(), null);

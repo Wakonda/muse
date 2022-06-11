@@ -129,6 +129,29 @@
 		</div>
 	</div>
 
+	<div class="card mt-2">
+		<div class="card-header role="tab" id="headingFacebook">
+			<a href="#" role="button" data-toggle="collapse" data-target="#collapseFacebook" aria-expanded="true" aria-controls="collapseOne">
+			<i class="fab fa-facebook-square" aria-hidden="true"></i> Facebook
+			</a>
+		</div>
+		<div id="collapseFacebook" class="collapse" aria-labelledby="headingFacebook" aria-expanded="true">
+			<div class="card-body">
+				<form action="{{ path('app_quoteadmin_facebook', {'id': entity.id}) }}" method="post">
+					<div class="row mb-3">
+						{% for quoteImage in entity.images %}
+							<div class="col-md-4 mb-10"><div class="thumbnail" role="button"><img src="{{ absolute_url(asset(constant('\\App\\Entity\\Quote::PATH_FILE')~quoteImage.image)) }}" data-id="{{ quoteImage.id }}"></div></div>
+						{% endfor %}
+					</div>
+					<input type="hidden" name="image_id_facebook" id="image_facebook">
+					<textarea id="twitter_area" name="facebook_area" rows="3" cols="70" class="form-control">{{ entity.text|raw }} #{{ ('admin.index.Quote'|trans)|lower }}</textarea>
+					<br>
+					<input value="{{ 'admin.socialNetwork.Send'|trans }}" id="tweet" type="submit" class="btn btn-outline-secondary">
+				</form>
+			</div>
+		</div>
+	</div>
+
 	{% if entity.images is not empty %}
 	<div class="card mt-2">
 		<div class="card-header" role="tab" id="headingPinterest">
