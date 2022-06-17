@@ -438,40 +438,49 @@ die("ok");
     /**
      * @Route("/twitter/{id}")
      */
-	public function twitterAction(Request $request, SessionInterface $session, TranslatorInterface $translator, $id)
+	public function twitterAction(Request $request, SessionInterface $session, TranslatorInterface $translator, Twitter $twitter, $id)
 	{
 		$entityManager = $this->getDoctrine()->getManager();
 		$entity = $entityManager->getRepository(Quote::class)->find($id);
 
-		$locale = strtoupper($entity->getLanguage()->getAbbreviation());
+		// $locale = strtoupper($entity->getLanguage()->getAbbreviation());
 
-		$consumer_key = $_ENV["TWITTER_CONSUMER_KEY_".$locale];
-		$consumer_secret = $_ENV["TWITTER_CONSUMER_SECRET_".$locale];
-		$access_token = $_ENV["TWITTER_ACCESS_TOKEN_".$locale];
-		$access_token_secret = $_ENV["TWITTER_ACCESS_TOKEN_SECRET_".$locale];
+		// $consumer_key = $_ENV["TWITTER_CONSUMER_KEY_".$locale];
+		// $consumer_secret = $_ENV["TWITTER_CONSUMER_SECRET_".$locale];
+		// $access_token = $_ENV["TWITTER_ACCESS_TOKEN_".$locale];
+		// $access_token_secret = $_ENV["TWITTER_ACCESS_TOKEN_SECRET_".$locale];
 
-		$connection = new TwitterOAuth($consumer_key, $consumer_secret, $access_token, $access_token_secret);
+		// $connection = new TwitterOAuth($consumer_key, $consumer_secret, $access_token, $access_token_secret);
+		
+		$message = $request->request->get("twitter_area")." ".$this->generateUrl("app_indexquotus_read", array("id" => $id, 'slug' => $entity->getSlug()), UrlGeneratorInterface::ABSOLUTE_URL);
 
-		$parameters = [];
-		$parameters["status"] = $request->request->get("twitter_area")." ".$this->generateUrl("app_indexquotus_read", array("id" => $id, 'slug' => $entity->getSlug()), UrlGeneratorInterface::ABSOLUTE_URL);
+		// $parameters = [];
+		// $parameters["status"] = $message;
 		$imageId = $request->request->get('image_id_tweet');
 
 		$quoteImage = null;
+		$image = null;
 
 		if(!empty($imageId)) {
 			$quoteImage = $entityManager->getRepository(QuoteImage::class)->find($imageId);
-			$media = $connection->upload('media/upload', array('media' => Quote::PATH_FILE.$quoteImage->getImage()));
-			$parameters['media_ids'] = implode(',', array($media->media_id_string));
+			$image = Quote::PATH_FILE.$quoteImage->getImage();
+			
+			// $media = $connection->upload('media/upload', array('media' => Quote::PATH_FILE.$quoteImage->getImage()));
+			// $parameters['media_ids'] = implode(',', array($media->media_id_string));
 		}
+		
+		$statues = $twitter->sendTweet($message, $image, $locale);
 
-		$statues = $connection->post("statuses/update", $parameters);
+		// $statues = $connection->post("statuses/update", $parameters);
 	
 		if(isset($statues->errors) and !empty($statues->errors))
 			$session->getFlashBag()->add('message', "Twitter - ".$translator->trans("admin.index.SentError"));
 		else {
-			$quoteImage->addSocialNetwork("Twitter");
-			$entityManager->persist($quoteImage);
-			$entityManager->flush();
+			if(!empty($quoteImage)) {
+				$quoteImage->addSocialNetwork("Twitter");
+				$entityManager->persist($quoteImage);
+				$entityManager->flush();
+			}
 		
 			$session->getFlashBag()->add('message', "Twitter - ".$translator->trans("admin.index.SentSuccessfully"));
 		}
@@ -536,16 +545,17 @@ die("ok");
 		$entityManager = $this->getDoctrine()->getManager();
 		
 		$quoteImage = null;
+		
+		$quote = $entityManager->getRepository(Quote::class)->find($id);
 
 		if(!empty($request->request->get("image_id_facebook"))) {
 			$quoteImage = $entityManager->getRepository(QuoteImage::class)->find($request->request->get("image_id_facebook"));
 			$url = $this->generateUrl("app_indexquotus_read", ["id" => $id, "slug" => $quoteImage->getQuote()->getSlug(), "idImage" => $quoteImage->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 		} else {
-			$quote = $entityManager->getRepository(Quote::class)->find($id);
 			$url = $this->generateUrl("app_indexquotus_read", ["id" => $id, "slug" => $quote->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL);
 		}
 
-		$res = json_decode($facebook->postMessage($url, $request->request->get("facebook_area")));
+		$res = json_decode($facebook->postMessage($url, $request->request->get("facebook_area"), $quote->getLanguage()->getAbbreviation()));
 		
 		if(property_exists($res, "error")) {
 			$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentError")." (".$res->error->message.")");

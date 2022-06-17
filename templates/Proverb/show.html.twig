@@ -100,6 +100,7 @@
 		</div>
 	</div>
 	
+	{% if isTwitterAvailable(entity) %}
 	<div class="card mt-2">
 		<div class="card-header" role="tab" id="headingTwitter">
 			<a href="#" role="button" data-toggle="collapse" data-target="#collapseTwitter" aria-expanded="true" aria-controls="collapseOne">
@@ -123,7 +124,9 @@
 			</div>
 		</div>
 	</div>
+	{% endif %}
 
+	{% if isFacebookAvailable(entity) %}
 	<div class="card mt-2">
 		<div class="card-header role="tab" id="headingFacebook">
 			<a href="#" role="button" data-toggle="collapse" data-target="#collapseFacebook" aria-expanded="true" aria-controls="collapseOne">
@@ -146,6 +149,7 @@
 			</div>
 		</div>
 	</div>
+	{% endif %}
 
 	{#{% if entity.images is not empty %}
 	<div class="card mt-2">

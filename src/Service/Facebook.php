@@ -4,15 +4,23 @@ namespace App\Service;
 
 class Facebook {
 	// https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived
-	private $apiGraphVersion = "v14.0";
+
+	private $FACEBOOK_PAGE_ID = null;
+	private $FACEBOOK_APP_ID = null;
+	private $FACEBOOK_SECRET_KEY = null;
+	private $FACEBOOK_GRAPH_VERSION = null;
+	private $FACEBOOK_USER_ID = null;
+	private $FACEBOOK_ACCESS_TOKEN = null;
 	
-	public function getLongLiveAccessToken() {
+	public function getLongLiveAccessToken(string $locale) {
+		$this->setLanguage($locale);
+		
 		$accessToken = ""; // Token généré à partir de la page : https://developers.facebook.com/tools/explorer/
-		$pageId = $_ENV["FACEBOOK_PAGE_ID"];
-		$appId = $_ENV["FACEBOOK_APP_ID"];
-		$secretKey = $_ENV["FACEBOOK_SECRET_KEY"];
-		$apiGraphVersion = $_ENV["FACEBOOK_GRAPH_VERSION"];
-		$userId = $_ENV["FACEBOOK_USER_ID"]; // GET me?fields=id,name
+		$pageId = $this->FACEBOOK_PAGE_ID;
+		$appId = $this->FACEBOOK_APP_ID;
+		$secretKey = $this->FACEBOOK_SECRET_KEY;
+		$apiGraphVersion = $this->FACEBOOK_GRAPH_VERSION;
+		$userId = $this->FACEBOOK_USER_ID; // GET me?fields=id,name
 		
 		$ch = curl_init();
 
@@ -50,8 +58,10 @@ class Facebook {
 		return json_decode($result);
 	}
 
-	public function postMessage(string $url, string $message) {
-		$pageId = $_ENV["FACEBOOK_PAGE_ID"];
+	public function postMessage(string $url, string $message, string $locale) {
+		$this->setLanguage($locale);
+		
+		$pageId = $this->FACEBOOK_PAGE_ID;
 
 		$url = urlencode($url);
 		
@@ -59,7 +69,7 @@ class Facebook {
 
 		$message = urlencode($message);
 		
-		$llt = $_ENV["FACEBOOK_ACCESS_TOKEN"];
+		$llt = $this->FACEBOOK_ACCESS_TOKEN;
 
 		curl_setopt($ch, CURLOPT_URL, "https://graph.facebook.com/${pageId}/feed?message=${message}&link=${url}&access_token=".$llt);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -76,5 +86,25 @@ class Facebook {
 		curl_close($ch);
 
 		return $result;
+	}
+
+	public function setLanguage($language)
+	{
+		switch($language)
+		{
+			case "fr":
+				$this->FACEBOOK_PAGE_ID = $_ENV["FACEBOOK_FR_PAGE_ID_FR"];
+				$this->FACEBOOK_APP_ID = $_ENV["FACEBOOK_FR_APP_ID_FR"];
+				$this->FACEBOOK_SECRET_KEY = $_ENV["FACEBOOK_FR_SECRET_KEY_FR"];
+				$this->FACEBOOK_GRAPH_VERSION = $_ENV["FACEBOOK_FR_GRAPH_VERSION_FR"];
+				$this->FACEBOOK_USER_ID = $_ENV["FACEBOOK_FR_USER_ID_FR"];
+				$this->FACEBOOK_ACCESS_TOKEN = $_ENV["FACEBOOK_FR_ACCESS_TOKEN_FR"];
+				break;
+		}
+	}
+
+	public function getLanguages()
+	{
+		return ["fr"];
 	}
 }

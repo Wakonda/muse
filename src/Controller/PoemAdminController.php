@@ -12,7 +12,7 @@ use App\Entity\PoeticForm;
 use App\Entity\Tag;
 use App\Form\Type\PoemType;
 use App\Form\Type\PoemFastType;
-use App\Form\Type\ImageGeneratorType;
+use App\Form\Type\ImagePoemGeneratorType;
 use App\Form\Type\PoemFastMultipleType;
 use App\Form\Type\PoemEditMultipleType;
 use App\Service\GenericFunction;
@@ -183,7 +183,7 @@ class PoemAdminController extends AbstractController
 		$entityManager = $this->getDoctrine()->getManager();
 		$entity = $entityManager->getRepository(Poem::class)->find($id);
 		
-		$imageGeneratorForm = $this->createForm(ImageGeneratorType::class);
+		$imageGeneratorForm = $this->createForm(ImagePoemGeneratorType::class);
 	
 		return $this->render('Poem/show.html.twig', array('entity' => $entity, 'imageGeneratorForm' => $imageGeneratorForm->createView()));
 	}
@@ -866,7 +866,7 @@ class PoemAdminController extends AbstractController
 		$entityManager = $this->getDoctrine()->getManager();
 		$entity = $entityManager->getRepository(Poem::class)->find($id);
 		
-        $imageGeneratorForm = $this->createForm(ImageGeneratorType::class);
+        $imageGeneratorForm = $this->createForm(ImagePoemGeneratorType::class);
         $imageGeneratorForm->handleRequest($request);
 		$data = $imageGeneratorForm->getData();
 		

@@ -23,8 +23,7 @@ class ImageGeneratorType extends AbstractType
 			->add('version', ChoiceType::class, array(
                 "required" => true, 'label' => 'admin.imageGenerator.Version', "choices" => ["V1" => "v1", "V2" => "v2"]
             ))
-			->add('save', SubmitType::class, array('label' => 'admin.main.Save', "attr" => array("class" => "btn btn-primary")))
-			;
+			->add('save', SubmitType::class, array('label' => 'admin.main.Save', "attr" => array("class" => "btn btn-primary")));
     }
 
     public function getName()

@@ -44,7 +44,9 @@ class MuseExtension extends AbstractExtension
 			new TwigFunction('text_month', array($this, 'textMonth')),
 			new TwigFunction('date_biography_letter', array($this, 'dateBiographyLetter'), array('is_safe' => array('html'))),
 			new TwigFunction('date_letter', array($this, 'dateLetter'), array('is_safe' => array('html'))),
-			new TwigFunction('display_file', array($this, 'displayFileManagement'), array('is_safe' => array('html')))
+			new TwigFunction('display_file', array($this, 'displayFileManagement'), array('is_safe' => array('html'))),
+			new TwigFunction('isTwitterAvailable', array($this, 'isTwitterAvailable')),
+			new TwigFunction('isFacebookAvailable', array($this, 'isFacebookAvailable'))
 		);
 	}
 
@@ -238,5 +240,18 @@ class MuseExtension extends AbstractExtension
 		$arrayBCYear["en"] = "BC";
 
 		return [$arrayBCYear, $arrayMonth];
+	}
+
+	public function isTwitterAvailable($entity): bool
+	{
+		$api = new \App\Service\Twitter();
+		
+		return in_array($entity->getLanguage()->getAbbreviation(), $api->getLanguages());
+	}
+
+	public function isFacebookAvailable($entity): bool
+	{
+		$api = new \App\Service\Facebook();
+		return in_array($entity->getLanguage()->getAbbreviation(), $api->getLanguages());
 	}
 }

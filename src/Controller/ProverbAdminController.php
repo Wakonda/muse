@@ -513,16 +513,17 @@ class ProverbAdminController extends AbstractController
 		$entityManager = $this->getDoctrine()->getManager();
 		
 		$proverbImage = null;
+		
+		$proverb = $entityManager->getRepository(Proverb::class)->find($id);
 
 		if(!empty($request->request->get("image_id_facebook"))) {
 			$proverbImage = $entityManager->getRepository(ProverbImage::class)->find($request->request->get("image_id_facebook"));
 			$url = $this->generateUrl("app_indexproverbius_read", ["id" => $id, "slug" => $proverbImage->getProverb()->getSlug(), "idImage" => $proverbImage->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 		} else {
-			$proverb = $entityManager->getRepository(Proverb::class)->find($id);
 			$url = $this->generateUrl("app_indexproverbius_read", ["id" => $id, "slug" => $proverb->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL);
 		}
 		
-		$res = json_decode($facebook->postMessage($url, $request->request->get("facebook_area")));
+		$res = json_decode($facebook->postMessage($url, $request->request->get("facebook_area"), $proverb->getLanguage()->getAbbreviation()));
 		
 		if(property_exists($res, "error")) {
 			$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentError")." (".$res->error->message.")");
