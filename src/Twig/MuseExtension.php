@@ -46,7 +46,8 @@ class MuseExtension extends AbstractExtension
 			new TwigFunction('date_letter', array($this, 'dateLetter'), array('is_safe' => array('html'))),
 			new TwigFunction('display_file', array($this, 'displayFileManagement'), array('is_safe' => array('html'))),
 			new TwigFunction('isTwitterAvailable', array($this, 'isTwitterAvailable')),
-			new TwigFunction('isFacebookAvailable', array($this, 'isFacebookAvailable'))
+			new TwigFunction('isFacebookAvailable', array($this, 'isFacebookAvailable')),
+			new TwigFunction('advertising', array($this, 'advertising'))
 		);
 	}
 
@@ -253,5 +254,9 @@ class MuseExtension extends AbstractExtension
 	{
 		$api = new \App\Service\Facebook();
 		return in_array($entity->getLanguage()->getAbbreviation(), $api->getLanguages());
+	}
+	
+	public function advertising($maxWidth, $maxHeight) {
+		return $this->em->getRepository("App\Entity\Advertising")->getOneRandomAdsByWidthAndHeight($maxWidth, $maxHeight);
 	}
 }

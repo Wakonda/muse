@@ -13,9 +13,9 @@
 		<meta name="msvalidate.01" content="FB19BE8A55C1B235B4389DE2169412FA" />
 
 		<link rel="shortcut icon" href="{{ asset('photo/favicon.ico') }}">
+		<script src="{{ asset(minify_file('js/tarteaucitron.js/tarteaucitron.js')) }}"></script>
 
 		<!-- GDPR -->
-		<script src="{{ asset(minify_file('js/tarteaucitron.js/tarteaucitron.js')) }}"></script>
         <script type="text/javascript">
 		tarteaucitronForceLanguage = "{{ app.request.locale }}";
 		
@@ -55,29 +55,12 @@
         });
         </script>
         <script type="text/javascript">
-        (tarteaucitron.job = tarteaucitron.job || []).push('adsense');
+			(tarteaucitron.job = tarteaucitron.job || []).push('adsense');
 
-		
-		document.addEventListener("adsense_added", function(e) {
-    console.log(e);let cookie = document.cookie.split(';').reduce((cookieObject, cookieString) => {
-   		let splitCookie = cookieString.split('=')
-   		try {
-   		  cookieObject[splitCookie[0].trim()] = decodeURIComponent(splitCookie[1])
-   		} catch (error) {
-   			cookieObject[splitCookie[0].trim()] = splitCookie[1]
-   		}
-   		return cookieObject
-   	}, [])
-    console.log(cookie);
-	
-	console.log(parseCookie(document.cookie))
-});
-		document.addEventListener("adsense_allowed", function(e) {
-    console.log(e);
-});
-		document.addEventListener("adsense_disallowed", function(e) {
-    console.log(e);
-});
+
+			document.addEventListener("adsense_allowed", function(e) {
+				window.location.reload();
+			});
         </script>
 		<!-- end GDPR -->
 
@@ -123,6 +106,13 @@
 						<script>
 							 (adsbygoogle = window.adsbygoogle || []).push({});
 						</script>
+						
+						{% set ads = advertising(800, 100) %}
+						{% if ads is not empty %}
+						<div class="d-none advertising-alternative">
+							{{ ads.text|raw }}
+						</div>
+						{% endif %}
 					</div>
 				</hgroup>
 				<!-- Hgroup Element Ends Here -->
@@ -170,6 +160,13 @@
 						<script type="text/javascript">
 						(adsbygoogle = window.adsbygoogle || []).push({});
 						</script>
+
+						{% set ads = advertising(300, 300) %}
+						{% if ads is not empty %}
+						<div class="d-none advertising-alternative">
+							{{ ads.text|raw }}
+						</div>
+						{% endif %}
 					</nav>
 					
 					<nav class="sidebar">
@@ -239,6 +236,13 @@
 					<script>
 					(adsbygoogle = window.adsbygoogle || []).push({});
 					</script></div>
+					
+					{% set ads = advertising(800, 100) %}
+					{% if ads is not empty %}
+					<div class="d-none advertising-alternative">
+						{{ ads.text|raw }}
+					</div>
+					{% endif %}
 				</article>
 			</div>
 
@@ -263,6 +267,31 @@
 					language: '{{ app.request.locale }}'
 				});
 			});
+			
+			async function detectAdBlock() {
+			  let adBlockEnabled = false
+			  const googleAdUrl = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
+			  try {
+				await fetch(new Request(googleAdUrl)).catch(_ => adBlockEnabled = true)
+			  } catch (e) {
+				adBlockEnabled = true
+			  } finally {
+				console.log(adBlockEnabled, document.cookie)
+				if(document.cookie.includes("tarteaucitron=!adsense=true") && adBlockEnabled == false) {
+					for (let element of document.getElementsByClassName("advertising-alternative"))
+						element.classList.add("d-none");
+					for (let element of document.getElementsByClassName("adsbygoogle"))
+						element.classList.remove("d-none");
+				} else {
+					for (let element of document.getElementsByClassName("advertising-alternative"))
+						element.classList.remove("d-none");
+					for (let element of document.getElementsByClassName("adsbygoogle"))
+						element.classList.add("d-none");
+				}
+			  }
+			}
+			
+			detectAdBlock();
 		</script>
 		{% block script_additional %}
 		{% endblock %}

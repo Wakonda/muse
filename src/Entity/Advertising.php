@@ -9,6 +9,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Advertising
 {
+	const FOLDER = "advertising";
+	const PATH_FILE = "photo/".self::FOLDER."/";
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue

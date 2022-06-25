@@ -1,0 +1,16 @@
+{% extends sub_domain()~'_layout.html.twig' %}
+
+{% block head_title %}{{ 'menu.left.Admin'|trans }} - {{ 'admin.index.Advertising'|trans }}{% endblock %}
+{% block main_title %}{{ 'menu.left.Admin'|trans }} - {{ 'admin.index.Advertising'|trans }}{% endblock %}
+
+{% block script_additional %}
+	{% import "Index/macro.html.twig" as macro %}
+	{{ macro.redactor("app_advertisingadmin_wysiwyguploadfilegeneric") }}
+{% endblock %}
+
+{% block main_content %}
+	{% form_theme form 'Form/fields.html.twig' %}
+	{{ form_start(form, {'method' : 'post', 'action' : path('app_advertisingadmin_update', {'id' : entity.id }), 'attr': {'novalidate': 'novalidate'} }) }}
+		{% include "Advertising/_form.html.twig" with {'form' : form} %}
+	{{ form_end(form) }}
+{% endblock %}

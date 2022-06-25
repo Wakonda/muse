@@ -442,6 +442,12 @@ admin:
         State: "Etat"
         MultipleEdition: "Edition multiple"
         ChangesMadeSuccessfully: "Modifications apportées avec succès"
+        Advertising: "Publicité"
+    advertising:
+        Title: "Titre"
+        Text: "Texte"
+        Width: "Largeur"
+        Height: "Hauteur"
     error:
         UnknownURL: "URL inconnue"
     table:
