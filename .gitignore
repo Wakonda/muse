@@ -32,6 +32,7 @@
 /public/photo/tag/
 /public/photo/user/
 /public/photo/version/
+/public/photo/advertising/
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###

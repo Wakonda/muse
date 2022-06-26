@@ -24,13 +24,13 @@ class AdvertisingType extends AbstractType
 
         $builder
             ->add('title', TextType::class, array(
-                'constraints' => new Assert\NotBlank(), "label" => "admin.advertising.Title"
+                'constraints' => new Assert\NotBlank(), "label" => "admin.advertising.Title"
             ))
 			->add('text', TextareaType::class, array(
                 'required' => false, "label" => "admin.advertising.Text", 'attr' => array('class' => 'redactor')
             ))
-			->add('width', IntegerType::class, array("label" => "admin.advertising.Width", "required" => false))
-			->add('height', IntegerType::class, array("label" => "admin.advertising.Height", "required" => false))
+			->add('width', IntegerType::class, array("label" => "admin.advertising.Width", "required" => true, 'constraints' => new Assert\NotBlank()))
+			->add('height', IntegerType::class, array("label" => "admin.advertising.Height", "required" => true, 'constraints' => new Assert\NotBlank()))
 			->add('language', EntityType::class, array(
 				'label' => 'admin.form.Language', 
 				'class' => Language::class,
@@ -51,10 +51,10 @@ class AdvertisingType extends AbstractType
 	 */
 	public function configureOptions(OptionsResolver $resolver)
 	{
-		$resolver->setDefaults(array(
+		$resolver->setDefaults([
 			"data_class" => Advertising::class,
 			"locale" => null
-		));
+		]);
 	}
 	
     public function getName()
