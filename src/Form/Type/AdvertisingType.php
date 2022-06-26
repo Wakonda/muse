@@ -24,7 +24,7 @@ class AdvertisingType extends AbstractType
 
         $builder
             ->add('title', TextType::class, array(
-                'constraints' => new Assert\NotBlank(), "label" => "admin.advertising.Title"
+                'constraints' => new Assert\NotBlank(), "label" => "admin.advertising.Title"
             ))
 			->add('text', TextareaType::class, array(
                 'required' => false, "label" => "admin.advertising.Text", 'attr' => array('class' => 'redactor')
