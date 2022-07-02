@@ -56,6 +56,9 @@ main:
         NoPoem: "Aucune poésie encore ajoutée"
         NoProverb: "Aucun Proverbe encore ajouté"
         NoQuote: "Aucun Citation encore ajoutée"
+    donate:
+        DonateInCryptocurrency: "Faites un don en cryptomonnaie"
+        CryptocurrencyDonation: "Don en crypto"
     field:
         Title: "Titre"
         Keywords: "Mots-clés"

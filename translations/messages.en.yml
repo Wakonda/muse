@@ -56,6 +56,9 @@ main:
         NoPoem: "No Poems added yet"
         NoProverb: "No Proverbs added yet"
         NoQuote: "No Quotes added yet"
+    donate:
+        DonateInCryptocurrency: "Donate in cryptocurrency"
+        CryptocurrencyDonation: "Crypto donation"
     field:
         Title: "Title"
         Keywords: "Keywords"

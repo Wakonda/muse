@@ -47,7 +47,8 @@ class MuseExtension extends AbstractExtension
 			new TwigFunction('display_file', array($this, 'displayFileManagement'), array('is_safe' => array('html'))),
 			new TwigFunction('isTwitterAvailable', array($this, 'isTwitterAvailable')),
 			new TwigFunction('isFacebookAvailable', array($this, 'isFacebookAvailable')),
-			new TwigFunction('advertising', array($this, 'advertising'))
+			new TwigFunction('advertising', array($this, 'advertising')),
+			new TwigFunction('get_env', array($this, 'getEnv'))
 		);
 	}
 
@@ -258,5 +259,10 @@ class MuseExtension extends AbstractExtension
 	
 	public function advertising($maxWidth, $maxHeight) {
 		return $this->em->getRepository("App\Entity\Advertising")->getOneRandomAdsByWidthAndHeight($maxWidth, $maxHeight);
+	}
+
+	public function getEnv(string $varname): string
+	{
+		return $_ENV[$varname];
 	}
 }

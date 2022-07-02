@@ -56,6 +56,9 @@ main:
         NoPoem: "Nenhuma poesie aditada"
         NoProverb: "Nenhum provérbio adicionado ainda"
         NoQuote: "Nenhuma citação adicionada ainda"
+    donate:
+        DonateInCryptocurrency: "Doe em criptomoeda"
+        CryptocurrencyDonation: "Doação de criptomoeda"
     field:
         Title: "Título"
         Keywords: "Palavra-chave"

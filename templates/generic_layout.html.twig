@@ -180,7 +180,7 @@
 						</form>
 
 						<div class="text-center">
-							<button onclick="window.open('https://wakonda.guru/help_us#make-donation');" target="_blank" class="btn btn-sm btn-warning mt-3"><i class="fab fa-bitcoin" aria-hidden="true"></i> Bitcoin</button>
+						{% include 'index/_donate.html.twig' %}
 						</div>
 					</nav>
 					
@@ -276,7 +276,6 @@
 			  } catch (e) {
 				adBlockEnabled = true
 			  } finally {
-				console.log(adBlockEnabled, document.cookie)
 				if(document.cookie.includes("tarteaucitron=!adsense=true") && adBlockEnabled == false) {
 					for (let element of document.getElementsByClassName("advertising-alternative"))
 						element.classList.add("d-none");
