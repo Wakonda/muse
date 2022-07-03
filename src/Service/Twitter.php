@@ -11,7 +11,7 @@ class Twitter
 	private $OAUTH_TOKEN_SECRET = null;
 	private $TWITTER_USERNAME = null;
 
-	public function sendTweet(array $parameters, $image, string $locale)
+	public function sendTweet(string $message, $image, string $locale)
 	{
 		$this->setLanguage($locale);
 		$connection = new TwitterOAuth($this->CONSUMER_KEY, $this->CONSUMER_SECRET, $this->OAUTH_TOKEN, $this->OAUTH_TOKEN_SECRET);
@@ -31,19 +31,12 @@ class Twitter
 	{
 		switch($language)
 		{
-			case "en":
-				$this->CONSUMER_KEY = $_ENV["TWITTER_EN_CONSUMER_KEY"];
-				$this->CONSUMER_SECRET = $_ENV["TWITTER_EN_CONSUMER_SECRET"];
-				$this->OAUTH_TOKEN = $_ENV["TWITTER_EN_OAUTH_TOKEN"];
-				$this->OAUTH_TOKEN_SECRET = $_ENV["TWITTER_EN_OAUTH_TOKEN_SECRET"];
-				$this->TWITTER_USERNAME = "WakondaEn";
-				break;
 			case "fr":
-				$this->CONSUMER_KEY = $_ENV["TWITTER_FR_CONSUMER_KEY"];
-				$this->CONSUMER_SECRET = $_ENV["TWITTER_FR_CONSUMER_SECRET"];
-				$this->OAUTH_TOKEN = $_ENV["TWITTER_FR_OAUTH_TOKEN"];
-				$this->OAUTH_TOKEN_SECRET = $_ENV["TWITTER_FR_OAUTH_TOKEN_SECRET"];
-				$this->TWITTER_USERNAME = "Wakonda1";
+				$this->CONSUMER_KEY = $_ENV["TWITTER_CONSUMER_KEY_FR"];
+				$this->CONSUMER_SECRET = $_ENV["TWITTER_CONSUMER_SECRET_FR"];
+				$this->OAUTH_TOKEN = $_ENV["TWITTER_ACCESS_TOKEN_FR"];
+				$this->OAUTH_TOKEN_SECRET = $_ENV["TWITTER_ACCESS_TOKEN_SECRET_FR"];
+				$this->TWITTER_USERNAME = "poeticus12";
 				break;
 		}
 	}

@@ -28,10 +28,10 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
-use Abraham\TwitterOAuth\TwitterOAuth;
 use seregazhuk\PinterestBot\Factories\PinterestBot;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\Facebook;
+use App\Service\Twitter;
 
 require_once __DIR__.'/../../vendor/simple_html_dom.php';
 
@@ -443,8 +443,8 @@ die("ok");
 		$entityManager = $this->getDoctrine()->getManager();
 		$entity = $entityManager->getRepository(Quote::class)->find($id);
 
-		// $locale = strtoupper($entity->getLanguage()->getAbbreviation());
-
+		$locale = $entity->getLanguage()->getAbbreviation();
+// print_r($locale);die;
 		// $consumer_key = $_ENV["TWITTER_CONSUMER_KEY_".$locale];
 		// $consumer_secret = $_ENV["TWITTER_CONSUMER_SECRET_".$locale];
 		// $access_token = $_ENV["TWITTER_ACCESS_TOKEN_".$locale];
@@ -474,7 +474,7 @@ die("ok");
 		// $statues = $connection->post("statuses/update", $parameters);
 	
 		if(isset($statues->errors) and !empty($statues->errors))
-			$session->getFlashBag()->add('message', "Twitter - ".$translator->trans("admin.index.SentError"));
+			$session->getFlashBag()->add('message', "Twitter - ".$translator->trans("admin.index.SentError").json_encode($statues->errors));
 		else {
 			if(!empty($quoteImage)) {
 				$quoteImage->addSocialNetwork("Twitter");
