@@ -24,10 +24,10 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-use Abraham\TwitterOAuth\TwitterOAuth;
 use seregazhuk\PinterestBot\Factories\PinterestBot;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\Facebook;
+use App\Service\Twitter;
 
 require_once __DIR__.'/../../vendor/simple_html_dom.php';
 
@@ -410,35 +410,29 @@ class ProverbAdminController extends AbstractController
     /**
      * @Route("/twitter/{id}")
      */
-	public function twitterAction(Request $request, SessionInterface $session, TranslatorInterface $translator, $id)
+	public function twitterAction(Request $request, SessionInterface $session, TranslatorInterface $translator, Twitter $twitter, $id)
 	{
 		$entityManager = $this->getDoctrine()->getManager();
 		$entity = $entityManager->getRepository(Proverb::class)->find($id);
 
-		$locale = strtoupper($entity->getLanguage()->getAbbreviation());
+		$locale = $entity->getLanguage()->getAbbreviation();
 		
-		$consumer_key = $_ENV["TWITTER_CONSUMER_KEY_".$locale];
-		$consumer_secret = $_ENV["TWITTER_CONSUMER_SECRET_".$locale];
-		$access_token = $_ENV["TWITTER_ACCESS_TOKEN_".$locale];
-		$access_token_secret = $_ENV["TWITTER_ACCESS_TOKEN_SECRET_".$locale];
+		$message = $request->request->get("twitter_area")." ".$this->generateUrl("app_indexproverbius_read", array("id" => $id, 'slug' => $entity->getSlug()), UrlGeneratorInterface::ABSOLUTE_URL);
 
-		$connection = new TwitterOAuth($consumer_key, $consumer_secret, $access_token, $access_token_secret);
-		$parameters = [];
-		$parameters["status"] = $request->request->get("twitter_area")." ".$this->generateUrl("app_indexproverbius_read", array("id" => $id, 'slug' => $entity->getSlug()), UrlGeneratorInterface::ABSOLUTE_URL);
 		$imageId = $request->request->get('image_id_tweet');
-		
+
 		$proverbImage = null;
+		$image = null;
 
 		if(!empty($imageId)) {
 			$proverbImage = $entityManager->getRepository(ProverbImage::class)->find($imageId);
-			$media = $connection->upload('media/upload', array('media' => Proverb::PATH_FILE.$proverbImage->getImage()));
-			$parameters['media_ids'] = implode(',', array($media->media_id_string));
+			$image = Proverb::PATH_FILE.$proverbImage->getImage();
 		}
-
-		$statues = $connection->post("statuses/update", $parameters);
 		
+		$statues = $twitter->sendTweet($message, $image, $locale);
+	
 		if(isset($statues->errors) and !empty($statues->errors))
-			$session->getFlashBag()->add('message', "Twitter - ".$translator->trans("admin.index.SentError"));
+			$session->getFlashBag()->add('message', "Twitter - ".$translator->trans("admin.index.SentError").json_encode($statues->errors));
 		else {
 			if(!empty($proverbImage)) {
 				$proverbImage->addSocialNetwork("Twitter");

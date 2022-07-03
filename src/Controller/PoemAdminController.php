@@ -30,9 +30,9 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
-use Abraham\TwitterOAuth\TwitterOAuth;
 use seregazhuk\PinterestBot\Factories\PinterestBot;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Service\Twitter;
 
 require_once __DIR__.'/../../vendor/simple_html_dom.php';
 
@@ -785,31 +785,30 @@ class PoemAdminController extends AbstractController
 		$entityManager = $this->getDoctrine()->getManager();
 		$entity = $entityManager->getRepository(Poem::class)->find($id);
 
-		$consumer_key = $_ENV["TWITTER_CONSUMER_KEY"];
-		$consumer_secret = $_ENV["TWITTER_CONSUMER_SECRET"];
-		$access_token = $_ENV["TWITTER_ACCESS_TOKEN"];
-		$access_token_secret = $_ENV["TWITTER_ACCESS_TOKEN_SECRET"];
+		$locale = $entity->getLanguage()->getAbbreviation();
+		
+		$message = $request->request->get("twitter_area")." ".$this->generateUrl("app_indexpoeticus_read", array("id" => $id, 'slug' => $entity->getSlug()), UrlGeneratorInterface::ABSOLUTE_URL);
 
-		$connection = new TwitterOAuth($consumer_key, $consumer_secret, $access_token, $access_token_secret);
-
-		$parameters = [];
-		$parameters["status"] = $request->request->get("twitter_area")." ".$this->generateUrl("app_indexpoeticus_read", array("id" => $id, 'slug' => $entity->getSlug()), UrlGeneratorInterface::ABSOLUTE_URL);
 		$imageId = $request->request->get('image_id_tweet');
+
+		$poemImage = null;
+		$image = null;
 
 		if(!empty($imageId)) {
 			$poemImage = $entityManager->getRepository(PoemImage::class)->find($imageId);
-			$media = $connection->upload('media/upload', array('media' => Poem::PATH_FILE.$poemImage->getImage()));
-			$parameters['media_ids'] = implode(',', array($media->media_id_string));
+			$image = Poem::PATH_FILE.$poemImage->getImage();
 		}
-
-		$statues = $connection->post("statuses/update", $parameters);
+		
+		$statues = $twitter->sendTweet($message, $image, $locale);
 	
 		if(isset($statues->errors) and !empty($statues->errors))
-			$session->getFlashBag()->add('message', "Twitter - ".$translator->trans("admin.index.SentError"));
+			$session->getFlashBag()->add('message', "Twitter - ".$translator->trans("admin.index.SentError").json_encode($statues->errors));
 		else {
-			$poemImage->addSocialNetwork("Twitter");
-			$entityManager->persist($poemImage);
-			$entityManager->flush();
+			if(!empty($poemImage)) {
+				$poemImage->addSocialNetwork("Twitter");
+				$entityManager->persist($poemImage);
+				$entityManager->flush();
+			}
 		
 			$session->getFlashBag()->add('message', "Twitter - ".$translator->trans("admin.index.SentSuccessfully"));
 		}
