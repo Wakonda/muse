@@ -35,4 +35,5 @@
 /public/photo/advertising/
 npm-debug.log
 yarn-error.log
+composer.phar
 ###< symfony/webpack-encore-bundle ###
