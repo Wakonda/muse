@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Quote;
 use App\Entity\language;
 use App\Entity\Biography;
+use App\Entity\Source;
 use App\Service\GenericFunction;
 
 final class QuoteDataPersister implements ContextAwareDataPersisterInterface
@@ -45,12 +46,37 @@ final class QuoteDataPersister implements ContextAwareDataPersisterInterface
         
 		$quote = $this->entityManager->getRepository(Quote::class)->findOneBy(["slug" => $slug, "biography" => $biography, "language" => $language]);
 		
-		if(!empty($data->getText()))
+		if(!empty($quote))
 			throw new \Exception("Data already exists on database");
+		
+		$source = $this->entityManager->getRepository(Source::class)->findOneBy(["identifier" => $data->getSource()->getIdentifier(), "language" => $language]);
+		
+		$data->setSource($source);
+		
+		if(!empty($source)) {
+			if($biography->isAuthor()) {
+				$sa = $this->entityManager->getRepository(Source::class)->getSourceByBiographyAndTitle($biography, $source->getTitle(), Biography::AUTHOR, $source->getIdentifier());
+			
+				if(empty($sa)) {//die("eeddd");
+					$source->addAuthor($biography);
+					$biography->addSource($source);
+				}
+			}
+			if($biography->isFictionalCharacter()) {
+				$sa = $this->entityManager->getRepository(Source::class)->getSourceByBiographyAndTitle($biography, $source->getTitle(), Biography::FICTIONAL_CHARACTER, $source->getIdentifier());
+			
+				if(empty($sa)) {
+					$source->addFictionalCharacter($biography);
+					$biography->addArtwork($source);
+				}
+			}
+			$this->entityManager->persist($source);
+			$this->entityManager->persist($biography);
+		}
 		
 		$data->setLanguage($language);
 		$data->setBiography($biography);
-
+// die("jjjj");
 		$this->entityManager->persist($data);
         $this->entityManager->flush();
 

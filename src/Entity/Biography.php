@@ -316,4 +316,44 @@ class Biography
     {
         return $this->wikidata;
     }
+
+    public function setSources($sources)
+    {
+        $this->sources = $sources;
+    }
+
+	public function removeSource($source)
+	{
+		$this->sources->removeElement($source);
+	}
+
+	public function getSources()
+	{
+		return $this->sources;
+	}
+
+	public function addSource($source)
+	{
+		$this->sources[] = $source;
+	}
+
+    public function setArtworks($artworks)
+    {
+        $this->artworks = $artworks;
+    }
+
+	public function removeArtwork($artwork)
+	{
+		$this->artworks->removeElement($artwork);
+	}
+
+	public function getArtworks()
+	{
+		return $this->artworks;
+	}
+
+	public function addArtwork($artwork)
+	{
+		$this->artworks[] = $artwork;
+	}
 }

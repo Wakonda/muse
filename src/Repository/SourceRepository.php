@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Entity\Biography;
 use App\Entity\Source;
 
 /**
@@ -50,13 +51,19 @@ class SourceRepository extends ServiceEntityRepository implements iRepository
 		return $qb->getQuery()->getResult();
 	}
 	
-	public function getSourceByAuthorsAndTitle($author, string $title)
+	public function getSourceByBiographyAndTitle($author, string $title, string $type = Biography::AUTHOR_CANONICAL, ?string $identifier = null)
 	{
 		$qb = $this->createQueryBuilder("pf");
+
+		if($type == Biography::AUTHOR) {
+			$qb->leftjoin("pf.authors", "p")
+			   ->where("p.id = :author");
+		} else if ($type == Biography::FICTIONAL_CHARACTER) {
+			$qb->leftjoin("pf.fictionalCharacters", "p")
+			   ->where("p.id = :author");
+		}
 	
-		$qb->leftjoin("pf.authors", "author")
-		   ->where("author.id = :author")
-		   ->setParameter("author", $author)
+		$qb->setParameter("author", $author)
 		   ->andWhere("pf.title = :title")
 		   ->setParameter("title", $title)
 		   ->setMaxResults(1);

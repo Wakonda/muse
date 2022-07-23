@@ -528,6 +528,7 @@ admin:
         Photo: "Photo"
         Type: "Type"
         ReleasedDate: "Released date"
+        Identifier: "Identifier"
     tag:
         Title: "Title"
         Photo: "Photo"

@@ -359,7 +359,7 @@ die("ok");
 						if($type == "personnage") {
 							
 							$sourceTitle = html_entity_decode(current($pb->find(".auteurLien"))->plaintext, ENT_QUOTES);
-							$source = $entityManager->getRepository(Source::class)->getSourceByAuthorsAndTitle($entity->getBiography(), $sourceTitle);
+							$source = $entityManager->getRepository(Source::class)->getSourceByBiographyAndTitle($entity->getBiography(), $sourceTitle);
 							
 							if(!empty($source))
 								$entityNew->setSource($source);
@@ -393,7 +393,7 @@ die("ok");
 						$entityNew->setSource(null);
 
 						if(isset($div[1])) {
-							$source = $entityManager->getRepository(Source::class)->getSourceByAuthorsAndTitle($entity->getBiography(), trim($div[1]));
+							$source = $entityManager->getRepository(Source::class)->getSourceByBiographyAndTitle($entity->getBiography(), trim($div[1]));
 							
 							if(!empty($source))
 								$entityNew->setSource($source);

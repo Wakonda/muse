@@ -5,8 +5,21 @@ namespace App\Entity;
 use App\Service\GenericFunction;
 use Doctrine\ORM\Mapping as ORM;
 
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 /**
  * @ORM\Entity(repositoryClass="App\Repository\SourceRepository")
+ * @ApiResource(
+ *     itemOperations={
+ *          "get"={"security"="is_granted('ROLE_ADMIN')"}
+ *      },
+ *     collectionOperations={
+ *          "get"={"security"="is_granted('ROLE_ADMIN')"}
+ *      },
+ *     normalizationContext={"groups"={"read"}},
+ *     denormalizationContext={"groups"={"write"}}
+ * )
  */
 class Source
 {
@@ -79,6 +92,12 @@ class Source
      * @ORM\Column(type="text", nullable=true)
      */
 	protected $widgetProduct;
+	
+    /**
+     * @ORM\Column(type="string", nullable=true, length=15)
+     * @Groups({"read", "write"})
+     */
+	protected $identifier;
 	
 	public function __toString()
 	{
@@ -260,5 +279,15 @@ class Source
     public function setWidgetProduct($widgetProduct)
     {
         $this->widgetProduct = $widgetProduct;
+    }
+
+    public function getIdentifier()
+    {
+        return $this->identifier;
+    }
+
+    public function setIdentifier($identifier)
+    {
+        $this->identifier = $identifier;
     }
 }

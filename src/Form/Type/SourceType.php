@@ -95,6 +95,7 @@ class SourceType extends AbstractType
 			->add('releasedDate', IntegerType::class, array(
                 'label' => 'admin.source.ReleasedDate', "required" => false
             ))
+			->add('identifier', TextType::class, ['label' => 'admin.source.Identifier', 'required' => false])
 			->add('fileManagement', FileManagementSelectorType::class, ["label" => "admin.source.Photo", "required" => false, "folder" => Source::FOLDER])
             ->add('save', SubmitType::class, array('label' => 'admin.main.Save', 'attr' => array('class' => 'btn btn-success')));
     }
