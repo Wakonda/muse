@@ -13,6 +13,14 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        api:
+            pattern: ^/api/
+            stateless: true
+            anonymous: true
+            provider: our_db_provider
+            guard:
+                authenticators:
+                    - lexik_jwt_authentication.jwt_token_authenticator
         main:
             pattern:    ^/
             http_basic: ~
@@ -30,6 +38,12 @@ security:
                 path:   app_user_logout
                 target: /
             # activate different ways to authenticate
+            json_login:
+                check_path: /authentication_token
+                username_path: username
+                password_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
             # http_basic: true
             # https://symfony.com/doc/current/security.html#a-configuring-how-your-users-will-authenticate

@@ -4,11 +4,27 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Service\GenericFunction;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\QuoteRepository")
+ * @ApiResource(
+ *     itemOperations={
+ *          "get"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "put"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "delete"={"security"="is_granted('ROLE_ADMIN')"}
+ *      },
+ *     collectionOperations={
+ *          "get"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "post"={"security"="is_granted('ROLE_ADMIN')"}
+ *      },
+ *     normalizationContext={"groups"={"read"}},
+ *     denormalizationContext={"groups"={"write"}}
+ * )
  */
 class Quote
 {
@@ -31,6 +47,7 @@ class Quote
 
     /**
      * @ORM\Column(type="text")
+     * @Groups({"read", "write"})
      */
     protected $text;
 
@@ -41,6 +58,7 @@ class Quote
 
 	/**
      * @ORM\ManyToOne(targetEntity="App\Entity\Country")
+     * @Groups({"read", "write"})
      */
     protected $country;
 
@@ -51,16 +69,19 @@ class Quote
 	
 	/**
      * @ORM\ManyToOne(targetEntity="App\Entity\Language")
+     * @Groups({"read", "write"})
      */
 	protected $language;
 
 	/**
      * @ORM\ManyToOne(targetEntity="App\Entity\Biography")
+     * @Groups({"read", "write"})
      */
     protected $biography;
 
 	/**
      * @ORM\ManyToOne(targetEntity="App\Entity\Source")
+     * @Groups({"read", "write"})
      */
     protected $source;
 	
@@ -76,11 +97,13 @@ class Quote
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"read", "write"})
      */
     protected $authorType;
 
    /**
     * @ORM\ManyToMany(targetEntity=Tag::class, inversedBy="quotes", cascade={"persist"})
+    * @Groups({"read", "write"})
     */
 	protected $tags;
 
@@ -146,6 +169,7 @@ class Quote
     {
         $this->quoteImages = new ArrayCollection();
         $this->images = new ArrayCollection();
+        $this->tags = new ArrayCollection();
 		$this->authorType = self::BIOGRAPHY_AUTHORTYPE;
 		$this->state = self::PUBLISHED_STATE;
     }
@@ -286,32 +310,17 @@ class Quote
     {
         $this->user = $user;
     }
-	
-   /**
-    * Add tags
-    *
-    * @param Tag $tags
-    */
+
 	public function addTag(Tag $tag)
 	{
 		$this->tags[] = $tag;
 	}
 
-    /**
-     * Set tags
-     *
-     * @param string $tags
-     */
     public function setTags($tags)
     {
         $this->tags = $tags;
     }
 
-   /**
-    * Remove tags
-    *
-    * @param Tag $tag
-    */
 	public function removeTag(Tag $tag)
 	{
 		$this->tags->removeElement($tag);
@@ -326,13 +335,8 @@ class Quote
 		return false;
 	}
 
-   /**
-    * Get tags
-    *
-    * @return Doctrine\Common\Collections\Collection
-    */
 	public function getTags()
 	{
-		return $this->tags;
+		return $this->tags->getValues();
 	}
 }

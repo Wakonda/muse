@@ -5,8 +5,21 @@ namespace App\Entity;
 use App\Service\GenericFunction;
 use Doctrine\ORM\Mapping as ORM;
 
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 /**
  * @ORM\Entity(repositoryClass="App\Repository\BiographyRepository")
+ * @ApiResource(
+ *     itemOperations={
+ *          "get"={"security"="is_granted('ROLE_ADMIN')"}
+ *      },
+ *     collectionOperations={
+ *          "get"={"security"="is_granted('ROLE_ADMIN')"}
+ *      },
+ *     normalizationContext={"groups"={"read"}},
+ *     denormalizationContext={"groups"={"write"}}
+ * )
  */
 class Biography
 {
@@ -100,6 +113,14 @@ class Biography
      * @ORM\ManyToOne(targetEntity="App\Entity\FileManagement")
      */
     protected $fileManagement;
+
+	/**
+	 * @var string $wikidata
+	 *
+	 * @ORM\Column(name="wikidata", type="string", length=15, nullable=true)
+     * @Groups({"read", "write"})
+	 */
+	private $wikidata;
 	
 	public function getTypeCanonical()
 	{
@@ -275,4 +296,24 @@ class Biography
 	{
 		$this->fileManagement = $fileManagement;
 	}
+
+    /**
+     * Set wikidata
+     *
+     * @param String $wikidata
+     */
+    public function setWikidata($wikidata)
+    {
+        $this->wikidata = $wikidata;
+    }
+
+    /**
+     * Get wikidata
+     *
+     * @return String
+     */
+    public function getWikidata()
+    {
+        return $this->wikidata;
+    }
 }

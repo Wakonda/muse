@@ -41,6 +41,7 @@ class BiographyType extends AbstractType
 			->add('dayDeath', IntegerType::class, array("label" => "admin.biography.DeathDate", "required" => false))
 			->add('monthDeath', IntegerType::class, array("label" => "", "required" => false))
 			->add('yearDeath', IntegerType::class, array("label" => "", "required" => false))
+			->add('wikidata', TextType::class, ['required' => false])
 			->add('country', EntityType::class, array(
 				'label' => 'admin.biography.Country',
 				'class' => Country::class,
