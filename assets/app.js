@@ -17,3 +17,11 @@ require('bootstrap');
 
 require('@fortawesome/fontawesome-free/css/all.min.css');
 require('@fortawesome/fontawesome-free/js/all.js');
+
+require('./js/BackToTop/BackToTop')
+require('./js/BackToTop/arrow-up.png');
+require('./js/BackToTop/BackToTop.css');
+
+$(function() {
+	$(document).BackToTop();
+});
