@@ -900,6 +900,16 @@ div.mce-edit-area {
 	padding-right: 1px;
 }
 
+@media screen and (max-width: 575px){
+	#media_management .modal-dialog {
+		height: 100%;
+		margin: 0;
+	}
+	#media_management .modal-dialog .modal-content, .embed-responsive {
+		height: 100%;
+	}
+}
+
 @media print {
 	a {
 		color: black;
