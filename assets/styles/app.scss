@@ -910,6 +910,13 @@ div.mce-edit-area {
 	}
 }
 
+#contents .advertising-alternative img {
+	box-shadow: none !important;
+    width: auto !important;
+    border: none !important;
+    border-radius: initial !important;
+}
+
 @media print {
 	a {
 		color: black;
