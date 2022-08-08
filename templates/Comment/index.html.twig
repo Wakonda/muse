@@ -39,28 +39,7 @@
 	<hr>
 	<h2>{{ 'comment.index.Comments'|trans }}</h2>
 	<div>
-		<!-- Nav tabs -->
-		<ul class="nav nav-tabs" role="tablist">
-			<li role="presentation" class="nav-item"><a class="nav-link active" href="#facebook_comment" aria-controls="facebook_comment" role="tab" data-toggle="tab">Facebook</a></li>
-			<li role="presentation" class="nav-item"><a class="nav-link" href="#muse_comment" aria-controls="muse_comment" role="tab" data-toggle="tab">Quotus</a></li>
-		</ul>
-
-		<!-- Tab panes -->
-		<div class="tab-content">
-			<br>
-			<div role="tabpanel" class="tab-pane active" id="facebook_comment">
-				<div id="fb-root"></div>
-				<script>(function(d, s, id) {
-				  var js, fjs = d.getElementsByTagName(s)[0];
-				  if (d.getElementById(id)) return;
-				  js = d.createElement(s); js.id = id;
-				  js.src = "//connect.facebook.net/fr_FR/sdk.js#xfbml=1&version=v2.6&appId=278784339126616";
-				  fjs.parentNode.insertBefore(js, fjs);
-				}(document, 'script', 'facebook-jssdk'));</script>
-				
-				<div class="fb-comments" data-href="{{ app.request.uri }}" data-numposts="5"></div>
-			</div>
-			<div role="tabpanel" class="tab-pane" id="muse_comment">
+			<div id="muse_comment">
 				{% if is_granted('IS_AUTHENTICATED_FULLY') == false and is_granted('IS_AUTHENTICATED_REMEMBERED') == false %}
 					<div class="alert alert-danger" role="alert">
 						<i class="fas fa-exclamation-triangle"></i> {{ 'comment.field.YouMustBeLoggedInToWriteAComment'|trans }}
@@ -72,6 +51,5 @@
 				<br>
 				<div id="list_comments"></div>
 			</div>
-		</div>
 	</div>
 </div>
