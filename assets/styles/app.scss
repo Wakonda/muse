@@ -7,6 +7,7 @@ $linkedin-color: #0e76a8;
 $pinterest-color: #b31217;
 $instagram-color: #DD2A7B;
 $github-color: #211F1F;
+$mastodon-color: #5843D7;
 
 @font-face {
 	font-family: "MagnetoBoldA";
@@ -690,18 +691,6 @@ div#poem_browsing a:hover {
 	text-decoration: none;
 }
 
-/** Social network **/
-td.socialNetwork {
-	padding-left: 5px;
-}
-
-td.socialNetwork#twitter {
-	padding-top: 7px;
-}
-td.socialNetwork#googlePlus {
-	padding-top: 6px;
-}
-
 .selected_language {
 	-webkit-filter: brightness(0.6);
 	filter: brightness(0.6);
@@ -829,6 +818,10 @@ div.social_network_container {
 	color: $linkedin-color;
 }
 
+.social-media-icons a.mastodon {
+	color: $mastodon-color;
+}
+
 a.social-network:hover {
 	filter: brightness(85%);
 }
@@ -855,6 +848,11 @@ a.btn.pinterest {
 a.btn.linkedin {
 	background-color: $linkedin-color;
 	border-color: 	$linkedin-color;
+}
+
+a.btn.mastodon {
+	background-color: $mastodon-color;
+	border-color: 	$mastodon-color;
 }
 
 .card {
