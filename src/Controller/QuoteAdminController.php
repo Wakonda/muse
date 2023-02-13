@@ -32,6 +32,7 @@ use seregazhuk\PinterestBot\Factories\PinterestBot;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\Facebook;
 use App\Service\Twitter;
+use App\Service\Mastodon;
 
 require_once __DIR__.'/../../vendor/simple_html_dom.php';
 
@@ -469,6 +470,45 @@ die("ok");
 			}
 		
 			$session->getFlashBag()->add('message', "Twitter - ".$translator->trans("admin.index.SentSuccessfully"));
+		}
+	
+		return $this->redirect($this->generateUrl("app_quoteadmin_show", array("id" => $id)));
+	}
+
+    /**
+     * @Route("/mastodon/{id}")
+     */
+	public function mastodonAction(Request $request, SessionInterface $session, TranslatorInterface $translator, Mastodon $mastodon, $id)
+	{
+		$entityManager = $this->getDoctrine()->getManager();
+		$entity = $entityManager->getRepository(Quote::class)->find($id);
+
+		$locale = $entity->getLanguage()->getAbbreviation();
+		
+		$message = $request->request->get("mastodon_area")." ".$this->generateUrl("app_indexquotus_read", array("id" => $id, 'slug' => $entity->getSlug()), UrlGeneratorInterface::ABSOLUTE_URL);
+
+		$imageId = $request->request->get('image_id_mastodon');
+
+		$quoteImage = null;
+		$image = null;
+
+		if(!empty($imageId)) {
+			$quoteImage = $entityManager->getRepository(QuoteImage::class)->find($imageId);
+			$image = Quote::PATH_FILE.$quoteImage->getImage();
+		}
+
+		$statues = $mastodon->postMessage($message, $image, $locale);
+	
+		if(isset($statues->errors) and !empty($statues->errors))
+			$session->getFlashBag()->add('message', "Mastodon - ".$translator->trans("admin.index.SentError").json_encode($statues->errors));
+		else {
+			if(!empty($quoteImage)) {
+				$quoteImage->addSocialNetwork("Mastodon");
+				$entityManager->persist($quoteImage);
+				$entityManager->flush();
+			}
+		
+			$session->getFlashBag()->add('message', "Mastodon - ".$translator->trans("admin.index.SentSuccessfully"));
 		}
 	
 		return $this->redirect($this->generateUrl("app_quoteadmin_show", array("id" => $id)));

@@ -130,6 +130,31 @@
 		</div>
 	</div>
 	{% endif %}
+	
+	{% if isMastodonAvailable(entity) %}
+	<div class="card mt-2">
+		<div class="card-header" role="tab" id="headingMastodon">
+			<a href="#" role="button" data-toggle="collapse" data-target="#collapseMastodon" aria-expanded="true" aria-controls="collapseOne">
+			<i class="fab fa-mastodon" aria-hidden="true"></i> Mastodon
+			</a>
+		</div>
+		<div id="collapseMastodon" class="collapse" aria-labelledby="headingMastodon" aria-expanded="true">
+			<div class="card-body">
+				<form action="{{ path('app_quoteadmin_mastodon', {'id': entity.id}) }}" method="post">
+					<div class="row mb-3">
+						{% for quoteImage in entity.images %}
+							<div class="col-md-4 mb-10"><div class="thumbnail" role="button"><img src="{{ absolute_url(asset(constant('\\App\\Entity\\Quote::PATH_FILE')~quoteImage.image)) }}" data-id="{{ quoteImage.id }}"></div></div>
+						{% endfor %}
+					</div>
+					<input type="hidden" name="image_id_mastodon" id="image_mastodon">
+					<textarea id="mastodon_area" name="mastodon_area" rows="3" cols="70" class="form-control">{{ entity.text|raw }} #{{ ('admin.index.Quote'|trans)|lower }}</textarea>
+					<br>
+					<input value="{{ 'admin.socialNetwork.Send'|trans }}" id="mastodon" type="submit" class="btn btn-outline-secondary">
+				</form>
+			</div>
+		</div>
+	</div>
+	{% endif %}
 
 	{% if isFacebookAvailable(entity) %}
 	<div class="card mt-2">
@@ -226,6 +251,13 @@
 				$("div#collapseFacebook .thumbnail img").removeAttr("style");
 				$(this).css({"border-color": "#eca7a7"});
 				$("#image_facebook").val($(this).data("id"));
+			});
+			
+			// Facebook
+			$("div#collapseMastodon .thumbnail img").click(function() {
+				$("div#collapseMastodon .thumbnail img").removeAttr("style");
+				$(this).css({"border-color": "#eca7a7"});
+				$("#image_mastodon").val($(this).data("id"));
 			});
 		});
 	</script>
