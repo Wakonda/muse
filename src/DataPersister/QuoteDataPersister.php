@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 use App\Entity\Quote;
 use App\Entity\language;
+use App\Entity\Country;
 use App\Entity\Biography;
 use App\Entity\Source;
 use App\Service\GenericFunction;
@@ -30,26 +31,35 @@ final class QuoteDataPersister implements ContextAwareDataPersisterInterface
     public function persist($data, array $context = [])
     {
 		$language = $this->entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $data->getLanguage()->getAbbreviation()]);
-		
+
 		if(empty($language))
-			throw new NotFoundHttpException();
-		
-		$biography = $this->entityManager->getRepository(Biography::class)->findOneBy(["wikidata" => $data->getBiography()->getWikidata(), "language" => $language]);
-		
-		if(empty($biography))
 			throw new NotFoundHttpException();
 		
 		if(empty($data->getText()))
 			throw new BadRequestHttpException();
-			
-		$slug = GenericFunction::slugify($data->getText(), 30);
-        
-		$quote = $this->entityManager->getRepository(Quote::class)->findOneBy(["slug" => $slug, "biography" => $biography, "language" => $language]);
 		
-		if(!empty($quote))
-			throw new \Exception("Data already exists on database");
+		$country = $this->entityManager->getRepository(Country::class)->findOneBy(["internationalName" => $data->getBiography()->getCountry()->getInternationalName(), "language" => $language]);
 		
-		$source = $this->entityManager->getRepository(Source::class)->findOneBy(["identifier" => $data->getSource()->getIdentifier(), "language" => $language]);
+		$biography = $this->entityManager->getRepository(Biography::class)->findOneBy(["wikidata" => $data->getBiography()->getWikidata(), "language" => $language]);
+
+		if(empty($biography)) {
+			$biography = $data->getBiography();
+			$fileManagement = $data->getBiography()->getFileManagement();			
+		}
+		else {
+			$fileManagement = $biography->getFileManagement();
+			$fileManagement->setDescription($data->getBiography()->getFileManagement()->getDescription());
+		}
+		
+		if(empty($biography->getWikidata()))
+			throw new NotFoundHttpException();
+		
+		$data->setAuthorType(Quote::BIOGRAPHY_AUTHORTYPE);
+
+		$fileManagement = $data->getBiography()->getFileManagement();
+
+		$imgBase64 = $data->getBiography()->getFileManagement()->imgBase64;
+		$source = null; //$this->entityManager->getRepository(Source::class)->findOneBy(["identifier" => $data->getSource()->getIdentifier(), "language" => $language]);
 		
 		$data->setSource($source);
 		
@@ -57,7 +67,7 @@ final class QuoteDataPersister implements ContextAwareDataPersisterInterface
 			if($biography->isAuthor()) {
 				$sa = $this->entityManager->getRepository(Source::class)->getSourceByBiographyAndTitle($biography, $source->getTitle(), Biography::AUTHOR, $source->getIdentifier());
 			
-				if(empty($sa)) {//die("eeddd");
+				if(empty($sa)) {
 					$source->addAuthor($biography);
 					$biography->addSource($source);
 				}
@@ -75,10 +85,24 @@ final class QuoteDataPersister implements ContextAwareDataPersisterInterface
 		}
 		
 		$data->setLanguage($language);
+		$data->getBiography()->setCountry($country);
+		$data->getBiography()->setLanguage($language);
+		$data->getBiography()->getFileManagement()->setFolder(Biography::FOLDER);
 		$data->setBiography($biography);
-// die("jjjj");
+
+		
 		$this->entityManager->persist($data);
         $this->entityManager->flush();
+
+		$data->setIdentifier("muse-".$data->getId());
+		
+		$this->entityManager->flush();
+
+		$this->entityManager->persist($data);
+        $this->entityManager->flush();
+
+		if(!empty($imgBase64))
+			file_put_contents("photo/".$data->getBiography()->getFileManagement()->getFolder()."/".$data->getBiography()->getFileManagement()->getPhoto(), base64_decode($imgBase64));
 
         return $data;
     }

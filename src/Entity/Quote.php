@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Service\GenericFunction;
 use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Core\Annotation\ApiProperty;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\QuoteRepository")
@@ -42,6 +43,7 @@ class Quote
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @ApiProperty(identifier=false)
      */
     protected $id;
 
@@ -56,9 +58,16 @@ class Quote
      */
     protected $slug;
 
+    /**
+     * @ORM\Column(type="string", length=500, unique=true)
+     * @ApiProperty(identifier=true)
+     * @Groups({"read", "write"})
+     */
+    protected $identifier;
+
 	/**
      * @ORM\ManyToOne(targetEntity="App\Entity\Country")
-     * @Groups({"read", "write"})
+     * Groups({"read", "write"})
      */
     protected $country;
 
@@ -74,7 +83,7 @@ class Quote
 	protected $language;
 
 	/**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Biography")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Biography", cascade={"persist"})
      * @Groups({"read", "write"})
      */
     protected $biography;
@@ -103,7 +112,7 @@ class Quote
 
    /**
     * @ORM\ManyToMany(targetEntity=Tag::class, inversedBy="quotes", cascade={"persist"})
-    * @Groups({"read", "write"})
+    * Groups({"read", "write"})
     */
 	protected $tags;
 
@@ -237,6 +246,16 @@ class Quote
 	public function setLanguage($language)
 	{
 		$this->language = $language;
+	}
+
+	public function getIdentifier()
+	{
+		return $this->identifier;
+	}
+	
+	public function setIdentifier($identifier)
+	{
+		$this->identifier = $identifier;
 	}
 
     public function getImages()

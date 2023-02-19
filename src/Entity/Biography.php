@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Core\Annotation\ApiProperty;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\BiographyRepository")
@@ -36,11 +37,13 @@ class Biography
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @ApiProperty(identifier=false)
      */
     protected $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"read", "write"})
      */
     protected $title;
 
@@ -51,46 +54,55 @@ class Biography
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Groups({"read", "write"})
      */
     protected $text;
 	
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"read", "write"})
      */
     protected $dayBirth;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"read", "write"})
      */
     protected $monthBirth;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"read", "write"})
      */
     protected $yearBirth;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"read", "write"})
      */
     protected $dayDeath;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"read", "write"})
      */
     protected $monthDeath;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"read", "write"})
      */
     protected $yearDeath;
 
 	/**
      * @ORM\ManyToOne(targetEntity="App\Entity\Country")
+     * @Groups({"read", "write"})
      */
     protected $country;
 	
 	/**
      * @ORM\ManyToOne(targetEntity="App\Entity\Language")
+     * @Groups({"read", "write"})
      */
 	protected $language;
 
@@ -110,7 +122,8 @@ class Biography
     private $artworks;
 	
 	/**
-     * @ORM\ManyToOne(targetEntity="App\Entity\FileManagement")
+     * @ORM\ManyToOne(targetEntity="App\Entity\FileManagement", cascade={"persist"})
+     * @Groups({"read", "write"})
      */
     protected $fileManagement;
 
@@ -119,6 +132,7 @@ class Biography
 	 *
 	 * @ORM\Column(name="wikidata", type="string", length=15, nullable=true)
      * @Groups({"read", "write"})
+     * @ApiProperty(identifier=true)
 	 */
 	private $wikidata;
 	

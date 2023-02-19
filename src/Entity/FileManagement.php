@@ -5,8 +5,25 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
+use ApiPlatform\Core\Annotation\ApiResource;
+use App\Service\GenericFunction;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 /**
  * @ORM\Entity(repositoryClass="App\Repository\FileManagementRepository")
+ * @ApiResource(
+ *     itemOperations={
+ *          "get"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "put"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "delete"={"security"="is_granted('ROLE_ADMIN')"}
+ *      },
+ *     collectionOperations={
+ *          "get"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "post"={"security"="is_granted('ROLE_ADMIN')"}
+ *      },
+ *     normalizationContext={"groups"={"read"}},
+ *     denormalizationContext={"groups"={"write"}}
+ * )
  */
 class FileManagement
 {
@@ -23,11 +40,13 @@ class FileManagement
      * @var text $description
      *
      * @ORM\Column(type="text", nullable=true)
+     * @Groups({"read", "write"})
      */
     private $description;
 
     /**
      * @ORM\Column(name="photo", type="string", length=255)
+     * @Groups({"read", "write"})
      */
     private $photo;
 
@@ -37,6 +56,11 @@ class FileManagement
      * @ORM\Column(type="text")
      */
     private $folder;
+
+	/**
+     * @Groups({"read", "write"})
+	 */
+	public $imgBase64;
 
     /**
      * Get id
