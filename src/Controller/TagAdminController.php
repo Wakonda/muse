@@ -67,8 +67,8 @@ class TagAdminController extends AbstractController
 			$row[] = $entity->getTitle();
 			$row[] = $entity->getLanguage()->getTitle();
 			
-			$show = $this->generateUrl('tagadmin_show', array('id' => $entity->getId()));
-			$edit = $this->generateUrl('tagadmin_edit', array('id' => $entity->getId()));
+			$show = $this->generateUrl('app_tagadmin_show', array('id' => $entity->getId()));
+			$edit = $this->generateUrl('app_tagadmin_edit', array('id' => $entity->getId()));
 			
 			$row[] = '<a href="'.$show.'" alt="Show">'.$translator->trans('admin.index.Read').'</a> - <a href="'.$edit.'" alt="Edit">'.$translator->trans('admin.index.Update').'</a>';
 
@@ -101,10 +101,6 @@ class TagAdminController extends AbstractController
 		$form->handleRequest($request);
 		
 		$this->checkForDoubloon($entity, $form);
-	
-		if(empty($entity->getFileManagement()) or $entity->getFileManagement()->getPhoto() == null) {
-			$form->get("fileManagement")->get("id")->addError(new FormError($translator->trans("This value should not be blank.", array(), "validators")));
-		}
 
 		if($form->isValid())
 		{
@@ -112,7 +108,7 @@ class TagAdminController extends AbstractController
 			$entityManager->persist($entity);
 			$entityManager->flush();
 
-			$redirect = $this->generateUrl('tagadmin_show', array('id' => $entity->getId()));
+			$redirect = $this->generateUrl('app_tagadmin_show', array('id' => $entity->getId()));
 
 			return $this->redirect($redirect);
 		}
@@ -150,7 +146,6 @@ class TagAdminController extends AbstractController
 	{
 		$entityManager = $this->getDoctrine()->getManager();
 		$entity = $entityManager->getRepository(Tag::class)->find($id);
-		$currentImage = $entity->getPhoto();
 		$form = $this->genericCreateForm($request->getLocale(), $entity);
 		$form->handleRequest($request);
 		
@@ -158,19 +153,10 @@ class TagAdminController extends AbstractController
 		
 		if($form->isValid())
 		{
-			if(!is_null($entity->getPhoto()) and (!empty($entity->getPhoto()["title"]) or !empty($entity->getPhoto()["content"])))
-			{
-				file_put_contents(Tag::PATH_FILE.$entity->getPhoto()["title"], $entity->getPhoto()["content"]);
-				$title = $entity->getPhoto()["title"];
-			}
-			else
-				$title = $currentImage;
-
-			$entity->setPhoto($title);
 			$entityManager->persist($entity);
 			$entityManager->flush();
 
-			$redirect = $this->generateUrl('tagadmin_show', array('id' => $entity->getId()));
+			$redirect = $this->generateUrl('app_tagadmin_show', array('id' => $entity->getId()));
 
 			return $this->redirect($redirect);
 		}

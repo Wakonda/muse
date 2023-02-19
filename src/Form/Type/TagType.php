@@ -40,7 +40,7 @@ class TagType extends AbstractType
 				'expanded' => false,
 				'placeholder' => 'main.field.ChooseAnOption'
 			))
-			->add('fileManagement', FileManagementSelectorType::class, ["label" => "admin.tag.Photo", "required" => true, "folder" => Tag::FOLDER])
+			->add('fileManagement', FileManagementSelectorType::class, ["label" => "admin.tag.Photo", "required" => false, "folder" => Tag::FOLDER])
             ->add('save', SubmitType::class, array('label' => 'admin.main.Save', 'attr' => array('class' => 'btn btn-success')))
 			;
     }
