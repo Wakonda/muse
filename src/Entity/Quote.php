@@ -112,7 +112,7 @@ class Quote
 
    /**
     * @ORM\ManyToMany(targetEntity=Tag::class, inversedBy="quotes", cascade={"persist"})
-    * Groups({"read", "write"})
+    * @Groups({"read", "write"})
     */
 	protected $tags;
 
@@ -332,7 +332,8 @@ class Quote
 
 	public function addTag(Tag $tag)
 	{
-		$this->tags[] = $tag;
+		if (!$this->tags->contains($tag))
+		    $this->tags[] = $tag;
 	}
 
     public function setTags($tags)

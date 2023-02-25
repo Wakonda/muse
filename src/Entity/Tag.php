@@ -7,8 +7,25 @@ use App\Service\GenericFunction;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Core\Annotation\ApiProperty;
+
 /**
  * @ORM\Entity(repositoryClass="App\Repository\TagRepository")
+ * @ApiResource(
+ *     itemOperations={
+ *          "get"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "put"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "delete"={"security"="is_granted('ROLE_ADMIN')"}
+ *      },
+ *     collectionOperations={
+ *          "get"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "post"={"security"="is_granted('ROLE_ADMIN')"}
+ *      },
+ *     normalizationContext={"groups"={"read"}},
+ *     denormalizationContext={"groups"={"write"}}
+ * )
  */
 class Tag
 {
@@ -19,16 +36,19 @@ class Tag
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
+     * @ApiProperty(identifier=false)
      */
     protected $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"read", "write"})
      */
     protected $title;
 
 	/**
      * @ORM\ManyToOne(targetEntity="App\Entity\Language")
+     * @Groups({"read", "write"})
      */
 	protected $language;
 
@@ -38,9 +58,10 @@ class Tag
 	protected $quotes;
 
 	/**
-	 * @ORM\Column(name="internationalName", type="string", length=255)
+	 * @ORM\Column(type="string", length=255)
+     * @Groups({"read", "write"})
 	 */
-	private $internationalName;
+	protected $internationalName;
 	
 	/**
      * @ORM\ManyToOne(targetEntity="App\Entity\FileManagement")
@@ -49,8 +70,16 @@ class Tag
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"read", "write"})
      */
     protected $slug;
+
+    /**
+     * @ORM\Column(type="string", length=255, unique=true)
+     * @ApiProperty(identifier=true)
+     * @Groups({"read", "write"})
+     */
+    protected $identifier;
 
     public function getId()
     {
@@ -142,5 +171,15 @@ class Tag
 	public function setFileManagement($fileManagement)
 	{
 		$this->fileManagement = $fileManagement;
+	}
+	
+	public function getIdentifier()
+	{
+		return $this->identifier;
+	}
+	
+	public function setIdentifier($identifier)
+	{
+		$this->identifier = $identifier;
 	}
 }

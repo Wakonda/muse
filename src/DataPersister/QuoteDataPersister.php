@@ -12,6 +12,7 @@ use App\Entity\language;
 use App\Entity\Country;
 use App\Entity\Biography;
 use App\Entity\Source;
+use App\Entity\Tag;
 use App\Service\GenericFunction;
 
 final class QuoteDataPersister implements ContextAwareDataPersisterInterface
@@ -37,10 +38,25 @@ final class QuoteDataPersister implements ContextAwareDataPersisterInterface
 		
 		if(empty($data->getText()))
 			throw new BadRequestHttpException();
-		
-		$country = $this->entityManager->getRepository(Country::class)->findOneBy(["internationalName" => $data->getBiography()->getCountry()->getInternationalName(), "language" => $language]);
-		
+
+		$country = !empty($c = $data->getBiography()->getCountry()->getInternationalName()) ? $this->entityManager->getRepository(Country::class)->findOneBy(["internationalName" => $c, "language" => $language]) : null;
+
 		$biography = $this->entityManager->getRepository(Biography::class)->findOneBy(["wikidata" => $data->getBiography()->getWikidata(), "language" => $language]);
+
+		$currentTags = [];
+
+		foreach($data->getTags() as $tag) {
+			$currentTag = $this->entityManager->getRepository(Tag::class)->findOneBy(["identifier" => $tag->getIdentifier(), "language" => $language]);
+
+			if(!empty($currentTag))
+				$currentTags[] = $currentTag;
+			else {
+				$currentTags[] = $tag;
+				$tag->setLanguage($language);
+			}
+		}
+
+		$data->setTags($currentTags);
 
 		if(empty($biography)) {
 			$biography = $data->getBiography();
@@ -56,9 +72,12 @@ final class QuoteDataPersister implements ContextAwareDataPersisterInterface
 		
 		$data->setAuthorType(Quote::BIOGRAPHY_AUTHORTYPE);
 
-		$fileManagement = $data->getBiography()->getFileManagement();
-
+		$data->getBiography()->getFileManagement()->setFolder(Biography::FOLDER);
 		$imgBase64 = $data->getBiography()->getFileManagement()->imgBase64;
+		
+		if(empty($fileManagement->getPhoto()))
+			$data->getBiography()->setFileManagement(null);
+
 		$source = null; //$this->entityManager->getRepository(Source::class)->findOneBy(["identifier" => $data->getSource()->getIdentifier(), "language" => $language]);
 		
 		$data->setSource($source);
@@ -87,7 +106,6 @@ final class QuoteDataPersister implements ContextAwareDataPersisterInterface
 		$data->setLanguage($language);
 		$data->getBiography()->setCountry($country);
 		$data->getBiography()->setLanguage($language);
-		$data->getBiography()->getFileManagement()->setFolder(Biography::FOLDER);
 		$data->setBiography($biography);
 
 		
