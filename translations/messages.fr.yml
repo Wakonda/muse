@@ -81,6 +81,8 @@ tag:
     table:
         Title: "Titre"
         Collection: "Recueil"
+        Quote: "Citation"
+        Author: "Auteur"
 biography:
     index:
         ByAuthors: "Par auteurs"

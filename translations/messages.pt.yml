@@ -72,9 +72,6 @@ main:
         GreatWriters: "Grandes autores"
         Type: "Tipo"
         Source: "Fonte"
-    type:
-        Author: "Autor"
-        FictionalCharacter: "Personagem fictício"
 publication:
     state:
         Published: "Publicado"
@@ -84,6 +81,8 @@ tag:
     table:
         Title: "Título"
         Collection: "Coleção"
+        Quote: "Citação"
+        Author: "Autor"
 biography:
     index:
         ByAuthors: "Por autores"
@@ -103,6 +102,9 @@ biography:
         Source: "Fonte"
         Action: "Acção"
         Text: "Texto"
+    type:
+        Author: "Autor"
+        FictionalCharacter: "Personagem fictício"
 source:
     index:
         BySources: "Por obras"

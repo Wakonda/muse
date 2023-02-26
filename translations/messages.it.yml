@@ -81,6 +81,8 @@ tag:
     table:
         Title: "Titolo"
         Collection: "Raccolta"
+        Quote: "Citazione"
+        Author: "Autore"
 biography:
     index:
         ByAuthors: "Per autore"

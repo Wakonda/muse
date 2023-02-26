@@ -81,6 +81,8 @@ tag:
     table:
         Text: "Text"
         Country: "Country"
+        Quote: "Quote"
+        Author: "Author"
 biography:
     index:
         ByAuthors: "By authors"
