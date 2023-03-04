@@ -4,10 +4,27 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiSubresource;
+
 use App\Service\GenericFunction;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\QuoteImageRepository")
+ * @ApiResource(
+ *     itemOperations={
+ *          "get"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "put"={"security"="is_granted('ROLE_ADMIN')"}
+ *      },
+ *     collectionOperations={
+ *          "get"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "post"={"security"="is_granted('ROLE_ADMIN')"}
+ *      },
+ *     normalizationContext={"groups"={"read"}},
+ *     denormalizationContext={"groups"={"write"}}
+ * )
  */
 class QuoteImage
 {
@@ -15,16 +32,19 @@ class QuoteImage
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @ApiProperty(identifier=false)
      */
     protected $id;
 
     /**
     * @ORM\ManyToOne(targetEntity=Quote::class, inversedBy="images", cascade={"persist"})
+     * @Groups({"read", "write"})
     */
     protected $quote;
 
     /**
      * @ORM\Column(type="text", length=255, nullable=true)
+     * @Groups({"read", "write"})
      */
     protected $image;
 
@@ -32,6 +52,18 @@ class QuoteImage
      * @ORM\Column(type="json", length=255, nullable=true)
      */
     protected $socialNetwork;
+
+    /**
+     * @ORM\Column(type="string", length=255, unique=true)
+     * @Groups({"read", "write"})
+     * @ApiProperty(identifier=true)
+     */
+    protected $identifier;
+
+	/**
+     * @Groups({"read", "write"})
+	 */
+	public $imgBase64;
 
 	public function __construct(String $image = null)
 	{
@@ -85,5 +117,15 @@ class QuoteImage
     public function setImage($image)
     {
         $this->image = $image;
+    }
+
+    public function getIdentifier()
+    {
+        return $this->identifier;
+    }
+
+    public function setIdentifier($identifier)
+    {
+        $this->identifier = $identifier;
     }
 }

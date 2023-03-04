@@ -10,6 +10,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use App\Service\GenericFunction;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\QuoteRepository")
@@ -73,6 +74,8 @@ class Quote
 
    /**
     * @ORM\OneToMany(targetEntity=QuoteImage::class, cascade={"persist", "remove"}, mappedBy="quote", orphanRemoval=true)
+    * @Groups({"write"})
+	* @ApiSubresource(maxDepth=1)
     */
     protected $images;
 	
