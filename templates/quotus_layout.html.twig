@@ -12,6 +12,18 @@
 
 {% block title_description %}{{ 'main.index.WonderfulWorldOfQuote'|trans|raw }}{% endblock %}
 
+{% block analytics %}
+	<!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-12307735-4"></script>
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+
+	  gtag('config', 'UA-12307735-4');
+	</script>
+{% endblock %}
+
 {% block menu %}
 	<li class="nav-item {{ app.request.get('_route') in ['app_indexquotus_index']  ? 'active' : '' }}">
 		<a class="nav-link" href="{{ path('app_indexquotus_index') }}"><i class="fas fa-home"></i> {{ 'menu.top.MainPage'|trans }}</a>

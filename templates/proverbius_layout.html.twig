@@ -12,6 +12,18 @@
 
 {% block title_description %}{{ 'main.index.WonderfulWorldOfProverb'|trans|raw }}{% endblock %}
 
+{% block analytics %}
+	<!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-EVM5RM18GC"></script>
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+
+	  gtag('config', 'G-EVM5RM18GC');
+	</script>
+{% endblock %}
+
 {% block menu %}
 	<li class="nav-item  {{ app.request.get('_route') in ['app_indexproverbius_index']  ? 'active' : '' }}">
 		<a class="nav-link" href="{{ path('app_indexproverbius_index') }}"><i class="fas fa-home"></i> {{ 'menu.top.MainPage'|trans }}</a>

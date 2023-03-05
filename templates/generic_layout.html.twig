@@ -13,6 +13,7 @@
 		<meta name="msvalidate.01" content="FB19BE8A55C1B235B4389DE2169412FA" />
 
 		<link rel="shortcut icon" href="{{ asset('photo/favicon.ico') }}">
+
 		<script src="{{ asset(minify_file('js/tarteaucitron.js/tarteaucitron.js')) }}"></script>
 
 		<!-- GDPR -->
@@ -73,6 +74,9 @@
 		{{ encore_entry_script_tags('app') }}
 
 		{% block script_additional_sup %}
+		{% endblock %}
+		
+		{% block analytics %}
 		{% endblock %}
 	</head>
 	<body>
