@@ -42,7 +42,6 @@ final class QuoteDataPersister implements ContextAwareDataPersisterInterface
 
 		$country = !empty($c = $data->getBiography()->getCountry()->getInternationalName()) ? $this->entityManager->getRepository(Country::class)->findOneBy(["internationalName" => $c, "language" => $language]) : null;
 
-
 		$currentTags = [];
 
 		foreach($data->getTags() as $tag) {
@@ -66,7 +65,9 @@ final class QuoteDataPersister implements ContextAwareDataPersisterInterface
 		}
 		else {
 			$fileManagement = $biography->getFileManagement();
-			$fileManagement->setDescription($data->getBiography()->getFileManagement()->getDescription());
+			
+			if(!empty($fileManagement))
+				$fileManagement->setDescription($data->getBiography()->getFileManagement()->getDescription());
 		}
 		
 		if(empty($biography->getWikidata()))
@@ -75,11 +76,13 @@ final class QuoteDataPersister implements ContextAwareDataPersisterInterface
 		$data->setBiography($biography);
 		$data->setAuthorType(Quote::BIOGRAPHY_AUTHORTYPE);
 
-		$biography->getFileManagement()->setFolder(Biography::FOLDER);
-		$imgBase64 = $biography->getFileManagement()->imgBase64;
-		
-		if(empty($fileManagement->getPhoto()))
-			$biography->setFileManagement(null);
+		if(!empty($biography->getFileManagement())) {
+			$biography->getFileManagement()->setFolder(Biography::FOLDER);
+			$imgBase64 = $biography->getFileManagement()->imgBase64;
+
+			if(empty($fileManagement->getPhoto()))
+				$biography->setFileManagement(null);
+		}
 
 		/*$source = null; //$this->entityManager->getRepository(Source::class)->findOneBy(["identifier" => $data->getSource()->getIdentifier(), "language" => $language]);
 		
