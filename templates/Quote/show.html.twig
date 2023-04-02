@@ -181,6 +181,31 @@
 	</div>
 	{% endif %}
 
+	{% if isInstagramAvailable(entity) %}
+	<div class="card mt-2">
+		<div class="card-header role="tab" id="headingInstagram">
+			<a href="#" role="button" data-toggle="collapse" data-target="#collapseInstagram" aria-expanded="true" aria-controls="collapseOne">
+			<i class="fab fa-instagram-square" aria-hidden="true"></i> Instagram
+			</a>
+		</div>
+		<div id="collapseInstagram" class="collapse" aria-labelledby="headingInstagram" aria-expanded="true">
+			<div class="card-body">
+				<form action="{{ path('app_quoteadmin_instagram', {'id': entity.id}) }}" method="post">
+					<div class="row mb-3">
+						{% for quoteImage in entity.images %}
+							<div class="col-md-4 mb-10"><div class="thumbnail" role="button"><img src="{{ absolute_url(asset(constant('\\App\\Entity\\Quote::PATH_FILE')~quoteImage.image)) }}" data-id="{{ quoteImage.id }}"></div></div>
+						{% endfor %}
+					</div>
+					<input type="hidden" name="image_id_instagram" id="image_instagram">
+					<textarea id="twitter_area" name="instagram_area" rows="3" cols="70" class="form-control">{{ entity.text|raw }} #{{ ('admin.index.Quote'|trans)|lower }}</textarea>
+					<br>
+					<input value="{{ 'admin.socialNetwork.Send'|trans }}" id="tweet" type="submit" class="btn btn-outline-secondary">
+				</form>
+			</div>
+		</div>
+	</div>
+	{% endif %}
+
 	{#{% if entity.images is not empty %}
 	<div class="card mt-2">
 		<div class="card-header" role="tab" id="headingPinterest">
@@ -253,11 +278,18 @@
 				$("#image_facebook").val($(this).data("id"));
 			});
 			
-			// Facebook
+			// Mastodon
 			$("div#collapseMastodon .thumbnail img").click(function() {
 				$("div#collapseMastodon .thumbnail img").removeAttr("style");
 				$(this).css({"border-color": "#eca7a7"});
 				$("#image_mastodon").val($(this).data("id"));
+			});
+			
+			// Instagram
+			$("div#collapseInstagram .thumbnail img").click(function() {
+				$("div#collapseInstagram .thumbnail img").removeAttr("style");
+				$(this).css({"border-color": "#eca7a7"});
+				$("#image_instagram").val($(this).data("id"));
 			});
 		});
 	</script>

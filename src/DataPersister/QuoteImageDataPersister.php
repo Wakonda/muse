@@ -38,7 +38,6 @@ final class QuoteImageDataPersister implements ContextAwareDataPersisterInterfac
 
     public function persist($data, array $context = [])
     {
-		// die(var_dump($data->getQuote()->getIdentifier()));
 		$quote = $this->entityManager->getRepository(Quote::class)->findOneBy(["identifier" => $data->getQuote()->getIdentifier()]);
 
 		file_put_contents("photo/quote/".$data->getImage(), base64_decode($data->imgBase64));

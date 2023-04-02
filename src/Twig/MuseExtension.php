@@ -48,6 +48,7 @@ class MuseExtension extends AbstractExtension
 			new TwigFunction('isTwitterAvailable', array($this, 'isTwitterAvailable')),
 			new TwigFunction('isFacebookAvailable', array($this, 'isFacebookAvailable')),
 			new TwigFunction('isMastodonAvailable', array($this, 'isMastodonAvailable')),
+			new TwigFunction('isInstagramAvailable', array($this, 'isInstagramAvailable')),
 			new TwigFunction('advertising', array($this, 'advertising')),
 			new TwigFunction('get_env', array($this, 'getEnv'))
 		);
@@ -261,6 +262,12 @@ class MuseExtension extends AbstractExtension
 	public function isMastodonAvailable($entity): bool
 	{
 		$api = new \App\Service\Mastodon();
+		return in_array($entity->getLanguage()->getAbbreviation(), $api->getLanguages());
+	}
+
+	public function isInstagramAvailable($entity): bool
+	{
+		$api = new \App\Service\Instagram();
 		return in_array($entity->getLanguage()->getAbbreviation(), $api->getLanguages());
 	}
 	

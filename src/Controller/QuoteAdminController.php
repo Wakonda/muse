@@ -33,6 +33,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Service\Facebook;
 use App\Service\Twitter;
 use App\Service\Mastodon;
+use App\Service\Instagram;
 
 require_once __DIR__.'/../../vendor/simple_html_dom.php';
 
@@ -593,6 +594,36 @@ die("ok");
 			}
 
 			$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentSuccessfully"));
+		}
+
+		return $this->redirect($this->generateUrl("app_quoteadmin_show", ["id" => $id]));
+	}
+
+    /**
+     * @Route("/instagram/{id}")
+     */
+	public function instagramAction(Request $request, TranslatorInterface $translator, Instagram $instagram, SessionInterface $session, $id)
+	{
+		$entityManager = $this->getDoctrine()->getManager();
+		
+		$quoteImage = $entityManager->getRepository(QuoteImage::class)->find($request->request->get("image_id_instagram"));
+
+		$quote = $entityManager->getRepository(Quote::class)->find($id);
+
+		$image_url = $request->getSchemeAndHttpHost()."/".Quote::PATH_FILE.$quoteImage->getImage();
+
+		$res = json_decode($instagram->addMediaMessage($image_url, $request->request->get("instagram_area"), $quote->getLanguage()->getAbbreviation()));
+		
+		if(property_exists($res, "error")) {
+			$session->getFlashBag()->add('message', "Instagram - ".$translator->trans("admin.index.SentError")." (".$res->error->message.")");
+		} else {
+			if(!empty($quoteImage)) {
+				$quoteImage->addSocialNetwork("Instagram");
+				$entityManager->persist($quoteImage);
+				$entityManager->flush();
+			}
+
+			$session->getFlashBag()->add('message', "Instagram - ".$translator->trans("admin.index.SentSuccessfully"));
 		}
 
 		return $this->redirect($this->generateUrl("app_quoteadmin_show", ["id" => $id]));

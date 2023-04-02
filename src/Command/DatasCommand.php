@@ -47,6 +47,10 @@ class DatasCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 		$conn = $this->em->getConnection();
+		
+		$conn->exec("UPDATE quote_image SET identifier = id");die("ok");
+		$conn->exec("UPDATE quote SET identifier = CONCAT('muse-', id)");die("ok");
+		
 		$conn->exec("DELETE FROM source_author");
 		
 		// Poeticus
