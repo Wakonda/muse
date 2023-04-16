@@ -66,6 +66,8 @@ final class QuoteImageDataPersister implements ContextAwareDataPersisterInterfac
 		if(!isset($statues->errors) or empty($statues->errors))
 			$data->addSocialNetwork("Twitter");
 		
+		$url = $this->router->generate("app_indexquotus_read", ["id" => $quote->getId(), "slug" => $quote->getSlug(), "idImage" => $data->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+		
 		$res = json_decode($this->facebook->postMessage($url, $text, $locale));
 		
 		if(property_exists($res, "error"))
