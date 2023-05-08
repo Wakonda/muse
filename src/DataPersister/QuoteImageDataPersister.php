@@ -51,7 +51,9 @@ final class QuoteImageDataPersister implements ContextAwareDataPersisterInterfac
 		$url = $this->router->generate("app_indexquotus_read", ["id" => $quote->getId(), 'slug' => $quote->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL);
 		$locale = $quote->getLanguage()->getAbbreviation();
 		
-		$tags = implode(" ", array_map(function($e) { return "#".$e->getSlug(); }, $quote->getTags()));
+		$biography = "#".strtolower(str_replace(["-", "'", " "], "", iconv('UTF-8','ASCII//TRANSLIT', $quote->getBiography()->getTitle())));
+		
+		$tags = implode(" ", array_map(function($e) { return "#".$e->getSlug(); }, $quote->getTags()))." ".$biography;
 
 		$message = $text." ".$tags." ".$url;
 		$image = Quote::PATH_FILE.$data->getImage();
