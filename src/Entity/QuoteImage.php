@@ -38,7 +38,7 @@ class QuoteImage
 
     /**
     * @ORM\ManyToOne(targetEntity=Quote::class, inversedBy="images", cascade={"persist"})
-     * @Groups({"read", "write"})
+    * @Groups({"read", "write"})
     */
     protected $quote;
 

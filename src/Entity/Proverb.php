@@ -5,10 +5,28 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Core\Annotation\ApiSubresource;
+
 use App\Service\GenericFunction;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ProverbRepository")
+ * @ApiResource(
+ *     itemOperations={
+ *          "get"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "put"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "delete"={"security"="is_granted('ROLE_ADMIN')"}
+ *      },
+ *     collectionOperations={
+ *          "get"={"security"="is_granted('ROLE_ADMIN')"},
+ *          "post"={"security"="is_granted('ROLE_ADMIN')"}
+ *      },
+ *     normalizationContext={"groups"={"read"}},
+ *     denormalizationContext={"groups"={"write"}}
+ * )
  */
 class Proverb
 {
@@ -19,11 +37,13 @@ class Proverb
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @ApiProperty(identifier=false)
      */
     protected $id;
 
     /**
      * @ORM\Column(type="text")
+     * @Groups({"read", "write"})
      */
     protected $text;
 
@@ -34,18 +54,35 @@ class Proverb
 
 	/**
      * @ORM\ManyToOne(targetEntity="App\Entity\Country")
+     * @Groups({"read", "write"})
      */
     protected $country;
 	
    /**
     * @ORM\OneToMany(targetEntity=ProverbImage::class, cascade={"persist", "remove"}, mappedBy="proverb", orphanRemoval=true)
+    * @Groups({"write"})
+	* @ApiSubresource(maxDepth=1)
     */
     protected $images;
 
    /**
     * @ORM\ManyToMany(targetEntity=Tag::class, inversedBy="proverbs", cascade={"persist"})
+    * @Groups({"read", "write"})
     */
 	protected $tags;
+	
+	/**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Language")
+     * @Groups({"read", "write"})
+     */
+	protected $language;
+
+    /**
+     * @ORM\Column(type="string", length=500, unique=true, nullable=true)
+     * @ApiProperty(identifier=true)
+     * @Groups({"read", "write"})
+     */
+    protected $identifier;
 	
     public function __construct()
     {
@@ -56,11 +93,6 @@ class Proverb
 	{
 		return "Proverbius";
 	}
-	
-	/**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Language")
-     */
-	protected $language;
 
     public function getId()
     {
@@ -183,5 +215,15 @@ class Proverb
 	public function getTags()
 	{
 		return $this->tags;
+	}
+
+	public function getIdentifier()
+	{
+		return $this->identifier;
+	}
+	
+	public function setIdentifier($identifier)
+	{
+		$this->identifier = $identifier;
 	}
 }
