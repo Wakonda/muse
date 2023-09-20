@@ -17,14 +17,21 @@ class Twitter
 		$connection = new TwitterOAuth($this->CONSUMER_KEY, $this->CONSUMER_SECRET, $this->OAUTH_TOKEN, $this->OAUTH_TOKEN_SECRET);
 
 		$parameters = [];
-		$parameters["status"] = $message;
 
 		if(!empty($image)) {
-			$media = $connection->upload('media/upload', array('media' => $image));
-			$parameters['media_ids'] = implode(',', array($media->media_id_string));
+			$imageArray = [];
+			$connection->setApiVersion('1.1');
+			$media = $connection->upload('media/upload', ['media' => $image]);
+			array_push($imageArray, $media->media_id_string);
+			
+			$parameters['media']['media_ids'] = $imageArray;
 		}
+		
+		$connection->setApiVersion('2');
 
-		return $connection->post('statuses/update', $parameters);
+		$parameters['text'] = $message;
+
+		return $connection->post('tweets', $parameters, true);
 	}
 	
 	public function setLanguage($language)
