@@ -74,11 +74,6 @@ class ImageGenerator
 
 	public function generate($start_x, $start_y, $max_width)
 	{
-		//split the string 
-		//build new string word for word 
-		//check everytime you add a word if string still fits 
-		//otherwise, remove last word, post current string and start fresh on a new line 
-		// die(qvar_dump($this->text, $this->image));
 		$words = explode(" ", $this->text); 
 		$string = ""; 
 		$tmp_string = ""; 

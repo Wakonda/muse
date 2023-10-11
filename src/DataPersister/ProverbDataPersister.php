@@ -54,6 +54,8 @@ final class ProverbDataPersister implements ContextAwareDataPersisterInterface
 					$currentTags[] = $tag;
 					$tag->setLanguage($language);
 				}
+				
+				$data->addTag($tag);
 			}
 		}
 

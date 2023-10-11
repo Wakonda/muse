@@ -24,7 +24,6 @@ class FileManagementTransformer implements DataTransformerInterface
      */
     public function transform($entity)
     {
-		// die(var_dump($entity));;
         if (null === $entity) {
             return null;
         }

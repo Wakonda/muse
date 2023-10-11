@@ -72,7 +72,7 @@ class VoteRepository extends ServiceEntityRepository
 		}
 		else
 			$qb->setFirstResult($iDisplayStart)->setMaxResults($iDisplayLength);
-// dump($qb->getQuery()->getResult());die;
+
 		return $qb->getQuery()->getResult();
 	}
 }

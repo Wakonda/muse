@@ -155,6 +155,7 @@ class IndexProverbiusController extends AbstractController
 	public function tagAction(Request $request, $id)
 	{
 		$entityManager = $this->getDoctrine()->getManager();
+
 		$entity = $entityManager->getRepository(Tag::class)->find($id);
 
 		return $this->render('IndexProverbius/tag.html.twig', array('entity' => $entity));

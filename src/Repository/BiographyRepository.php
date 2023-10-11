@@ -131,7 +131,7 @@ class BiographyRepository extends ServiceEntityRepository implements iRepository
 
 	// Combobox
 	public function getDatasCombobox($params, $locale, $count = false)
-	{//dump($params);die;
+	{
 		$qb = $this->createQueryBuilder("b");
 
 		if(!empty($locale))
@@ -166,7 +166,7 @@ class BiographyRepository extends ServiceEntityRepository implements iRepository
 			   
 			return $qb->getQuery()->getSingleScalarResult();
 		}
-// die($qb->getQuery()->getSQL());
+
 		return $qb->getQuery()->getResult();
 	}
 }

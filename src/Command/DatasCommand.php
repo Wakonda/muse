@@ -48,8 +48,8 @@ class DatasCommand extends Command
     {
 		$conn = $this->em->getConnection();
 		
-		$conn->exec("UPDATE quote_image SET identifier = id");die("ok");
-		$conn->exec("UPDATE quote SET identifier = CONCAT('muse-', id)");die("ok");
+		$conn->exec("UPDATE quote_image SET identifier = id");
+		$conn->exec("UPDATE quote SET identifier = CONCAT('muse-', id)");
 		
 		$conn->exec("DELETE FROM source_author");
 		

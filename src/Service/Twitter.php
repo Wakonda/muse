@@ -23,7 +23,7 @@ class Twitter
 			$connection->setApiVersion('1.1');
 			$media = $connection->upload('media/upload', ['media' => $image]);
 			array_push($imageArray, $media->media_id_string);
-			
+
 			$parameters['media']['media_ids'] = $imageArray;
 		}
 		

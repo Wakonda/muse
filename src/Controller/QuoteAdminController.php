@@ -342,7 +342,7 @@ class QuoteAdminController extends AbstractController
 
 			$dom = new \simple_html_dom();
 			$dom->load($html);
-die("ok");
+
 			switch(base64_encode($url_array['host']))
 			{
 				case 'Y2l0YXRpb24tY2VsZWJyZS5sZXBhcmlzaWVuLmZy':
