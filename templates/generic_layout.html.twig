@@ -14,56 +14,6 @@
 
 		<link rel="shortcut icon" href="{{ asset('photo/favicon.ico') }}">
 
-		<script src="{{ asset(minify_file('js/tarteaucitron.js/tarteaucitron.js')) }}"></script>
-
-		<!-- GDPR -->
-        <script type="text/javascript">
-		tarteaucitronForceLanguage = "{{ app.request.locale }}";
-		
-        tarteaucitron.init({
-			"privacyUrl": "", /* Privacy policy url */
-			"bodyPosition": "bottom", /* or top to bring it as first element for accessibility */
-
-			"hashtag": "#tarteaucitron", /* Open the panel with this hashtag */
-			"cookieName": "tarteaucitron", /* Cookie name */
-
-			"orientation": "middle", /* Banner position (top - bottom - middle - popup) */
-
-			"groupServices": false, /* Group services by category */
-
-			"showAlertSmall": false, /* Show the small banner on bottom right */
-			"cookieslist": false, /* Show the cookie list */
-
-			"showIcon": true, /* Show cookie icon to manage cookies */
-			// "iconSrc": "", /* Optionnal: URL or base64 encoded image */
-			"iconPosition": "BottomLeft", /* Position of the icon between BottomRight, BottomLeft, TopRight and TopLeft */
-
-			"adblocker": true, /* Show a Warning if an adblocker is detected */
-
-			"DenyAllCta" : true, /* Show the deny all button */
-			"AcceptAllCta" : true, /* Show the accept all button when highPrivacy on */
-			"highPrivacy": true, /* HIGHLY RECOMMANDED Disable auto consent */
-
-			"handleBrowserDNTRequest": false, /* If Do Not Track == 1, disallow all */
-
-			"removeCredit": false, /* Remove credit link */
-			"moreInfoLink": true, /* Show more info link */
-			"useExternalCss": false, /* If false, the tarteaucitron.css file will be loaded */
-
-			"readmoreLink": "/cookiespolicy", /* Change the default readmore link */
-
-			"mandatory": true /* Show a message about mandatory cookies */
-        });
-        </script>
-        <script type="text/javascript">
-			(tarteaucitron.job = tarteaucitron.job || []).push('adsense');
-
-			document.addEventListener("adsense_allowed", function(e) {
-				window.location.reload();
-			});
-        </script>
-		<!-- end GDPR -->
-
         {% block stylesheets %}
             {{ encore_entry_link_tags('app') }}
         {% endblock %}
@@ -98,7 +48,7 @@
 						<h2 class="mt-2">{% block title_description %}{% endblock %}</h2>
 					</div>
 					<div class="col-lg-6 mt-2">
-						<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> -->
+						<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 						<!-- QPP - Right side -->
 						<ins class="adsbygoogle"
 							 style="display:block"
@@ -155,7 +105,7 @@
 
 					<nav class="sidebar">
 						<h1>{{ 'menu.left.Publicity'|trans }}</h1>
-						<!-- <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> -->
+						<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 						<!-- Poeticus_right_menu -->
 						<ins class="adsbygoogle"
 							 style="display:inline-block;width:250px;height:250px"
@@ -230,7 +180,7 @@
 					{% block main_content %}{% endblock %}
 					<div class="advert">
 					<p class="ad_title hidden_print">{{ 'menu.left.Publicity'|trans }}</p>
-					<!-- <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> -->
+					<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 					<!-- poeticus_down -->
 					<ins class="adsbygoogle"
 						 style="display:block"
@@ -274,7 +224,7 @@
 			  } catch (e) {
 				adBlockEnabled = true
 			  } finally {
-				if(document.cookie.includes("tarteaucitron=!adsense=true") && adBlockEnabled == false) {
+				if(adBlockEnabled == false) {
 					for (let element of document.getElementsByClassName("advertising-alternative"))
 						element.classList.add("d-none");
 					for (let element of document.getElementsByClassName("adsbygoogle"))
