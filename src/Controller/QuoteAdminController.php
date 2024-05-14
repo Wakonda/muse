@@ -27,8 +27,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Doctrine\ORM\EntityManagerInterface;
 
-use seregazhuk\PinterestBot\Factories\PinterestBot;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\Facebook;
 use App\Service\Twitter;
@@ -57,9 +57,8 @@ class QuoteAdminController extends AbstractController
     /**
      * @Route("/datatables")
      */
-	public function indexDatatablesAction(Request $request, TranslatorInterface $translator)
+	public function indexDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 		$sSearch = $request->query->get('sSearch');
@@ -76,8 +75,8 @@ class QuoteAdminController extends AbstractController
 			}
 		}
 		
-		$entities = $entityManager->getRepository(Quote::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
-		$iTotal = $entityManager->getRepository(Quote::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
+		$entities = $em->getRepository(Quote::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
+		$iTotal = $em->getRepository(Quote::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -108,20 +107,19 @@ class QuoteAdminController extends AbstractController
     /**
      * @Route("/new/{biographyId}/{sourceId}", defaults={"biographyId": null, "sourceId": null}, requirements={"biographyId"="\d+", "sourceId"="\d+"})
      */
-    public function newAction(Request $request, $biographyId, $sourceId)
+    public function newAction(EntityManagerInterface $em, Request $request, $biographyId, $sourceId)
     {
 		$entity = new Quote();
-		
-		$entityManager = $this->getDoctrine()->getManager();
-		$language = $entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
-		
+
+		$language = $em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
+
 		$entity->setLanguage($language);
 		
 		if(!empty($biographyId))
-			$entity->setBiography($entityManager->getRepository(Biography::class)->find($biographyId));
+			$entity->setBiography($em->getRepository(Biography::class)->find($biographyId));
 		
 		if(!empty($sourceId))
-			$entity->setSource($entityManager->getRepository(Source::class)->find($sourceId));
+			$entity->setSource($em->getRepository(Source::class)->find($sourceId));
 
         $form = $this->genericCreateForm($request->getLocale(), $entity);
 
@@ -131,23 +129,22 @@ class QuoteAdminController extends AbstractController
     /**
      * @Route("/create")
      */
-	public function createAction(Request $request, TranslatorInterface $translator)
+	public function createAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$entity = new Quote();
-		$entityManager = $this->getDoctrine()->getManager();
 		$locale = $request->request->get($this->formName)["language"];
-		$language = $entityManager->getRepository(Language::class)->find($locale);
+		$language = $em->getRepository(Language::class)->find($locale);
 
         $form = $this->genericCreateForm($language->getAbbreviation(), $entity);
 		$form->handleRequest($request);
 
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 
 		if($form->isValid())
 		{
 			$entity->setState(0);
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			$redirect = $this->generateUrl('app_quoteadmin_show', array('id' => $entity->getId()));
 
@@ -160,23 +157,21 @@ class QuoteAdminController extends AbstractController
     /**
      * @Route("/show/{id}")
      */
-	public function showAction(Request $request, $id)
+	public function showAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Quote::class)->find($id);
+		$entity = $em->getRepository(Quote::class)->find($id);
 
 		$imageGeneratorForm = $this->createForm(ImageGeneratorType::class);
-	
+
 		return $this->render('Quote/show.html.twig', array('entity' => $entity, 'imageGeneratorForm' => $imageGeneratorForm->createView()));
 	}
 
     /**
      * @Route("/edit/{id}")
      */
-	public function editAction(Request $request, $id)
+	public function editAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Quote::class)->find($id);
+		$entity = $em->getRepository(Quote::class)->find($id);
 		$form = $this->genericCreateForm($entity->getLanguage()->getAbbreviation(), $entity);
 
 		return $this->render('Quote/edit.html.twig', array('form' => $form->createView(), 'entity' => $entity));
@@ -185,26 +180,25 @@ class QuoteAdminController extends AbstractController
     /**
      * @Route("/update/{id}")
      */
-	public function updateAction(Request $request, TranslatorInterface $translator, $id)
+	public function updateAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Quote::class)->find($id);
+		$entity = $em->getRepository(Quote::class)->find($id);
 		
 		$locale = $request->request->get($this->formName)["language"];
-		$language = $entityManager->getRepository(Language::class)->find($locale);
+		$language = $em->getRepository(Language::class)->find($locale);
 		
 		$form = $this->genericCreateForm($language->getAbbreviation(), $entity);
 		$form->handleRequest($request);
 		
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 		
 		if(($entity->isBiography() and $entity->getBiography() == null) or ($entity->isUser() and $entity->getUser() == null))
 			$form->get($entity->getAuthorType())->addError(new FormError($translator->trans("This value should not be blank.", array(), "validators")));
 		
 		if($form->isValid())
 		{
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			return $this->redirect($this->generateUrl('app_quoteadmin_show', array('id' => $entity->getId())));
 		}
@@ -215,11 +209,10 @@ class QuoteAdminController extends AbstractController
     /**
      * @Route("/edit_multiple")
      */
-	public function editMultipleAction(Request $request)
+	public function editMultipleAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$ids = json_decode($request->query->get("ids"));
-		$locale = $entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
+		$locale = $em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
 		$form = $this->createForm(QuoteEditMultipleType::class, null, array("locale" => $locale->getId()));
 
 		return $this->render('Quote/editMultiple.html.twig', array('form' => $form->createView(), 'ids' => $ids));
@@ -228,11 +221,10 @@ class QuoteAdminController extends AbstractController
     /**
      * @Route("/update_multiple/{ids}")
      */
-	public function updateMultipleAction(Request $request, SessionInterface $session, TranslatorInterface $translator, $ids)
+	public function updateMultipleAction(EntityManagerInterface $em, Request $request, SessionInterface $session, TranslatorInterface $translator, $ids)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$ids = json_decode($ids);
-		$locale = $entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
+		$locale = $em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
 		$form = $this->createForm(QuoteEditMultipleType::class, null, array("locale" => $locale->getId()));
 		$form->handleRequest($request);
 
@@ -240,25 +232,25 @@ class QuoteAdminController extends AbstractController
 
 		foreach($ids as $id)
 		{
-			$entity = $entityManager->getRepository(Quote::class)->find($id);
+			$entity = $em->getRepository(Quote::class)->find($id);
 			$tagsId = $req["tags"];
 
 			foreach($tagsId as $tagId)
 			{
-				$tag = $entityManager->getRepository(Tag::class)->find($tagId);
-				$realTag = $entityManager->getRepository(Tag::class)->findOneBy(["internationalName" => $tag->getInternationalName(), "language" => $entity->getLanguage()]);
+				$tag = $em->getRepository(Tag::class)->find($tagId);
+				$realTag = $em->getRepository(Tag::class)->findOneBy(["internationalName" => $tag->getInternationalName(), "language" => $entity->getLanguage()]);
 				
 				if(!empty($realTag))
 				{
 					if(!$entity->isTagExisted($realTag))
 					{
 						$entity->addTag($realTag);
-						$entityManager->persist($entity);
+						$em->persist($entity);
 					}
 				}
 			}
 
-			$entityManager->flush();
+			$em->flush();
 		}
 		
 		$session->getFlashBag()->add('message', $translator->trans("admin.index.ChangesMadeSuccessfully"));
@@ -269,9 +261,8 @@ class QuoteAdminController extends AbstractController
     /**
      * @Route("/new_fast_multiple")
      */
-	public function newFastMultipleAction(Request $request)
+	public function newFastMultipleAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$datas = $request->query->all();
 		$datas = !empty($datas) ? json_decode($datas["datas"], true) : null;
 		$entity = new Quote();
@@ -280,16 +271,16 @@ class QuoteAdminController extends AbstractController
 		$ipProxy = null;
 
 		if(!empty($datas)) {
-			$entity->setLanguage($entityManager->getRepository(Language::class)->find($datas["language"]));
-			$entity->setBiography($entityManager->getRepository(Biography::class)->find($datas["biography"]));
+			$entity->setLanguage($em->getRepository(Language::class)->find($datas["language"]));
+			$entity->setBiography($em->getRepository(Biography::class)->find($datas["biography"]));
 			
 			if(!empty($datas["source"]))
-				$entity->setSource($entityManager->getRepository(Source::class)->find($datas["source"]));
+				$entity->setSource($em->getRepository(Source::class)->find($datas["source"]));
 			
 			$url = $datas["url"];
 			$ipProxy = $datas["ipProxy"];
 		} else
-			$entity->setLanguage($entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
+			$entity->setLanguage($em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
 
 		$form = $this->createForm(QuoteFastMultipleType::class, $entity, array("locale" => $request->getLocale(), "url" => $url, "ipProxy" => $ipProxy));
 
@@ -299,9 +290,8 @@ class QuoteAdminController extends AbstractController
     /**
      * @Route("/add_fast_multiple")
      */
-	public function addFastMultipleAction(Request $request, SessionInterface $session, TranslatorInterface $translator)
+	public function addFastMultipleAction(EntityManagerInterface $em, Request $request, SessionInterface $session, TranslatorInterface $translator)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$entity = new Quote();
 		
 		$form = $this->createForm(QuoteFastMultipleType::class, $entity, array("locale" => $request->getLocale()));
@@ -361,7 +351,7 @@ class QuoteAdminController extends AbstractController
 						if($type == "personnage") {
 							
 							$sourceTitle = html_entity_decode(current($pb->find(".auteurLien"))->plaintext, ENT_QUOTES);
-							$source = $entityManager->getRepository(Source::class)->getSourceByBiographyAndTitle($entity->getBiography(), $sourceTitle);
+							$source = $em->getRepository(Source::class)->getSourceByBiographyAndTitle($entity->getBiography(), $sourceTitle);
 							
 							if(!empty($source))
 								$entityNew->setSource($source);
@@ -395,7 +385,7 @@ class QuoteAdminController extends AbstractController
 						$entityNew->setSource(null);
 
 						if(isset($div[1])) {
-							$source = $entityManager->getRepository(Source::class)->getSourceByBiographyAndTitle($entity->getBiography(), trim($div[1]));
+							$source = $em->getRepository(Source::class)->getSourceByBiographyAndTitle($entity->getBiography(), trim($div[1]));
 							
 							if(!empty($source))
 								$entityNew->setSource($source);
@@ -413,16 +403,14 @@ class QuoteAdminController extends AbstractController
 			$numberAdded = 0;
 			$numberDoubloons = 0;
 
-			$entityManager = $this->getDoctrine()->getManager();
-
 			foreach($entitiesArray as $entity)
 			{
-				if($entityManager->getRepository(Quote::class)->checkForDoubloon($entity) > 0)
+				if($em->getRepository(Quote::class)->checkForDoubloon($entity) > 0)
 					$numberDoubloons++;
 				else
 				{
-					$entityManager->persist($entity);
-					$entityManager->flush();
+					$em->persist($entity);
+					$em->flush();
 					$numberAdded++;
 				}
 			}
@@ -440,22 +428,20 @@ class QuoteAdminController extends AbstractController
     /**
      * @Route("/twitter/{id}")
      */
-	public function twitterAction(Request $request, SessionInterface $session, TranslatorInterface $translator, Twitter $twitter, $id)
+	public function twitterAction(EntityManagerInterface $em, Request $request, SessionInterface $session, TranslatorInterface $translator, Twitter $twitter, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Quote::class)->find($id);
+		$entity = $em->getRepository(Quote::class)->find($id);
 
 		$locale = $entity->getLanguage()->getAbbreviation();
 		
 		$message = $request->request->get("twitter_area")." ".$this->generateUrl("app_indexquotus_read", array("id" => $id, 'slug' => $entity->getSlug()), UrlGeneratorInterface::ABSOLUTE_URL);
-
 		$imageId = $request->request->get('image_id_tweet');
 
 		$quoteImage = null;
 		$image = null;
 
 		if(!empty($imageId)) {
-			$quoteImage = $entityManager->getRepository(QuoteImage::class)->find($imageId);
+			$quoteImage = $em->getRepository(QuoteImage::class)->find($imageId);
 			$image = Quote::PATH_FILE.$quoteImage->getImage();
 		}
 		
@@ -466,8 +452,8 @@ class QuoteAdminController extends AbstractController
 		else {
 			if(!empty($quoteImage)) {
 				$quoteImage->addSocialNetwork("Twitter");
-				$entityManager->persist($quoteImage);
-				$entityManager->flush();
+				$em->persist($quoteImage);
+				$em->flush();
 			}
 		
 			$session->getFlashBag()->add('message', "Twitter - ".$translator->trans("admin.index.SentSuccessfully"));
@@ -479,22 +465,20 @@ class QuoteAdminController extends AbstractController
     /**
      * @Route("/mastodon/{id}")
      */
-	public function mastodonAction(Request $request, SessionInterface $session, TranslatorInterface $translator, Mastodon $mastodon, $id)
+	public function mastodonAction(EntityManagerInterface $em, Request $request, SessionInterface $session, TranslatorInterface $translator, Mastodon $mastodon, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Quote::class)->find($id);
+		$entity = $em->getRepository(Quote::class)->find($id);
 
 		$locale = $entity->getLanguage()->getAbbreviation();
 		
 		$message = $request->request->get("mastodon_area")." ".$this->generateUrl("app_indexquotus_read", array("id" => $id, 'slug' => $entity->getSlug()), UrlGeneratorInterface::ABSOLUTE_URL);
-
 		$imageId = $request->request->get('image_id_mastodon');
 
 		$quoteImage = null;
 		$image = null;
 
 		if(!empty($imageId)) {
-			$quoteImage = $entityManager->getRepository(QuoteImage::class)->find($imageId);
+			$quoteImage = $em->getRepository(QuoteImage::class)->find($imageId);
 			$image = Quote::PATH_FILE.$quoteImage->getImage();
 		}
 
@@ -505,8 +489,8 @@ class QuoteAdminController extends AbstractController
 		else {
 			if(!empty($quoteImage)) {
 				$quoteImage->addSocialNetwork("Mastodon");
-				$entityManager->persist($quoteImage);
-				$entityManager->flush();
+				$em->persist($quoteImage);
+				$em->flush();
 			}
 		
 			$session->getFlashBag()->add('message', "Mastodon - ".$translator->trans("admin.index.SentSuccessfully"));
@@ -516,67 +500,16 @@ class QuoteAdminController extends AbstractController
 	}
 
     /**
-     * @Route("/pinterest/{id}")
-     */
-	public function pinterestAction(Request $request, SessionInterface $session, TranslatorInterface $translator, $id)
-	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Quote::class)->find($id);
-		
-		$mail = $_ENV["PINTEREST_MAIL"];
-		$pwd = $_ENV["PINTEREST_PASSWORD"];
-		$username = $_ENV["PINTEREST_USERNAME"];
-
-		$bot = PinterestBot::create();
-		$bot->auth->login($mail, $pwd);
-		
-		$boards = $bot->boards->forUser($username);
-		
-		$i = 0;
-
-		foreach($boards as $board) {
-			if($pinterestBoards[$board["name"]] == $entity->getLanguage()->getAbbreviation())
-				break;
-
-			$i++;
-		}
-		
-		$imageId = $request->request->get('image_id_pinterest');
-		$quoteImage = $entityManager->getRepository(QuoteImage::class)->find($imageId);
-		
-		if(empty($quoteImage)) {
-			$session->getFlashBag()->add('message', "Pinterest - ".$translator->trans("admin.index.YouMustSelectAnImage"));
-			return $this->redirect($this->generateUrl("app_quoteadmin_show", array("id" => $id)));
-		}
-
-		$bot->pins->create($request->getUriForPath('/'.Quote::PATH_FILE.$quoteImage->getImage()), $boards[0]['id'], $request->request->get("pinterest_area"), $this->generateUrl("read", ["id" => $entity->getId(), "slug" => $entity->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL));
-		
-		if(empty($bot->getLastError())) {
-			$session->getFlashBag()->add('message', "Pinterest - ".$translator->trans("admin.index.SentSuccessfully"));
-			
-			$quoteImage->addSocialNetwork("Pinterest");
-			$entityManager->persist($quoteImage);
-			$entityManager->flush();
-		}
-		else
-			$session->getFlashBag()->add('message', $bot->getLastError());
-	
-		return $this->redirect($this->generateUrl("app_quoteadmin_show", array("id" => $id)));
-	}
-
-    /**
      * @Route("/facebook/{id}")
      */
-	public function facebookAction(Request $request, TranslatorInterface $translator, Facebook $facebook, SessionInterface $session, $id)
+	public function facebookAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, Facebook $facebook, SessionInterface $session, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		
 		$quoteImage = null;
 		
-		$quote = $entityManager->getRepository(Quote::class)->find($id);
+		$quote = $em->getRepository(Quote::class)->find($id);
 
 		if(!empty($request->request->get("image_id_facebook"))) {
-			$quoteImage = $entityManager->getRepository(QuoteImage::class)->find($request->request->get("image_id_facebook"));
+			$quoteImage = $em->getRepository(QuoteImage::class)->find($request->request->get("image_id_facebook"));
 			$url = $this->generateUrl("app_indexquotus_read", ["id" => $id, "slug" => $quoteImage->getQuote()->getSlug(), "idImage" => $quoteImage->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 		} else {
 			$url = $this->generateUrl("app_indexquotus_read", ["id" => $id, "slug" => $quote->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL);
@@ -589,8 +522,8 @@ class QuoteAdminController extends AbstractController
 		} else {
 			if(!empty($quoteImage)) {
 				$quoteImage->addSocialNetwork("Facebook");
-				$entityManager->persist($quoteImage);
-				$entityManager->flush();
+				$em->persist($quoteImage);
+				$em->flush();
 			}
 
 			$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentSuccessfully"));
@@ -602,13 +535,10 @@ class QuoteAdminController extends AbstractController
     /**
      * @Route("/instagram/{id}")
      */
-	public function instagramAction(Request $request, TranslatorInterface $translator, Instagram $instagram, SessionInterface $session, $id)
+	public function instagramAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, Instagram $instagram, SessionInterface $session, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		
-		$quoteImage = $entityManager->getRepository(QuoteImage::class)->find($request->request->get("image_id_instagram"));
-
-		$quote = $entityManager->getRepository(Quote::class)->find($id);
+		$quoteImage = $em->getRepository(QuoteImage::class)->find($request->request->get("image_id_instagram"));
+		$quote = $em->getRepository(Quote::class)->find($id);
 
 		$image_url = $request->getSchemeAndHttpHost()."/".Quote::PATH_FILE.$quoteImage->getImage();
 
@@ -619,8 +549,8 @@ class QuoteAdminController extends AbstractController
 		} else {
 			if(!empty($quoteImage)) {
 				$quoteImage->addSocialNetwork("Instagram");
-				$entityManager->persist($quoteImage);
-				$entityManager->flush();
+				$em->persist($quoteImage);
+				$em->flush();
 			}
 
 			$session->getFlashBag()->add('message', "Instagram - ".$translator->trans("admin.index.SentSuccessfully"));
@@ -632,10 +562,9 @@ class QuoteAdminController extends AbstractController
     /**
      * @Route("/save_image/{id}")
      */
-	public function saveImageAction(Request $request, TranslatorInterface $translator, $id)
+	public function saveImageAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Quote::class)->find($id);
+		$entity = $em->getRepository(Quote::class)->find($id);
 		
         $imageGeneratorForm = $this->createForm(ImageGeneratorType::class);
         $imageGeneratorForm->handleRequest($request);
@@ -745,8 +674,8 @@ class QuoteAdminController extends AbstractController
 
 			$entity->addImage(new QuoteImage($fileName));
 			
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 			
 			$redirect = $this->generateUrl('app_quoteadmin_show', array('id' => $entity->getId()));
 
@@ -759,23 +688,21 @@ class QuoteAdminController extends AbstractController
     /**
      * @Route("/remove_image/{id}/{quoteImageId}")
      */
-	public function removeImageAction(Request $request, $id, $quoteImageId)
+	public function removeImageAction(EntityManagerInterface $em, Request $request, $id, $quoteImageId)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Quote::class)->find($id);
-		
-		$quoteImage = $entityManager->getRepository(QuoteImage::class)->find($quoteImageId);
-		
+		$entity = $em->getRepository(Quote::class)->find($id);
+		$quoteImage = $em->getRepository(QuoteImage::class)->find($quoteImageId);
+
 		$fileName = $quoteImage->getImage();
-		
+
 		$entity->removeQuoteImage($quoteImage);
-		
-		$entityManager->persist($entity);
-		$entityManager->flush();
-		
+
+		$em->persist($entity);
+		$em->flush();
+
 		$filesystem = new Filesystem();
 		$filesystem->remove(Quote::PATH_FILE.$fileName);
-		
+
 		$redirect = $this->generateUrl('app_quoteadmin_show', array('id' => $entity->getId()));
 
 		return $this->redirect($redirect);
@@ -786,12 +713,11 @@ class QuoteAdminController extends AbstractController
 		return $this->createForm(QuoteType::class, $entity, array('locale' => $locale));
 	}
 
-	private function checkForDoubloon(TranslatorInterface $translator, $entity, $form)
+	private function checkForDoubloon(EntityManagerInterface $em, TranslatorInterface $translator, $entity, $form)
 	{
 		if($entity->getText() != null)
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$checkForDoubloon = $entityManager->getRepository(Quote::class)->checkForDoubloon($entity);
+			$checkForDoubloon = $em->getRepository(Quote::class)->checkForDoubloon($entity);
 
 			if($checkForDoubloon > 0)
 				$form->get("title")->addError(new FormError($translator->trans("admin.index.ThisEntryAlreadyExists")));

@@ -32,6 +32,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/user")
@@ -43,9 +44,7 @@ class UserController extends AbstractController
      */
     public function loginAction(AuthenticationUtils $authenticationUtils)
     {
-        // get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
-        // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
 		return $this->render('User/login.html.twig', array(
@@ -59,17 +58,15 @@ class UserController extends AbstractController
      */
     public function logout()
     {
-        // controller can be blank: it will never be executed!
         throw new \Exception('Don\'t forget to activate logout in security.yaml');
     }
 
     /**
      * @Route("/list")
      */
-	public function listAction(Request $request)
+	public function listAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(User::class)->findAll();
+		$entities = $em->getRepository(User::class)->findAll();
 
 		return $this->render('User/list.html.twig', array('entities' => $entities));
 	}
@@ -77,11 +74,10 @@ class UserController extends AbstractController
     /**
      * @Route("/show", defaults={"username": null})
      */
-	public function showAction(TokenStorageInterface $tokenStorage, $username)
+	public function showAction(EntityManagerInterface $em, TokenStorageInterface $tokenStorage, $username)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		if(!empty($username))
-			$entity = $entityManager->getRepository(User::class)->findOneBy(["username" => $username]);
+			$entity = $em->getRepository(User::class)->findOneBy(["username" => $username]);
 		else
 			$entity = $tokenStorage->getToken()->getUser();
 
@@ -102,7 +98,7 @@ class UserController extends AbstractController
     /**
      * @Route("/create")
      */
-	public function createAction(Request $request, SessionInterface $session, \Swift_Mailer $mailer, TranslatorInterface $translator)
+	public function createAction(EntityManagerInterface $em, Request $request, SessionInterface $session, \Swift_Mailer $mailer, TranslatorInterface $translator)
 	{
 		$entity = new User();
         $form = $this->createFormUser($entity, false);
@@ -113,7 +109,7 @@ class UserController extends AbstractController
 		if($params["captcha"] != "" and $session->get("captcha_word") != $params["captcha"])
 			$form->get("captcha")->addError(new FormError($translator->trans('user.createAccount.TheWordMustMatchThePicture')));
 
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 
 		if($form->isValid())
 		{
@@ -136,9 +132,8 @@ class UserController extends AbstractController
 			$entity->setEnabled(false);
 			$entity->setSalt($salt);
 
-			$entityManager = $this->getDoctrine()->getManager();
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			// Send email
 			$body = $this->renderView('User/confirmationInscription_mail.html.twig', array("entity" => $entity));
@@ -159,11 +154,10 @@ class UserController extends AbstractController
     /**
      * @Route("/edit", defaults={"id": null})
      */
-	public function editAction(Request $request, TokenStorageInterface $tokenStorage, TranslatorInterface $translator, $id)
+	public function editAction(EntityManagerInterface $em, Request $request, TokenStorageInterface $tokenStorage, TranslatorInterface $translator, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		if(!empty($id))
-			$entity = $entityManager->getRepository(User::class)->find($id);
+			$entity = $em->getRepository(User::class)->find($id);
 		else
 		{
 			$this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY', null, $translator->trans('user.createAccount.UnableToAccessThisPage'));
@@ -178,20 +172,19 @@ class UserController extends AbstractController
     /**
      * @Route("/update", defaults={"id": null})
      */
-	public function updateAction(Request $request, TokenStorageInterface $tokenStorage, TranslatorInterface $translator, $id)
+	public function updateAction(EntityManagerInterface $em, Request $request, TokenStorageInterface $tokenStorage, TranslatorInterface $translator, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		if(empty($id))
 			$entity = $tokenStorage->getToken()->getUser();
 		else
-			$entity = $entityManager->getRepository(User::class)->find($id);
+			$entity = $em->getRepository(User::class)->find($id);
 		
 		$current_avatar = $entity->getAvatar();
 
 		$form = $this->createFormUser($entity, true);
 		$form->handleRequest($request);
 		
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 
 		if($form->isValid())
 		{
@@ -205,9 +198,8 @@ class UserController extends AbstractController
 			else
 				$entity->setAvatar($current_avatar);
 
-			$entityManager = $this->getDoctrine()->getManager();
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 			
 			return $this->redirect($this->generateUrl('user_show', array('id' => $entity->getId())));
 		}
@@ -229,7 +221,7 @@ class UserController extends AbstractController
     /**
      * @Route("/updatepasswordsave")
      */
-	public function updatePasswordSaveAction(Request $request, SessionInterface $session, TokenStorageInterface $tokenStorage, TranslatorInterface $translator)
+	public function updatePasswordSaveAction(EntityManagerInterface $em, Request $request, SessionInterface $session, TokenStorageInterface $tokenStorage, TranslatorInterface $translator)
 	{
 		$entity = $tokenStorage->getToken()->getUser();
         $form = $this->createForm(UpdatePasswordType::class, $entity);
@@ -243,9 +235,9 @@ class UserController extends AbstractController
 			$encoder = new MessageDigestPasswordEncoder();
 			$entity->setSalt($salt);
 			$entity->setPassword($encoder->encodePassword($entity->getPassword(), $salt));
-			$entityManager = $this->getDoctrine()->getManager();
-			$entityManager->persist($entity);
-			$entityManager->flush();
+
+			$em->persist($entity);
+			$em->flush();
 
 			$session->getFlashBag()->add('new_password', $translator->trans('forgottenPassword.confirmation.YourPasswordHasBeenChanged'));
 
@@ -268,7 +260,7 @@ class UserController extends AbstractController
     /**
      * @Route("/forgottenpasswordsend")
      */
-	public function forgottenPasswordSendAction(Request $request, \Swift_Mailer $mailer, TranslatorInterface $translator)
+	public function forgottenPasswordSendAction(EntityManagerInterface $em, Request $request, \Swift_Mailer $mailer, TranslatorInterface $translator)
 	{
         $form = $this->createForm(ForgottenPasswordType::class, null);
 		$form->handleRequest($request);
@@ -278,8 +270,7 @@ class UserController extends AbstractController
 		if($params["captcha"] != "" and $request->getSession()->get("captcha_word") != $params["captcha"])
 			$form->get("captcha")->addError(new FormError($translator->trans('forgottenPassword.field.TheWordMustMatchThePicture')));
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(User::class)->findByUsernameOrEmail($params["emailUsername"]);
+		$entity = $em->getRepository(User::class)->findByUsernameOrEmail($params["emailUsername"]);
 
 		if(empty($entity))
 			$form->get("emailUsername")->addError(new FormError($translator->trans('forgottenPassword.field.UsernameOrEmailAddressDoesNotExist')));
@@ -296,8 +287,8 @@ class UserController extends AbstractController
 		$encoder = new MessageDigestPasswordEncoder();
 		$entity->setSalt($salt);
 		$entity->setPassword($encoder->encodePassword($temporaryPassword, $salt));
-		$entityManager->persist($entity);
-        $entityManager->flush();
+		$em->persist($entity);
+        $em->flush();
 		
 		// Send email
 		$body = $this->renderView('User/forgottenpassword_mail.html.twig', array("entity" => $entity, "temporaryPassword" => $temporaryPassword));
@@ -327,12 +318,11 @@ class UserController extends AbstractController
 		return $this->createForm(UserType::class, $entity, array('edit' => $ifEdit));
 	}
 
-	private function checkForDoubloon(TranslatorInterface $translator, $entity, $form)
+	private function checkForDoubloon(EntityManagerInterface $em, TranslatorInterface $translator, $entity, $form)
 	{
 		if($entity->getUsername() != null)
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$checkForDoubloon = $entityManager->getRepository(User::class)->checkForDoubloon($entity);
+			$checkForDoubloon = $em->getRepository(User::class)->checkForDoubloon($entity);
 
 			if($checkForDoubloon > 0)
 				$form->get("username")->addError(new FormError($translator->trans('user.createAccount.UserSameUsernameEmailExists')));
@@ -388,10 +378,9 @@ class UserController extends AbstractController
     /**
      * @Route("/quote_user_datatables/{username}")
      */
-	public function quotesUserDatatablesAction(Request $request, TokenStorageInterface $tokenStorage, TranslatorInterface $translator, AuthorizationCheckerInterface $authChecker, $username)
+	public function quotesUserDatatablesAction(EntityManagerInterface $em, Request $request, TokenStorageInterface $tokenStorage, TranslatorInterface $translator, AuthorizationCheckerInterface $authChecker, $username)
 	{
 		list($voteClassName, $commentClassName, $entityClass, $editRoute) = $this->selectEntity();
-		$entityManager = $this->getDoctrine()->getManager();
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 		$sSearch = $request->query->get('sSearch');
@@ -408,8 +397,8 @@ class UserController extends AbstractController
 			}
 		}
 
-		$entities = $entityManager->getRepository($entityClass)->findByUserAndAuhorType($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $username, $tokenStorage->getToken()->getUser(), 'user');
-		$iTotal = $entityManager->getRepository($entityClass)->findByUserAndAuhorType($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $username, $tokenStorage->getToken()->getUser(), 'user', true);
+		$entities = $em->getRepository($entityClass)->findByUserAndAuhorType($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $username, $tokenStorage->getToken()->getUser(), 'user');
+		$iTotal = $em->getRepository($entityClass)->findByUserAndAuhorType($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $username, $tokenStorage->getToken()->getUser(), 'user', true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -439,7 +428,7 @@ class UserController extends AbstractController
     /**
      * @Route("/vote_datatables/{username}")
      */
-	public function votesUserDatatablesAction(Request $request, $username)
+	public function votesUserDatatablesAction(EntityManagerInterface $em, Request $request, $username)
 	{
 		list($voteClassName, $commentClassName, $entityClass, $editRoute) = $this->selectEntity();
 		$iDisplayStart = $request->query->get('iDisplayStart');
@@ -458,9 +447,8 @@ class UserController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository($voteClassName)->findVoteByUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $username);
-		$iTotal = $entityManager->getRepository($voteClassName)->findVoteByUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $username, true);
+		$entities = $em->getRepository($voteClassName)->findVoteByUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $username);
+		$iTotal = $em->getRepository($voteClassName)->findVoteByUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $username, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -488,7 +476,7 @@ class UserController extends AbstractController
     /**
      * @Route("/comment_datatables/{username}")
      */
-	public function commentsUserDatatablesAction(Request $request, $username)
+	public function commentsUserDatatablesAction(EntityManagerInterface $em, Request $request, $username)
 	{
 		list($voteClassName, $commentClassName, $entityClass, $editRoute) = $this->selectEntity();
 		$iDisplayStart = $request->query->get('iDisplayStart');
@@ -507,9 +495,8 @@ class UserController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository($commentClassName)->findCommentByUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $username);
-		$iTotal = $entityManager->getRepository($commentClassName)->findCommentByUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $username, true);
+		$entities = $em->getRepository($commentClassName)->findCommentByUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $username);
+		$iTotal = $em->getRepository($commentClassName)->findCommentByUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $username, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),

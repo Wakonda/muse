@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 use Symfony\Component\Form\FormError;
 
@@ -22,13 +23,12 @@ class FileManagementAdminController extends AbstractController
     /**
      * @Route("/media/{idForm}/{folder}/{id}", defaults={"id": null})
      */
-	public function mediaAction(Request $request, $idForm, $folder, $id)
+	public function mediaAction(EntityManagerInterface $em, Request $request, $idForm, $folder, $id)
 	{
 		if(empty($id))
 			$entity = new FileManagement();
 		else {
-			$entityManager = $this->getDoctrine()->getManager();
-			$entity = $entityManager->getRepository(FileManagement::class)->find($id);
+			$entity = $em->getRepository(FileManagement::class)->find($id);
 		}
 
 		$entity->setFolder($folder);
@@ -40,13 +40,12 @@ class FileManagementAdminController extends AbstractController
     /**
      * @Route("/upload/{idForm}/{folder}/{id}", defaults={"id": null})
      */
-	public function uploadAction(Request $request, TranslatorInterface $translator, $idForm, $folder, $id)
+	public function uploadAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $idForm, $folder, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		if(empty($id))
 			$entity = new FileManagement();
 		else
-			$entity = $entityManager->getRepository(FileManagement::class)->find($id);
+			$entity = $em->getRepository(FileManagement::class)->find($id);
 
 		$form = $this->createForm(FileManagementType::class, $entity);
 		$form->handleRequest($request);
@@ -67,8 +66,6 @@ class FileManagementAdminController extends AbstractController
 
 		if($form->isValid())
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			
 			if(isset($request->request->get($form->getName())["photo"]) and isset($request->request->get($form->getName())["photo"]["name"]) and !empty($request->request->get($form->getName())["photo"]["name"]))
 			{
 				$gf = new GenericFunction();
@@ -82,8 +79,8 @@ class FileManagementAdminController extends AbstractController
 
 			$entity->setPhoto($title);
 			
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			return new JsonResponse(["state" => "success", "id" => $entity->getId(), "filename" => $entity->getPhoto()]);
 		}
@@ -94,13 +91,12 @@ class FileManagementAdminController extends AbstractController
     /**
      * @Route("/load/{folder}")
      */
-	public function loadAction(Request $request, $folder)
+	public function loadAction(EntityManagerInterface $em, Request $request, $folder)
 	{
 		$page = $request->request->get("page");
-		
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(FileManagement::class)->loadAjax($folder, $page, 10);
-		$total = $entityManager->getRepository(FileManagement::class)->count([]);
+
+		$entities = $em->getRepository(FileManagement::class)->loadAjax($folder, $page, 10);
+		$total = $em->getRepository(FileManagement::class)->count([]);
 		
 		return $this->render('FileManagement/loadMedia.html.twig', ["entities" => $entities, "page" => $page, "total" => $total, "folder" => $folder]);
 	}

@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/vote")
@@ -26,15 +27,13 @@ class VoteController extends AbstractController
     /**
      * @Route("/{id}")
      */
-	public function voteAction(Request $request, TokenStorageInterface $tokenStorage, TranslatorInterface $translator, $id)
+	public function voteAction(EntityManagerInterface $em, Request $request, TokenStorageInterface $tokenStorage, TranslatorInterface $translator, $id)
 	{
 		list($entity, $className, $mainEntity) = $this->selectEntity();
 		
 		$vote = $request->query->get('vote');
-		$entityManager = $this->getDoctrine()->getManager();
-		
 		$state = "";
-		
+
 		if(!empty($vote))
 		{
 			$user = $tokenStorage->getToken()->getUser();
@@ -44,28 +43,27 @@ class VoteController extends AbstractController
 				$vote = ($vote == "up") ? 1 : -1;
 				
 				$entity->setVote($vote);
-				$entity->setEntity($entityManager->getRepository($mainEntity)->find($id));
-				
-				
-				$userDb = $entityManager->getRepository(User::class)->findByUsernameOrEmail($user->getUsername());
+				$entity->setEntity($em->getRepository($mainEntity)->find($id));
+
+				$userDb = $em->getRepository(User::class)->findByUsernameOrEmail($user->getUsername());
 				$entity->setUser($userDb);
 			
-				$numberOfDoubloons = $entityManager->getRepository($className)->checkIfUserAlreadyVote($id, $userDb->getId());
+				$numberOfDoubloons = $em->getRepository($className)->checkIfUserAlreadyVote($id, $userDb->getId());
 				
 				if($numberOfDoubloons >= 1)
 					$state = $translator->trans("vote.field.YouHaveAlreadyVotedForThis");
 				else
 				{
-					$entityManager->persist($entity);
-					$entityManager->flush();
+					$em->persist($entity);
+					$em->flush();
 				}
 			}
 			else
 				$state = $translator->trans("vote.field.YouMustBeLoggedInToVote");
 		}
 
-		$up_values = $entityManager->getRepository($className)->countVoteBy($id, 1);
-		$down_values = $entityManager->getRepository($className)->countVoteBy($id, -1);
+		$up_values = $em->getRepository($className)->countVoteBy($id, 1);
+		$down_values = $em->getRepository($className)->countVoteBy($id, -1);
 		$total = $up_values + $down_values;
 		$value = ($total == 0) ? 50 : round(((100 * $up_values) / $total), 1);
 
@@ -82,7 +80,7 @@ class VoteController extends AbstractController
 			case "proverbius":
 				return [new ProverbVote(), ProverbVote::class, Proverb::class];
 		}
-		
+
 		return [];
 	}
 }

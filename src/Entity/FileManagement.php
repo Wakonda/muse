@@ -5,26 +5,29 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GetCollection;
 use App\Service\GenericFunction;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\FileManagementRepository")
- * @ApiResource(
- *     itemOperations={
- *          "get"={"security"="is_granted('ROLE_ADMIN')"},
- *          "put"={"security"="is_granted('ROLE_ADMIN')"},
- *          "delete"={"security"="is_granted('ROLE_ADMIN')"}
- *      },
- *     collectionOperations={
- *          "get"={"security"="is_granted('ROLE_ADMIN')"},
- *          "post"={"security"="is_granted('ROLE_ADMIN')"}
- *      },
- *     normalizationContext={"groups"={"read"}},
- *     denormalizationContext={"groups"={"write"}}
- * )
  */
+#[ApiResource(
+    operations: [
+        new Get(security: "is_granted('ROLE_ADMIN')"),
+        new Put(security: "is_granted('ROLE_ADMIN')"),
+		new Delete(security: "is_granted('ROLE_ADMIN')"),
+		new Post(security: "is_granted('ROLE_ADMIN')"),
+        new GetCollection(security: "is_granted('ROLE_ADMIN')")
+    ],
+    normalizationContext: ['groups' => ['read']],
+    denormalizationContext: ['groups' => ['write']]
+)]
 class FileManagement
 {
     /**

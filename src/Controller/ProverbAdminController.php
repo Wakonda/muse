@@ -23,8 +23,8 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Doctrine\ORM\EntityManagerInterface;
 
-use seregazhuk\PinterestBot\Factories\PinterestBot;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\Facebook;
 use App\Service\Twitter;
@@ -50,7 +50,7 @@ class ProverbAdminController extends AbstractController
     /**
      * @Route("/datatables")
      */
-	public function indexDatatablesAction(Request $request, TranslatorInterface $translator)
+	public function indexDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -68,9 +68,8 @@ class ProverbAdminController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Proverb::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
-		$iTotal = $entityManager->getRepository(Proverb::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
+		$entities = $em->getRepository(Proverb::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
+		$iTotal = $em->getRepository(Proverb::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -101,15 +100,14 @@ class ProverbAdminController extends AbstractController
     /**
      * @Route("/new/{countryId}", defaults={"countryId": null}, requirements={"countryId"="\d+"})
      */
-    public function newAction(Request $request, $countryId)
+    public function newAction(EntityManagerInterface $em, Request $request, $countryId)
     {
-		$entityManager = $this->getDoctrine()->getManager();
 		$entity = new Proverb();
 		
-		$entity->setLanguage($entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
+		$entity->setLanguage($em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
 		
 		if(!empty($countryId))
-			$entity->setCountry($entityManager->getRepository(Country::class)->find($countryId));
+			$entity->setCountry($em->getRepository(Country::class)->find($countryId));
 		
 		$form = $this->genericCreateForm($request->getLocale(), $entity);
 
@@ -119,22 +117,21 @@ class ProverbAdminController extends AbstractController
     /**
      * @Route("/create")
      */
-	public function createAction(Request $request, TranslatorInterface $translator)
+	public function createAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$entity = new Proverb();
 		$locale = $request->request->get($this->formName)["language"];
-		$language = $entityManager->getRepository(Language::class)->find($locale);
+		$language = $em->getRepository(Language::class)->find($locale);
 
         $form = $this->genericCreateForm($language->getAbbreviation(), $entity);
 		$form->handleRequest($request);
 		
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 
 		if($form->isValid())
 		{
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			$redirect = $this->generateUrl('app_proverbadmin_show', array('id' => $entity->getId()));
 
@@ -147,10 +144,9 @@ class ProverbAdminController extends AbstractController
     /**
      * @Route("/show/{id}")
      */
-	public function showAction(Request $request, $id)
+	public function showAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Proverb::class)->find($id);
+		$entity = $em->getRepository(Proverb::class)->find($id);
 		
 		$imageGeneratorForm = $this->createForm(ImageGeneratorType::class);
 	
@@ -160,10 +156,9 @@ class ProverbAdminController extends AbstractController
     /**
      * @Route("/edit/{id}")
      */
-	public function editAction(Request $request, $id)
+	public function editAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Proverb::class)->find($id);
+		$entity = $em->getRepository(Proverb::class)->find($id);
 		$form = $this->genericCreateForm($entity->getLanguage()->getAbbreviation(), $entity);
 	
 		return $this->render('Proverb/edit.html.twig', array('form' => $form->createView(), 'entity' => $entity));
@@ -172,22 +167,21 @@ class ProverbAdminController extends AbstractController
     /**
      * @Route("/update/{id}")
      */
-	public function updateAction(Request $request, TranslatorInterface $translator, $id)
+	public function updateAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Proverb::class)->find($id);
+		$entity = $em->getRepository(Proverb::class)->find($id);
 		$locale = $request->request->get($this->formName)["language"];
-		$language = $entityManager->getRepository(Language::class)->find($locale);
+		$language = $em->getRepository(Language::class)->find($locale);
 		
 		$form = $this->genericCreateForm($language->getAbbreviation(), $entity);
 		$form->handleRequest($request);
 		
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 		
 		if($form->isValid())
 		{
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			$redirect = $this->generateUrl('app_proverbadmin_show', array('id' => $entity->getId()));
 
@@ -200,11 +194,10 @@ class ProverbAdminController extends AbstractController
     /**
      * @Route("/edit_multiple")
      */
-	public function editMultipleAction(Request $request)
+	public function editMultipleAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$ids = json_decode($request->query->get("ids"));
-		$locale = $entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
+		$locale = $em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
 		$form = $this->createForm(ProverbEditMultipleType::class, null, array("locale" => $locale->getId()));
 
 		return $this->render('Proverb/editMultiple.html.twig', array('form' => $form->createView(), 'ids' => $ids));
@@ -213,11 +206,10 @@ class ProverbAdminController extends AbstractController
     /**
      * @Route("/update_multiple/{ids}")
      */
-	public function updateMultipleAction(Request $request, SessionInterface $session, TranslatorInterface $translator, $ids)
+	public function updateMultipleAction(EntityManagerInterface $em, Request $request, SessionInterface $session, TranslatorInterface $translator, $ids)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$ids = json_decode($ids);
-		$locale = $entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
+		$locale = $em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
 		$form = $this->createForm(ProverbEditMultipleType::class, null, array("locale" => $locale->getId()));
 		$form->handleRequest($request);
 
@@ -225,25 +217,25 @@ class ProverbAdminController extends AbstractController
 
 		foreach($ids as $id)
 		{
-			$entity = $entityManager->getRepository(Proverb::class)->find($id);
+			$entity = $em->getRepository(Proverb::class)->find($id);
 			$tagsId = $req["tags"];
 
 			foreach($tagsId as $tagId)
 			{
-				$tag = $entityManager->getRepository(Tag::class)->find($tagId);
-				$realTag = $entityManager->getRepository(Tag::class)->findOneBy(["internationalName" => $tag->getInternationalName(), "language" => $entity->getLanguage()]);
+				$tag = $em->getRepository(Tag::class)->find($tagId);
+				$realTag = $em->getRepository(Tag::class)->findOneBy(["internationalName" => $tag->getInternationalName(), "language" => $entity->getLanguage()]);
 				
 				if(!empty($realTag))
 				{
 					if(!$entity->isTagExisted($realTag))
 					{
 						$entity->addTag($realTag);
-						$entityManager->persist($entity);
+						$em->persist($entity);
 					}
 				}
 			}
 			
-			$entityManager->flush();
+			$em->flush();
 		}
 		
 		$session->getFlashBag()->add('message', $translator->trans("admin.index.ChangesMadeSuccessfully"));
@@ -254,9 +246,8 @@ class ProverbAdminController extends AbstractController
     /**
      * @Route("/new_fast_multiple")
      */
-	public function newFastMultipleAction(Request $request)
+	public function newFastMultipleAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$datas = $request->query->all();
 		$datas = !empty($datas) ? json_decode($datas["datas"], true) : null;
 		$entity = new Proverb();
@@ -265,12 +256,12 @@ class ProverbAdminController extends AbstractController
 		$ipProxy = null;
 
 		if(!empty($datas)) {
-			$entity->setLanguage($entityManager->getRepository(Language::class)->find($datas["language"]));
+			$entity->setLanguage($em->getRepository(Language::class)->find($datas["language"]));
 
 			$url = $datas["url"];
 			$ipProxy = $datas["ipProxy"];
 		} else
-			$entity->setLanguage($entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
+			$entity->setLanguage($em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
 
 		$form = $this->createForm(ProverbFastMultipleType::class, $entity, ["locale" => $request->getLocale(), "url" => $url, "ipProxy" => $ipProxy]);
 
@@ -280,7 +271,7 @@ class ProverbAdminController extends AbstractController
     /**
      * @Route("/add_fast_multiple")
      */
-	public function addFastMultipleAction(Request $request, SessionInterface $session, TranslatorInterface $translator)
+	public function addFastMultipleAction(EntityManagerInterface $em, Request $request, SessionInterface $session, TranslatorInterface $translator)
 	{
 		$entity = new Proverb();
 		
@@ -383,16 +374,14 @@ class ProverbAdminController extends AbstractController
 			$numberAdded = 0;
 			$numberDoubloons = 0;
 
-			$entityManager = $this->getDoctrine()->getManager();
-
 			foreach($proverbsArray as $proverb)
 			{
-				if($entityManager->getRepository(Proverb::class)->checkForDoubloon($proverb) > 0)
+				if($em->getRepository(Proverb::class)->checkForDoubloon($proverb) > 0)
 					$numberDoubloons++;
 				else
 				{
-					$entityManager->persist($proverb);
-					$entityManager->flush();
+					$em->persist($proverb);
+					$em->flush();
 					$numberAdded++;
 				}
 			}
@@ -410,22 +399,19 @@ class ProverbAdminController extends AbstractController
     /**
      * @Route("/twitter/{id}")
      */
-	public function twitterAction(Request $request, SessionInterface $session, TranslatorInterface $translator, Twitter $twitter, $id)
+	public function twitterAction(EntityManagerInterface $em, Request $request, SessionInterface $session, TranslatorInterface $translator, Twitter $twitter, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Proverb::class)->find($id);
-
+		$entity = $em->getRepository(Proverb::class)->find($id);
 		$locale = $entity->getLanguage()->getAbbreviation();
-		
-		$message = $request->request->get("twitter_area")." ".$this->generateUrl("app_indexproverbius_read", array("id" => $id, 'slug' => $entity->getSlug()), UrlGeneratorInterface::ABSOLUTE_URL);
 
+		$message = $request->request->get("twitter_area")." ".$this->generateUrl("app_indexproverbius_read", array("id" => $id, 'slug' => $entity->getSlug()), UrlGeneratorInterface::ABSOLUTE_URL);
 		$imageId = $request->request->get('image_id_tweet');
 
 		$proverbImage = null;
 		$image = null;
 
 		if(!empty($imageId)) {
-			$proverbImage = $entityManager->getRepository(ProverbImage::class)->find($imageId);
+			$proverbImage = $em->getRepository(ProverbImage::class)->find($imageId);
 			$image = Proverb::PATH_FILE.$proverbImage->getImage();
 		}
 		
@@ -436,10 +422,10 @@ class ProverbAdminController extends AbstractController
 		else {
 			if(!empty($proverbImage)) {
 				$proverbImage->addSocialNetwork("Twitter");
-				$entityManager->persist($proverbImage);
-				$entityManager->flush();
+				$em->persist($proverbImage);
+				$em->flush();
 			}
-		
+
 			$session->getFlashBag()->add('message', "Twitter - ".$translator->trans("admin.index.SentSuccessfully"));
 		}
 	
@@ -447,71 +433,16 @@ class ProverbAdminController extends AbstractController
 	}
 
     /**
-     * @Route("/pinterest/{id}")
-     */
-	public function pinterestAction(Request $request, SessionInterface $session, TranslatorInterface $translator, $id)
-	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Proverb::class)->find($id);
-		
-		$mail = $_ENV["PINTEREST_MAIL"];
-		$pwd = $_ENV["PINTEREST_PASSWORD"];
-		$username = $_ENV["PINTEREST_USERNAME"];
-
-		$pinterestBoards = [
-			"Proverbes" => "fr",
-			"Proverbs" => "en"
-		];
-
-		$bot = PinterestBot::create();
-		$bot->auth->login($mail, $pwd);
-		
-		$boards = $bot->boards->forUser($username);
-		$i = 0;
-
-		foreach($boards as $board) {
-			if(!isset($pinterestBoards[$board["name"]]) or $pinterestBoards[$board["name"]] == $entity->getLanguage()->getAbbreviation()) {
-				break;
-			}
-			$i++;
-		}
-
-		$imageId = $request->request->get('image_id_pinterest');
-		$proverbImage = $entityManager->getRepository(ProverbImage::class)->find($imageId);
-		
-		if(empty($proverbImage)) {
-			$session->getFlashBag()->add('message', $translator->trans("admin.index.YouMustSelectAnImage"));
-			return $this->redirect($this->generateUrl("app_proverbadmin_show", array("id" => $id)));
-		}
-			
-		$bot->pins->create($request->getUriForPath('/'.Proverb::PATH_FILE.$proverbImage->getImage()), $boards[$i]['id'], $request->request->get("pinterest_area"), $this->generateUrl("app_indexproverbius_read", ["id" => $entity->getId(), "slug" => $entity->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL));
-		
-		if(empty($bot->getLastError())) {
-			$session->getFlashBag()->add('message', "Pinterest - ".$translator->trans("admin.index.SentSuccessfully"));
-
-			$proverbImage->addSocialNetwork("Pinterest");
-			$entityManager->persist($proverbImage);
-			$entityManager->flush();
-		}
-		else
-			$session->getFlashBag()->add('message', $bot->getLastError());
-	
-		return $this->redirect($this->generateUrl("app_proverbadmin_show", array("id" => $id)));
-	}
-
-    /**
      * @Route("/facebook/{id}")
      */
-	public function facebookAction(Request $request, TranslatorInterface $translator, Facebook $facebook, SessionInterface $session, $id)
+	public function facebookAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, Facebook $facebook, SessionInterface $session, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		
 		$proverbImage = null;
 		
-		$proverb = $entityManager->getRepository(Proverb::class)->find($id);
+		$proverb = $em->getRepository(Proverb::class)->find($id);
 
 		if(!empty($request->request->get("image_id_facebook"))) {
-			$proverbImage = $entityManager->getRepository(ProverbImage::class)->find($request->request->get("image_id_facebook"));
+			$proverbImage = $em->getRepository(ProverbImage::class)->find($request->request->get("image_id_facebook"));
 			$url = $this->generateUrl("app_indexproverbius_read", ["id" => $id, "slug" => $proverbImage->getProverb()->getSlug(), "idImage" => $proverbImage->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 		} else {
 			$url = $this->generateUrl("app_indexproverbius_read", ["id" => $id, "slug" => $proverb->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL);
@@ -524,8 +455,8 @@ class ProverbAdminController extends AbstractController
 		} else {
 			if(!empty($proverbImage)) {
 				$proverbImage->addSocialNetwork("Facebook");
-				$entityManager->persist($proverbImage);
-				$entityManager->flush();	
+				$em->persist($proverbImage);
+				$em->flush();	
 			}
 
 			$session->getFlashBag()->add('message', "Facebook - ".$translator->trans("admin.index.SentSuccessfully"));
@@ -537,10 +468,9 @@ class ProverbAdminController extends AbstractController
     /**
      * @Route("/save_image/{id}")
      */
-	public function saveImageAction(Request $request, $id)
+	public function saveImageAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Proverb::class)->find($id);
+		$entity = $em->getRepository(Proverb::class)->find($id);
 		
         $imageGeneratorForm = $this->createForm(ImageGeneratorType::class);
         $imageGeneratorForm->handleRequest($request);
@@ -647,8 +577,8 @@ class ProverbAdminController extends AbstractController
 
 			$entity->addImage(new ProverbImage($fileName));
 			
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 			
 			$redirect = $this->generateUrl('app_proverbadmin_show', array('id' => $entity->getId()));
 
@@ -661,18 +591,17 @@ class ProverbAdminController extends AbstractController
     /**
      * @Route("/remove_image/{id}/{proverbImageId}")
      */
-	public function removeImageAction(Request $request, $id, $proverbImageId)
+	public function removeImageAction(EntityManagerInterface $em, Request $request, $id, $proverbImageId)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Proverb::class)->find($id);
-		$proverbImage = $entityManager->getRepository(ProverbImage::class)->find($proverbImageId);
+		$entity = $em->getRepository(Proverb::class)->find($id);
+		$proverbImage = $em->getRepository(ProverbImage::class)->find($proverbImageId);
 		
 		$fileName = $proverbImage->getImage();
 		
 		$entity->removeImage($proverbImage);
 		
-		$entityManager->persist($entity);
-		$entityManager->flush();
+		$em->persist($entity);
+		$em->flush();
 		
 		$filesystem = new Filesystem();
 		$filesystem->remove(Proverb::PATH_FILE.$fileName);
@@ -687,12 +616,11 @@ class ProverbAdminController extends AbstractController
 		return $this->createForm(ProverbType::class, $entity, array('locale' => $locale));
 	}
 	
-	private function checkForDoubloon(TranslatorInterface $translator, $entity, $form)
+	private function checkForDoubloon(EntityManagerInterface $em, TranslatorInterface $translator, $entity, $form)
 	{
 		if($entity->getText() != null)
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$checkForDoubloon = $entityManager->getRepository(Proverb::class)->checkForDoubloon($entity);
+			$checkForDoubloon = $em->getRepository(Proverb::class)->checkForDoubloon($entity);
 
 			if($checkForDoubloon > 0)
 				$form->get("text")->addError(new FormError($translator->trans("admin.index.ThisEntryAlreadyExists")));

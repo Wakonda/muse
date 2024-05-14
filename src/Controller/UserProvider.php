@@ -29,6 +29,10 @@ class UserProvider implements UserProviderInterface
         return new User($user['username'], $user['password'], $user['salt'], explode(',', $user['roles']), true, true, true, true);
     }
 
+	public function loadUserByIdentifier(string $usernameOrEmail): User {
+		return $this->loadUserByIdentifier($usernameOrEmail);
+	}
+
     public function refreshUser(UserInterface $user)
     {
         if (!$user instanceof User) {

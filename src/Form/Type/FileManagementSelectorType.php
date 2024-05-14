@@ -16,12 +16,12 @@ use App\Entity\FileManagement;
 class FileManagementSelectorType extends AbstractType
 {
     private $transformer;
-	private $entityManager;
+	private $em;
 
-    public function __construct(FileManagementTransformer $transformer, EntityManagerInterface $entityManager)
+    public function __construct(FileManagementTransformer $transformer, EntityManagerInterface $em)
     {
         $this->transformer = $transformer;
-		$this->entityManager = $entityManager;
+		$this->em = $em;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
@@ -37,7 +37,7 @@ class FileManagementSelectorType extends AbstractType
     public function buildView(FormView $view, FormInterface $form, array $options)
     {
 		if(!empty($val = $view->vars["value"]) and !empty($id = $val["id"]) and empty($val["filename"])) {
-			$fm = $this->entityManager->getRepository(FileManagement::class)->find($id);
+			$fm = $this->em->getRepository(FileManagement::class)->find($id);
 			
 			if(!empty($fm))
 				$view->vars["value"]["filename"] = $fm->getPhoto();

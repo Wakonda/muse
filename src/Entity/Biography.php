@@ -5,23 +5,23 @@ namespace App\Entity;
 use App\Service\GenericFunction;
 use Doctrine\ORM\Mapping as ORM;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
-use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Metadata\ApiProperty;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\BiographyRepository")
- * @ApiResource(
- *     itemOperations={
- *          "get"={"security"="is_granted('ROLE_ADMIN')"}
- *      },
- *     collectionOperations={
- *          "get"={"security"="is_granted('ROLE_ADMIN')"}
- *      },
- *     normalizationContext={"groups"={"read"}},
- *     denormalizationContext={"groups"={"write"}}
- * )
  */
+#[ApiResource(
+    operations: [
+        new Get(security: "is_granted('ROLE_ADMIN')"),
+        new GetCollection(security: "is_granted('ROLE_ADMIN')")
+    ],
+    normalizationContext: ['groups' => ['read']],
+    denormalizationContext: ['groups' => ['write']]
+)]
 class Biography
 {
 	const AUTHOR = "author";
@@ -37,7 +37,7 @@ class Biography
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @ApiProperty(identifier=false)
+     * #[ApiProperty(identifier: false)]
      */
     protected $id;
 
@@ -132,7 +132,7 @@ class Biography
 	 *
 	 * @ORM\Column(name="wikidata", type="string", length=15, nullable=true)
      * @Groups({"read", "write"})
-     * @ApiProperty(identifier=true)
+     * #[ApiProperty(identifier: true)]
 	 */
 	private $wikidata;
 	

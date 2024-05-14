@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/admin/tag")
@@ -31,7 +32,7 @@ class TagAdminController extends AbstractController
     /**
      * @Route("/datatables")
      */
-	public function indexDatatablesAction(Request $request, TranslatorInterface $translator)
+	public function indexDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -49,9 +50,8 @@ class TagAdminController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Tag::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
-		$iTotal = $entityManager->getRepository(Tag::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
+		$entities = $em->getRepository(Tag::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
+		$iTotal = $em->getRepository(Tag::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -81,11 +81,10 @@ class TagAdminController extends AbstractController
     /**
      * @Route("/new")
      */
-    public function newAction(Request $request)
+    public function newAction(EntityManagerInterface $em, Request $request)
     {
 		$entity = new Tag();
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity->setLanguage($entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
+		$entity->setLanguage($em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
         $form = $this->genericCreateForm($request->getLocale(), $entity);
 
 		return $this->render('Tag/new.html.twig', array('form' => $form->createView()));
@@ -94,19 +93,18 @@ class TagAdminController extends AbstractController
     /**
      * @Route("/create")
      */
-	public function createAction(Request $request, TranslatorInterface $translator)
+	public function createAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$entity = new Tag();
         $form = $this->genericCreateForm($request->getLocale(), $entity);
 		$form->handleRequest($request);
 		
-		$this->checkForDoubloon($entity, $form);
+		$this->checkForDoubloon($em, $entity, $form);
 
 		if($form->isValid())
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			$redirect = $this->generateUrl('app_tagadmin_show', array('id' => $entity->getId()));
 
@@ -119,10 +117,9 @@ class TagAdminController extends AbstractController
     /**
      * @Route("/show/{id}")
      */
-	public function showAction(Request $request, $id)
+	public function showAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Tag::class)->find($id);
+		$entity = $em->getRepository(Tag::class)->find($id);
 	
 		return $this->render('Tag/show.html.twig', array('entity' => $entity));
 	}
@@ -130,10 +127,9 @@ class TagAdminController extends AbstractController
     /**
      * @Route("/edit/{id}")
      */
-	public function editAction(Request $request, $id)
+	public function editAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Tag::class)->find($id);
+		$entity = $em->getRepository(Tag::class)->find($id);
 		$form = $this->genericCreateForm($request->getLocale(), $entity);
 	
 		return $this->render('Tag/edit.html.twig', array('form' => $form->createView(), 'entity' => $entity));
@@ -142,19 +138,18 @@ class TagAdminController extends AbstractController
     /**
      * @Route("/update/{id}")
      */
-	public function updateAction(Request $request, $id)
+	public function updateAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Tag::class)->find($id);
+		$entity = $em->getRepository(Tag::class)->find($id);
 		$form = $this->genericCreateForm($request->getLocale(), $entity);
 		$form->handleRequest($request);
 		
-		$this->checkForDoubloon($entity, $form);
+		$this->checkForDoubloon($em, $entity, $form);
 		
 		if($form->isValid())
 		{
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			$redirect = $this->generateUrl('app_tagadmin_show', array('id' => $entity->getId()));
 
@@ -167,24 +162,21 @@ class TagAdminController extends AbstractController
     /**
      * @Route("/tags")
      */
-	public function getTagsByAjaxAction(Request $request)
+	public function getTagsByAjaxAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$locale = $request->query->get("locale", null);
 		$type = $request->query->get("type", null);
 		$query = $request->query->get("q", null);
 		
-		$datas =  $entityManager->getRepository(Tag::class)->getDatasSelect($type, $locale, $query, null);
+		$datas =  $em->getRepository(Tag::class)->getDatasSelect($type, $locale, $query, null);
 		
 		$res = [];
 
 		foreach($datas as $data)
 		{
 			$row = [];
-			
 			$row["id"] = $data->getId();
 			$row["text"] = $data->getTitle();
-			
 			$res["results"][] = $row;
 		}
 
@@ -196,12 +188,11 @@ class TagAdminController extends AbstractController
 		return $this->createForm(TagType::class, $entity, array('locale' => $locale));
 	}
 
-	private function checkForDoubloon($entity, $form)
+	private function checkForDoubloon(EntityManagerInterface $em, $entity, $form)
 	{
 		if($entity->getTitle() != null)
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$checkForDoubloon = $entityManager->getRepository(Tag::class)->checkForDoubloon($entity);
+			$checkForDoubloon = $em->getRepository(Tag::class)->checkForDoubloon($entity);
 
 			if($checkForDoubloon > 0)
 				$form->get("title")->addError(new FormError('Cette entrée existe déjà !'));

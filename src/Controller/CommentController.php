@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 use App\Entity\Comment;
 use App\Entity\PoemComment;
@@ -41,35 +42,34 @@ class CommentController extends AbstractController
     /**
      * @Route("/create/{id}", requirements={"id"="\d+"})
      */
-	public function createAction(Request $request, TokenStorageInterface $tokenStorage, TranslatorInterface $translator, $id)
+	public function createAction(EntityManagerInterface $em, Request $request, TokenStorageInterface $tokenStorage, TranslatorInterface $translator, $id)
 	{
 		list($entity, $className, $mainEntity) = $this->selectEntity();
 		$newEntity = clone $entity;
-		$entityManager = $this->getDoctrine()->getManager();
         $form = $this->createForm(CommentType::class, $entity);
 		$form->handleRequest($request);
 
 		$user = $tokenStorage->getToken()->getUser();
 		
 		if(!empty($user) and is_object($user))
-			$user = $entityManager->getRepository(User::class)->findByUsernameOrEmail($user->getUsername());
+			$user = $em->getRepository(User::class)->findByUsernameOrEmail($user->getUsername());
 		else
 			$form->get("text")->addError(new FormError($translator->trans("comment.field.YouMustBeLoggedInToWriteAComment")));
 
 		if($form->isValid())
 		{
 			$entity->setUser($user);
-			$entity->setEntity($entityManager->getRepository($mainEntity)->find($id));
+			$entity->setEntity($em->getRepository($mainEntity)->find($id));
 
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 			
-			$entities = $entityManager->getRepository($className)->findAll();
+			$entities = $em->getRepository($className)->findAll();
 
 			$form = $this->createForm(CommentType::class, $newEntity);
 		}
 
-		$params = $this->getParametersComment($request, $id);
+		$params = $this->getParametersComment($em, $request, $id);
 
 		return $this->render('Comment/form.html.twig', array("form" => $form->createView(), "id" => $id));
 	}
@@ -77,9 +77,9 @@ class CommentController extends AbstractController
     /**
      * @Route("/load/{id}", requirements={"id"="\d+"})
      */
-	public function loadAction(Request $request, $id)
+	public function loadAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		return $this->render('Comment/list.html.twig', $this->getParametersComment($request, $id));
+		return $this->render('Comment/list.html.twig', $this->getParametersComment($em, $request, $id));
 	}
 	
 	private function selectEntity()
@@ -96,18 +96,17 @@ class CommentController extends AbstractController
 		return [];
 	}
 	
-	private function getParametersComment($request, $id)
+	private function getParametersComment($em, $request, $id)
 	{
 		list($entity, $className, $mainEntity) = $this->selectEntity();
 
-		$entityManager = $this->getDoctrine()->getManager();
 		$max_comment_by_page = 7;
 		$page = $request->query->get("page");
-		$totalComments = $entityManager->getRepository($className)->countAllComments($id);
+		$totalComments = $em->getRepository($className)->countAllComments($id);
 		$number_pages = ceil($totalComments / $max_comment_by_page);
 		$first_message_to_display = ($page - 1) * $max_comment_by_page;
 		
-		$entities = $entityManager->getRepository($className)->displayComments($id, $max_comment_by_page, $first_message_to_display);
+		$entities = $em->getRepository($className)->displayComments($id, $max_comment_by_page, $first_message_to_display);
 		
 		return array("entities" => $entities, "page" => $page, "number_pages" => $number_pages);
 	}

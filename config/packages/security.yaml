@@ -1,5 +1,5 @@
 security:
-    encoders:
+    password_hashers:
         App\Entity\User:
             algorithm: sha512
     # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
@@ -16,18 +16,17 @@ security:
         api:
             pattern: ^/api/
             stateless: true
-            anonymous: true
+            # anonymous: true
             provider: our_db_provider
-            guard:
-                authenticators:
-                    - lexik_jwt_authentication.jwt_token_authenticator
+            jwt:
+                authenticator: app.custom_authenticator
         main:
             pattern:    ^/
             http_basic: ~
             provider: our_db_provider
-            anonymous: ~
+            # anonymous: ~
             form_login:
-                csrf_token_generator: security.csrf.token_manager
+                enable_csrf: true
                 login_path: app_user_login
                 check_path: app_user_login
             remember_me:
@@ -44,7 +43,7 @@ security:
                 password_path: password
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
-
+            entry_point: form_login
             # http_basic: true
             # https://symfony.com/doc/current/security.html#a-configuring-how-your-users-will-authenticate
 

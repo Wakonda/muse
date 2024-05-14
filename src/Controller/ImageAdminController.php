@@ -16,6 +16,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/admin/image")
@@ -33,7 +34,7 @@ class ImageAdminController extends AbstractController
     /**
      * @Route("/datatables/{domainName}")
      */
-	public function indexDatatablesAction(Request $request, TranslatorInterface $translator, String $domainName)
+	public function indexDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, String $domainName)
 	{
 		list($imageClass, $path, $method) = $this->selectEntity($domainName);
 		$iDisplayStart = $request->query->get('iDisplayStart');
@@ -52,9 +53,8 @@ class ImageAdminController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository($imageClass)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
-		$iTotal = $entityManager->getRepository($imageClass)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
+		$entities = $em->getRepository($imageClass)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
+		$iTotal = $em->getRepository($imageClass)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),

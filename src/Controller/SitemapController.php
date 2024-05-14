@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 use App\Service\SitemapGenerator;
 
@@ -20,9 +21,8 @@ class SitemapController
     /**
      * @Route("/generate")
      */
-    public function generateAction(Request $request)
+    public function generateAction(EntityManagerInterface $em, Request $request)
     {
-		$entityManager = $this->getDoctrine()->getManager();
 		$url_base = $request->getUriForPath("/");
 
 		$sg = new SitemapGenerator($url_base, array("image" => true));
@@ -37,7 +37,7 @@ class SitemapController
 		// Country
 		$sg->addItem("bycountries");
 		
-		$entities = $entityManager->getRepository(Country::class)->findAll();
+		$entities = $em->getRepository(Country::class)->findAll();
 
 		foreach($entities as $entity)
 		{
@@ -45,7 +45,7 @@ class SitemapController
 		}
 
 		// Proverb
-		$entities = $entityManager->getRepository(Proverb::class)->findAll();
+		$entities = $em->getRepository(Proverb::class)->findAll();
 
 		foreach($entities as $entity)
 		{

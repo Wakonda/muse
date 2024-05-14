@@ -9,11 +9,11 @@ use App\Entity\Biography;
 
 class BiographyTransformer implements DataTransformerInterface
 {
-    private $entityManager;
+    private $em;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $em)
     {
-        $this->entityManager = $entityManager;
+        $this->em = $em;
     }
 
     /**
@@ -45,7 +45,7 @@ class BiographyTransformer implements DataTransformerInterface
             return;
         }
 
-        $biography = $this->entityManager
+        $biography = $this->em
             ->getRepository(Biography::class)
             // query for the issue with this id
             ->find($biographyNumber)

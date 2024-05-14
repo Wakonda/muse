@@ -9,11 +9,11 @@ use App\Entity\FileManagement;
 
 class FileManagementTransformer implements DataTransformerInterface
 {
-    private $entityManager;
+    private $em;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $em)
     {
-        $this->entityManager = $entityManager;
+        $this->em = $em;
     }
 
     /**
@@ -45,7 +45,7 @@ class FileManagementTransformer implements DataTransformerInterface
             return;
         }
 
-        $entity = $this->entityManager
+        $entity = $this->em
             ->getRepository(FileManagement::class)
             // query for the issue with this id
             ->find($entityNumber["id"])

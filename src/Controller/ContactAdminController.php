@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/admin/contact")
@@ -27,7 +28,7 @@ class ContactAdminController extends AbstractController
     /**
      * @Route("/datatables")
      */
-	public function datatablesAction(Request $request, TranslatorInterface $translator)
+	public function datatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -45,9 +46,8 @@ class ContactAdminController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Contact::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
-		$iTotal = $entityManager->getRepository(Contact::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
+		$entities = $em->getRepository(Contact::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
+		$iTotal = $em->getRepository(Contact::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -81,14 +81,13 @@ class ContactAdminController extends AbstractController
     /**
      * @Route("/show/{id}")
      */
-	public function showAction(Request $request, $id)
+	public function showAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Contact::class)->find($id);
+		$entity = $em->getRepository(Contact::class)->find($id);
 		
 		$entity->setReadMessage(true);
-		$entityManager->persist($entity);
-		$entityManager->flush();
+		$em->persist($entity);
+		$em->flush();
 
 		return $this->render('Contact/show.html.twig', array('entity' => $entity));
 	}

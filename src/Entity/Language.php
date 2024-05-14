@@ -4,22 +4,22 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\LanguageRepository")
- * @ApiResource(
- *     itemOperations={
- *          "get"={"security"="is_granted('ROLE_ADMIN')"}
- *      },
- *     collectionOperations={
- *          "get"={"security"="is_granted('ROLE_ADMIN')"}
- *      },
- *     normalizationContext={"groups"={"read"}},
- *     denormalizationContext={"groups"={"write"}}
- * )
  */
+#[ApiResource(
+    operations: [
+        new Get(security: "is_granted('ROLE_ADMIN')"),
+        new GetCollection(security: "is_granted('ROLE_ADMIN')")
+    ],
+    normalizationContext: ['groups' => ['read']],
+    denormalizationContext: ['groups' => ['write']]
+)]
 class Language
 {
     /**

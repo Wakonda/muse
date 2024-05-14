@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Doctrine\ORM\EntityManagerInterface;
 
 use App\Form\Type\IndexProverbiusSearchType;
 
@@ -39,11 +40,10 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/", priority=10)
      */
-    public function indexAction(Request $request)
+    public function indexAction(EntityManagerInterface $em, Request $request)
     {
 		$form = $this->createFormIndexSearch($request->getLocale(), null);
-		$entityManager = $this->getDoctrine()->getManager();
-		$random = $entityManager->getRepository(Proverb::class)->getRandomProverb($request->getLocale());
+		$random = $em->getRepository(Proverb::class)->getRandomProverb($request->getLocale());
 
         return $this->render('IndexProverbius/index.html.twig', array('form' => $form->createView(), 'random' => $random));
     }
@@ -51,10 +51,9 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/random")
      */
-    public function randomAction(Request $request)
+    public function randomAction(EntityManagerInterface $em, Request $request)
     {
-		$entityManager = $this->getDoctrine()->getManager();
-		$random = $entityManager->getRepository(Proverb::class)->getRandomProverb($request->getLocale());
+		$random = $em->getRepository(Proverb::class)->getRandomProverb($request->getLocale());
 
         return $this->render('IndexProverbius/random.html.twig', array('random' => $random));
     }
@@ -71,16 +70,15 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/search")
      */
-	public function searchAction(Request $request, TranslatorInterface $translator)
+	public function searchAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
-		$search = $request->request->get("index_proverbius_search", []);
-		$entityManager = $this->getDoctrine()->getManager();
+		$search = $request->request->all("index_proverbius_search", []);
 		$search['country'] = (empty($search['country'])) ? null : $search['country'];
 		
 		unset($search["_token"]);
 		
 		$criteria = $search;
-		$criteria['country'] = (empty($search['country'])) ? null : $entityManager->getRepository(Country::class)->find($search['country'])->getTitle();
+		$criteria['country'] = (empty($search['country'])) ? null : $em->getRepository(Country::class)->find($search['country'])->getTitle();
 		$criteria = array_filter(array_values($criteria));
 		$criteria = empty($criteria) ? $translator->trans("search.result.None") : $criteria;
 
@@ -90,7 +88,7 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/result_search/{search}")
      */
-	public function searchDatatablesAction(Request $request, $search)
+	public function searchDatatablesAction(EntityManagerInterface $em, Request $request, $search)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -108,9 +106,8 @@ class IndexProverbiusController extends AbstractController
 		}
 		$sSearch = json_decode(base64_decode($search));
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Proverb::class)->findIndexSearch($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
-		$iTotal = $entityManager->getRepository(Proverb::class)->findIndexSearch($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
+		$entities = $em->getRepository(Proverb::class)->findIndexSearch($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
+		$iTotal = $em->getRepository(Proverb::class)->findIndexSearch($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -138,13 +135,12 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/read/{id}/{slug}/{idImage}", defaults={"slug": null, "idImage": null})
      */
-	public function readAction(Request $request, $id, $idImage)
+	public function readAction(EntityManagerInterface $em, Request $request, $id, $idImage)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Proverb::class)->find($id);
-		$image = (!empty($idImage)) ? $entityManager->getRepository(ProverbImage::class)->find($idImage) : null;
+		$entity = $em->getRepository(Proverb::class)->find($id);
+		$image = (!empty($idImage)) ? $em->getRepository(ProverbImage::class)->find($idImage) : null;
 		
-		$browsingProverbs = $entityManager->getRepository(Proverb::class)->browsingProverbShow($id);
+		$browsingProverbs = $em->getRepository(Proverb::class)->browsingProverbShow($id);
 
 		return $this->render('IndexProverbius/read.html.twig', array('entity' => $entity, 'browsingProverbs' => $browsingProverbs, 'image' => $image));
 	}
@@ -152,11 +148,9 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/tag/{id}/{slug}", defaults={"slug": null})
      */
-	public function tagAction(Request $request, $id)
+	public function tagAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-
-		$entity = $entityManager->getRepository(Tag::class)->find($id);
+		$entity = $em->getRepository(Tag::class)->find($id);
 
 		return $this->render('IndexProverbius/tag.html.twig', array('entity' => $entity));
 	}
@@ -164,7 +158,7 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/tag_datatables/{tagId}")
      */
-	public function tagDatatablesAction(Request $request, $tagId)
+	public function tagDatatablesAction(EntityManagerInterface $em, Request $request, $tagId)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -182,9 +176,8 @@ class IndexProverbiusController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Proverb::class)->getEntityByTagDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $tagId);
-		$iTotal = $entityManager->getRepository(Proverb::class)->getEntityByTagDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $tagId, true);
+		$entities = $em->getRepository(Proverb::class)->getEntityByTagDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $tagId);
+		$iTotal = $em->getRepository(Proverb::class)->getEntityByTagDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $tagId, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -212,10 +205,9 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/byimages", defaults={"page": 1})
      */
-	public function byImagesAction(Request $request, PaginatorInterface $paginator, $page)
+	public function byImagesAction(EntityManagerInterface $em, Request $request, PaginatorInterface $paginator, $page)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$query = $entityManager->getRepository(ProverbImage::class)->getPaginator($request->getLocale());
+		$query = $em->getRepository(ProverbImage::class)->getPaginator($request->getLocale());
 
 		$pagination = $paginator->paginate(
 			$query, /* query NOT result */
@@ -241,10 +233,9 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/read_pdf/{id}/{slug}", defaults={"slug": null})
      */
-	public function readPDFAction(Request $request, $id)
+	public function readPDFAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Proverb::class)->find($id);
+		$entity = $em->getRepository(Proverb::class)->find($id);
 		$content = $this->renderView('IndexProverbius/pdf.html.twig', array('entity' => $entity));
 
 		$html2pdf = new Html2Pdf('P','A4','fr');
@@ -257,18 +248,16 @@ class IndexProverbiusController extends AbstractController
 		return $response;
 	}
 
-	public function lastAction(Request $request)
+	public function lastAction(EntityManagerInterface $em, Request $request)
     {
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Proverb::class)->getLastEntries($request->getLocale());
+		$entities = $em->getRepository(Proverb::class)->getLastEntries($request->getLocale());
 
 		return $this->render('IndexProverbius/last.html.twig', array('entities' => $entities));
     }
 	
-	public function statAction(Request $request)
+	public function statAction(EntityManagerInterface $em, Request $request)
     {
-		$entityManager = $this->getDoctrine()->getManager();
-		$statistics = $entityManager->getRepository(Proverb::class)->getStat($request->getLocale());
+		$statistics = $em->getRepository(Proverb::class)->getStat($request->getLocale());
 
 		return $this->render('IndexProverbius/stat.html.twig', array('statistics' => $statistics));
     }
@@ -276,10 +265,9 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/country/{id}/{slug}", defaults={"slug": null})
      */
-	public function countryAction(Request $request, $id)
+	public function countryAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Country::class)->find($id);
+		$entity = $em->getRepository(Country::class)->find($id);
 
 		return $this->render('IndexProverbius/country.html.twig', array('entity' => $entity));
 	}
@@ -287,7 +275,7 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/country_datatables/{countryId}")
      */
-	public function countryDatatablesAction(Request $request, TranslatorInterface $translator, $countryId)
+	public function countryDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $countryId)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -305,9 +293,8 @@ class IndexProverbiusController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Proverb::class)->getProverbByCountryDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $countryId);
-		$iTotal = $entityManager->getRepository(Proverb::class)->getProverbByCountryDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $countryId, true);
+		$entities = $em->getRepository(Proverb::class)->getProverbByCountryDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $countryId);
+		$iTotal = $em->getRepository(Proverb::class)->getProverbByCountryDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $countryId, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -340,7 +327,7 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/bycountries_datatables")
      */
-	public function byCountriesDatatablesAction(Request $request)
+	public function byCountriesDatatablesAction(EntityManagerInterface $em, Request $request)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -358,9 +345,8 @@ class IndexProverbiusController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Proverb::class)->findProverbByCountry($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
-		$iTotal = $entityManager->getRepository(Proverb::class)->findProverbByCountry($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
+		$entities = $em->getRepository(Proverb::class)->findProverbByCountry($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
+		$iTotal = $em->getRepository(Proverb::class)->findProverbByCountry($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -398,7 +384,7 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/letter_datatables/{letter}")
      */
-	public function letterDatatablesAction(Request $request, TranslatorInterface $translator, $letter)
+	public function letterDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $letter)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -416,9 +402,8 @@ class IndexProverbiusController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Proverb::class)->getProverbByLetterDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $letter, $request->getLocale());
-		$iTotal = $entityManager->getRepository(Proverb::class)->getProverbByLetterDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $letter, $request->getLocale(), true);
+		$entities = $em->getRepository(Proverb::class)->getProverbByLetterDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $letter, $request->getLocale());
+		$iTotal = $em->getRepository(Proverb::class)->getProverbByLetterDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $letter, $request->getLocale(), true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -451,10 +436,9 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/byletters_datatables")
      */
-	public function byLettersDatatablesAction(Request $request)
+	public function byLettersDatatablesAction(EntityManagerInterface $em, Request $request)
 	{
 		$results = [];
-		$entityManager = $this->getDoctrine()->getManager();
 		
 		foreach(range('A', 'Z') as $letter)
 		{
@@ -462,11 +446,11 @@ class IndexProverbiusController extends AbstractController
 			
 			$subArray["letter"] = $letter;
 			
-			$resQuery = $entityManager->getRepository(Proverb::class)->findProverbByLetter($letter, $request->getLocale());
+			$resQuery = $em->getRepository(Proverb::class)->findProverbByLetter($letter, $request->getLocale());
 			$subArray["link"] = $resQuery["number_letter"];
 			$results[] = $subArray;
 		}
-		
+
 		return $this->render('IndexProverbius/byletterDatatable.html.twig', array('results' => $results));
 	}
 
@@ -481,11 +465,10 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/author/{id}/{slug}", defaults={"slug": null})
      */
-	public function authorAction(Request $request, $id)
+	public function authorAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Biography::class)->find($id);
-		$stores = $entityManager->getRepository(Store::class)->findBy(["biography" => $entity]);
+		$entity = $em->getRepository(Biography::class)->find($id);
+		$stores = $em->getRepository(Store::class)->findBy(["biography" => $entity]);
 
 		return $this->render('IndexProverbius/author.html.twig', array('entity' => $entity, "stores" => $stores));
 	}
@@ -493,10 +476,9 @@ class IndexProverbiusController extends AbstractController
     /**
      * @Route("/widget/{locale}", defaults={"locale": "en"})
      */
-	public function widgetAction(Request $request, $locale)
+	public function widgetAction(EntityManagerInterface $em, Request $request, $locale)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$proverb = $entityManager->getRepository(Proverb::class)->getRandomProverb($locale);
+		$proverb = $em->getRepository(Proverb::class)->getRandomProverb($locale);
 
 		return $this->render('IndexProverbius/Widget/randomProverbWidget.html.twig', ['proverb' => $proverb]);
 	}

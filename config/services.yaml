@@ -38,3 +38,7 @@ services:
         decorates: 'api_platform.openapi.factory'
         arguments: ['@.inner']
         autoconfigure: false
+
+    app.custom_authenticator:
+        class: Lexik\Bundle\JWTAuthenticationBundle\Security\Authenticator\JWTAuthenticator
+        parent: lexik_jwt_authentication.security.jwt_authenticator

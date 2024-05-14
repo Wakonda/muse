@@ -117,7 +117,12 @@ class User implements UserInterface, \Serializable
             $this->salt
         ) = unserialize($serialized);
     }
-	
+
+	public function getUserIdentifier(): string
+	{
+		return $this->username;
+	}
+
     public function getId()
     {
         return $this->id;
@@ -148,7 +153,7 @@ class User implements UserInterface, \Serializable
         $this->password = $password;
     }
 
-    public function getRoles()
+    public function getRoles(): array
     {
         return explode(",", $this->roles);
     }

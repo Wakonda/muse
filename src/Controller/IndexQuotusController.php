@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Doctrine\ORM\EntityManagerInterface;
 
 use App\Form\Type\QuoteUserType;
 use App\Form\Type\IndexQuotusSearchType;
@@ -44,12 +45,10 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/", priority=10)
      */
-    public function indexAction(Request $request)
+    public function indexAction(EntityManagerInterface $em, Request $request)
     {
-		$entityManager = $this->getDoctrine()->getManager();
-
 		$form = $this->createFormIndexSearch($request->getLocale(), null);
-		$random = $entityManager->getRepository(Quote::class)->getRandom($request->getLocale());
+		$random = $em->getRepository(Quote::class)->getRandom($request->getLocale());
 
         return $this->render('IndexQuotus/index.html.twig', ['form' => $form->createView(), 'random' => $random]);
     }
@@ -57,10 +56,9 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/random")
      */
-    public function randomAction(Request $request)
+    public function randomAction(EntityManagerInterface $em, Request $request)
     {
-		$entityManager = $this->getDoctrine()->getManager();
-		$random = $entityManager->getRepository(Quote::class)->getRandom($request->getLocale());
+		$random = $em->getRepository(Quote::class)->getRandom($request->getLocale());
 
         return $this->render('IndexQuotus/random.html.twig', array('random' => $random));
     }
@@ -79,8 +77,7 @@ class IndexQuotusController extends AbstractController
      */
 	public function searchAction(Request $request, TranslatorInterface $translator)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$search = $request->request->get("index_quotus_search", []);
+		$search = $request->request->all("index_quotus_search", []);
 		
 		unset($search["_token"]);
 
@@ -100,9 +97,8 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/result_search/{search}")
      */
-	public function searchDatatablesAction(Request $request, $search)
+	public function searchDatatablesAction(EntityManagerInterface $em, Request $request, $search)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 
@@ -118,8 +114,8 @@ class IndexQuotusController extends AbstractController
 			}
 		}
 		$sSearch = json_decode(base64_decode($search));
-		$entities = $entityManager->getRepository(Quote::class)->findIndexSearch($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
-		$iTotal = $entityManager->getRepository(Quote::class)->findIndexSearch($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
+		$entities = $em->getRepository(Quote::class)->findIndexSearch($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
+		$iTotal = $em->getRepository(Quote::class)->findIndexSearch($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -144,13 +140,12 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/read/{id}/{slug}/{idImage}", defaults={"slug": null, "idImage": null})
      */
-	public function readAction(Request $request, $id, $idImage)
+	public function readAction(EntityManagerInterface $em, Request $request, $id, $idImage)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Quote::class)->find($id);
-		$image = (!empty($idImage)) ? $entityManager->getRepository(QuoteImage::class)->find($idImage) : null;
+		$entity = $em->getRepository(Quote::class)->find($id);
+		$image = (!empty($idImage)) ? $em->getRepository(QuoteImage::class)->find($idImage) : null;
 		
-		$browsing = $entityManager->getRepository(Quote::class)->browsingShow($id);
+		$browsing = $em->getRepository(Quote::class)->browsingShow($id);
 
 		return $this->render('IndexQuotus/read.html.twig', array('entity' => $entity, 'browsing' => $browsing, 'image' => $image));
 	}
@@ -158,10 +153,9 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/read_pdf/{id}/{slug}", defaults={"slug": null})
      */
-	public function readPDFAction(Request $request, $id)
+	public function readPDFAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Quote::class)->find($id);
+		$entity = $em->getRepository(Quote::class)->find($id);
 		
 		if(empty($entity))
 			throw $this->createNotFoundException('404');
@@ -181,10 +175,9 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/byimages/{page}", defaults={"page": 1})
      */
-	public function byImagesAction(Request $request, PaginatorInterface $paginator, $page)
+	public function byImagesAction(EntityManagerInterface $em, Request $request, PaginatorInterface $paginator, $page)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$query = $entityManager->getRepository(QuoteImage::class)->getPaginator($request->getLocale());
+		$query = $em->getRepository(QuoteImage::class)->getPaginator($request->getLocale());
 
 		$pagination = $paginator->paginate(
 			$query, /* query NOT result */
@@ -200,10 +193,9 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/tag/{id}/{slug}", defaults={"slug": null})
      */
-	public function tagAction(Request $request, $id)
+	public function tagAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Tag::class)->find($id);
+		$entity = $em->getRepository(Tag::class)->find($id);
 
 		return $this->render('IndexQuotus/tag.html.twig', array('entity' => $entity));
 	}
@@ -211,7 +203,7 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/tag_datatables/{tagId}")
      */
-	public function tagDatatablesAction(Request $request, $tagId)
+	public function tagDatatablesAction(EntityManagerInterface $em, Request $request, $tagId)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -229,9 +221,8 @@ class IndexQuotusController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Quote::class)->getEntityByTagDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $tagId);
-		$iTotal = $entityManager->getRepository(Quote::class)->getEntityByTagDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $tagId, true);
+		$entities = $em->getRepository(Quote::class)->getEntityByTagDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $tagId);
+		$iTotal = $em->getRepository(Quote::class)->getEntityByTagDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $tagId, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -264,7 +255,7 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/bysources_datatables")
      */
-	public function bySourcesDatatablesAction(Request $request)
+	public function bySourcesDatatablesAction(EntityManagerInterface $em, Request $request)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -282,9 +273,8 @@ class IndexQuotusController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Quote::class)->findQuoteBySource($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
-		$iTotal = $entityManager->getRepository(Quote::class)->findQuoteBySource($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
+		$entities = $em->getRepository(Quote::class)->findQuoteBySource($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
+		$iTotal = $em->getRepository(Quote::class)->findQuoteBySource($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -316,11 +306,10 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/source/{id}/{slug}", defaults={"slug": null})
      */
-	public function sourceAction(Request $request, $id)
+	public function sourceAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Source::class)->find($id);
-		$stores = $entityManager->getRepository(Store::class)->findBy(["source" => $entity]);
+		$entity = $em->getRepository(Source::class)->find($id);
+		$stores = $em->getRepository(Store::class)->findBy(["source" => $entity]);
 
 		return $this->render('IndexQuotus/source.html.twig', array('entity' => $entity, "stores" => $stores));
 	}
@@ -328,7 +317,7 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/source_datatables/{sourceId}")
      */
-	public function sourceDatatablesAction(Request $request, TranslatorInterface $translator, $sourceId)
+	public function sourceDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $sourceId)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -346,9 +335,8 @@ class IndexQuotusController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Quote::class)->getQuoteBySourceDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $sourceId);
-		$iTotal = $entityManager->getRepository(Quote::class)->getQuoteBySourceDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $sourceId, true);
+		$entities = $em->getRepository(Quote::class)->getQuoteBySourceDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $sourceId);
+		$iTotal = $em->getRepository(Quote::class)->getQuoteBySourceDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $sourceId, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -382,7 +370,7 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/byauthors_datatables")
      */
-	public function byAuthorsDatatablesAction(Request $request)
+	public function byAuthorsDatatablesAction(EntityManagerInterface $em, Request $request)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -400,9 +388,8 @@ class IndexQuotusController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Quote::class)->findQuoteByBiography(Biography::AUTHOR, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
-		$iTotal = $entityManager->getRepository(Quote::class)->findQuoteByBiography(Biography::AUTHOR, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
+		$entities = $em->getRepository(Quote::class)->findQuoteByBiography(Biography::AUTHOR, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
+		$iTotal = $em->getRepository(Quote::class)->findQuoteByBiography(Biography::AUTHOR, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -434,11 +421,10 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/author/{id}/{slug}", defaults={"slug": null})
      */
-	public function authorAction(Request $request, $id)
+	public function authorAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Biography::class)->find($id);
-		$stores = $entityManager->getRepository(Store::class)->findBy(["biography" => $entity]);
+		$entity = $em->getRepository(Biography::class)->find($id);
+		$stores = $em->getRepository(Store::class)->findBy(["biography" => $entity]);
 
 		return $this->render('IndexQuotus/author.html.twig', array('entity' => $entity, 'stores' => $stores));
 	}
@@ -446,7 +432,7 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/author_datatables/{biographyId}")
      */
-	public function authorDatatablesAction(Request $request, TranslatorInterface $translator, $biographyId)
+	public function authorDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $biographyId)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -464,9 +450,8 @@ class IndexQuotusController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Quote::class)->getQuoteByBiographyDatatables(Biography::AUTHOR, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $biographyId);
-		$iTotal = $entityManager->getRepository(Quote::class)->getQuoteByBiographyDatatables(Biography::AUTHOR, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $biographyId, true);
+		$entities = $em->getRepository(Quote::class)->getQuoteByBiographyDatatables(Biography::AUTHOR, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $biographyId);
+		$iTotal = $em->getRepository(Quote::class)->getQuoteByBiographyDatatables(Biography::AUTHOR, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $biographyId, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -500,7 +485,7 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/byfictionalcharacters_datatables")
      */
-	public function byFictionalCharactersDatatablesAction(Request $request)
+	public function byFictionalCharactersDatatablesAction(EntityManagerInterface $em, Request $request)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -518,9 +503,8 @@ class IndexQuotusController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Quote::class)->findQuoteByBiography(Biography::FICTIONAL_CHARACTER, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
-		$iTotal = $entityManager->getRepository(Quote::class)->findQuoteByBiography(Biography::FICTIONAL_CHARACTER, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
+		$entities = $em->getRepository(Quote::class)->findQuoteByBiography(Biography::FICTIONAL_CHARACTER, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
+		$iTotal = $em->getRepository(Quote::class)->findQuoteByBiography(Biography::FICTIONAL_CHARACTER, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -552,10 +536,9 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/fictionalcharacter/{id}/{slug}", defaults={"slug": null})
      */
-	public function fictionalCharacterAction(Request $request, $id)
+	public function fictionalCharacterAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Biography::class)->find($id);
+		$entity = $em->getRepository(Biography::class)->find($id);
 
 		return $this->render('IndexQuotus/fictionalcharacter.html.twig', array('entity' => $entity));
 	}
@@ -563,7 +546,7 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/fictionalcharacter_datatables/{biographyId}")
      */
-	public function fictionalCharacterDatatablesAction(Request $request, TranslatorInterface $translator, $biographyId)
+	public function fictionalCharacterDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $biographyId)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -580,9 +563,8 @@ class IndexQuotusController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Quote::class)->getQuoteByBiographyDatatables(Biography::FICTIONAL_CHARACTER, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $biographyId);
-		$iTotal = $entityManager->getRepository(Quote::class)->getQuoteByBiographyDatatables(Biography::FICTIONAL_CHARACTER, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $biographyId, true);
+		$entities = $em->getRepository(Quote::class)->getQuoteByBiographyDatatables(Biography::FICTIONAL_CHARACTER, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $biographyId);
+		$iTotal = $em->getRepository(Quote::class)->getQuoteByBiographyDatatables(Biography::FICTIONAL_CHARACTER, $iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $biographyId, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -616,9 +598,8 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/byusers_datatables")
      */
-	public function byUsersDatatablesAction(Request $request)
+	public function byUsersDatatablesAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 		$sSearch = $request->query->get('sSearch');
@@ -635,8 +616,8 @@ class IndexQuotusController extends AbstractController
 			}
 		}
 
-		$entities = $entityManager->getRepository(Quote::class)->findQuoteByUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
-		$iTotal = $entityManager->getRepository(Quote::class)->findQuoteByUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
+		$entities = $em->getRepository(Quote::class)->findQuoteByUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
+		$iTotal = $em->getRepository(Quote::class)->findQuoteByUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -674,18 +655,16 @@ class IndexQuotusController extends AbstractController
 		return $response;
 	}
 
-	public function lastAction(Request $request)
+	public function lastAction(EntityManagerInterface $em, Request $request)
     {
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Quote::class)->getLastEntries($request->getLocale());
+		$entities = $em->getRepository(Quote::class)->getLastEntries($request->getLocale());
 
 		return $this->render('IndexQuotus/last.html.twig', array('entities' => $entities));
     }
 
-	public function statAction(Request $request)
+	public function statAction(EntityManagerInterface $em, Request $request)
     {
-		$entityManager = $this->getDoctrine()->getManager();
-		$statistics = $entityManager->getRepository(Quote::class)->getStat($request->getLocale());
+		$statistics = $em->getRepository(Quote::class)->getStat($request->getLocale());
 
 		return $this->render('IndexQuotus/stat.html.twig', array('statistics' => $statistics));
     }
@@ -703,7 +682,7 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/quoteuser/create")
      */
-	public function quoteUserCreateAction(Request $request, TokenStorageInterface $tokenStorage)
+	public function quoteUserCreateAction(EntityManagerInterface $em, Request $request, TokenStorageInterface $tokenStorage)
 	{
 		$entity = new Quote();
 		$form = $this->createForm(QuoteUserType::class, $entity);
@@ -721,12 +700,11 @@ class IndexQuotusController extends AbstractController
 			$entity->setUser($user);
 			$entity->setAuthorType("user");
 
-			$entityManager = $this->getDoctrine()->getManager();
-			$entity->setLanguage($entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
+			$entity->setLanguage($em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
 			$entity->setText(nl2br($entity->getText()));
 
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			return $this->redirect($this->generateUrl('app_user_show', array('id' => $user->getId())));
 		}
@@ -737,10 +715,9 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/quoteuser/edit/{id}")
      */
-	public function quoteUserEditAction(Request $request, $id)
+	public function quoteUserEditAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Quote::class)->find($id);
+		$entity = $em->getRepository(Quote::class)->find($id);
 		$entity->setText(strip_tags($entity->getText()));
 		
 		$form = $this->createForm(QuoteUserType::class, $entity);
@@ -751,10 +728,9 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/quoteuser/update/{id}")
      */
-	public function quoteUserUpdateAction(Request $request, TokenStorageInterface $tokenStorage, $id)
+	public function quoteUserUpdateAction(EntityManagerInterface $em, Request $request, TokenStorageInterface $tokenStorage, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Quote::class)->find($id, true);
+		$entity = $em->getRepository(Quote::class)->find($id, true);
 		$form = $this->createForm(QuoteUserType::class, $entity);
 		$form->handleRequest($request);
 
@@ -770,12 +746,12 @@ class IndexQuotusController extends AbstractController
 			$user = $tokenStorage->getToken()->getUser();
 			$entity->setUser($user);
 			
-			$language = $entityManager->getRepository(Language::class)->findOneBy(['abbreviation' => $request->getLocale()]);
+			$language = $em->getRepository(Language::class)->findOneBy(['abbreviation' => $request->getLocale()]);
 
 			$entity->setLanguage($language->getId());
 			
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			return $this->redirect($this->generateUrl('app_user_show', array('id' => $user->getId())));
 		}
@@ -786,12 +762,11 @@ class IndexQuotusController extends AbstractController
     /**
      * @Route("/quoteuser/delete")
      */
-	public function quoteUserDeleteAction(Request $request, TokenStorageInterface $tokenStorage)
+	public function quoteUserDeleteAction(EntityManagerInterface $em, Request $request, TokenStorageInterface $tokenStorage)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$id = $request->query->get("id");
 		
-		$entity = $entityManager->getRepository(Quote::class)->find($id, false);
+		$entity = $em->getRepository(Quote::class)->find($id, false);
 		$entity->setState(2);
 		
 		$entity->setText(nl2br($entity->getText()));
@@ -799,8 +774,8 @@ class IndexQuotusController extends AbstractController
 
 		$entity->setUser($user);
 
-		$entityManager->persist($entity);
-		$entityManager->flush();
+		$em->persist($entity);
+		$em->flush();
 		
 		return new Response();
 	}

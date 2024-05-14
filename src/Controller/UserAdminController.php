@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/admin/user")
@@ -26,7 +27,7 @@ class UserAdminController extends AbstractController
     /**
      * @Route("/datatables")
      */
-	public function indexDatatablesAction(Request $request, TranslatorInterface $translator)
+	public function indexDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -44,9 +45,8 @@ class UserAdminController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(User::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
-		$iTotal = $entityManager->getRepository(User::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
+		$entities = $em->getRepository(User::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
+		$iTotal = $em->getRepository(User::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -74,14 +74,13 @@ class UserAdminController extends AbstractController
     /**
      * @Route("/enabled/{id}/{state}")
      */
-	public function enabledAction(Request $request, $id, $state)
+	public function enabledAction(EntityManagerInterface $em, Request $request, $id, $state)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(User::class)->find($id);
+		$entity = $em->getRepository(User::class)->find($id);
 		$entity->setEnabled($state);
 
-		$entityManager->persist($entity);
-		$entityManager->flush();
+		$em->persist($entity);
+		$em->flush();
 
 		return $this->redirect($this->generateUrl('useradmin_show', array('id' => $id)));
 	}
@@ -89,10 +88,9 @@ class UserAdminController extends AbstractController
     /**
      * @Route("/show/{id}")
      */
-	public function showAction(Request $request, $id)
+	public function showAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(User::class)->find($id);
+		$entity = $em->getRepository(User::class)->find($id);
 	
 		return $this->render('User/Admin/show.html.twig', array('entity' => $entity));
 	}

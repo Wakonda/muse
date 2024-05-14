@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Doctrine\ORM\EntityManagerInterface;
 
 use Spipu\Html2Pdf\Html2Pdf;
 
@@ -44,12 +45,10 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/")
      */
-	public function indexAction(Request $request)
+	public function indexAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-
 		$form = $this->createFormIndexSearch($request->getLocale(), null);
-		$random = $entityManager->getRepository(Poem::class)->getRandomPoem($request->getLocale());
+		$random = $em->getRepository(Poem::class)->getRandomPoem($request->getLocale());
 
 		return $this->render('IndexPoeticus/index.html.twig', ['form' => $form->createView(), 'random' => $random]);
 	}
@@ -57,10 +56,9 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/random")
      */
-    public function randomAction(Request $request)
+    public function randomAction(EntityManagerInterface $em, Request $request)
     {
-		$entityManager = $this->getDoctrine()->getManager();
-		$random = $entityManager->getRepository(Poem::class)->getRandomPoem($request->getLocale());
+		$random = $em->getRepository(Poem::class)->getRandomPoem($request->getLocale());
 
         return $this->render('IndexPoeticus/random.html.twig', array('random' => $random));
     }
@@ -77,10 +75,9 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/search")
      */
-	public function searchAction(Request $request, TranslatorInterface $translator)
+	public function searchAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$search = $request->request->get("index_poeticus_search", []);
+		$search = $request->request->all("index_poeticus_search", []);
 
 		unset($search["_token"]);
 
@@ -93,7 +90,7 @@ class IndexPoeticusController extends AbstractController
 				$criteria['type'] =  $translator->trans('main.field.YourPoems');
 		}
 
-		$criteria['country'] = (empty($search['country'])) ? null : $entityManager->getRepository(Country::class)->find($search['country'])->getTitle();
+		$criteria['country'] = (empty($search['country'])) ? null : $em->getRepository(Country::class)->find($search['country'])->getTitle();
 		$criteria = array_filter(array_values($criteria));
 		$criteria = empty($criteria) ? $translator->trans("search.result.None") : $criteria;
 
@@ -103,9 +100,8 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/result_search/{search}")
      */
-	public function searchDatatablesAction(Request $request, $search)
+	public function searchDatatablesAction(EntityManagerInterface $em, Request $request, $search)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 
@@ -121,8 +117,8 @@ class IndexPoeticusController extends AbstractController
 			}
 		}
 		$sSearch = json_decode(base64_decode($search));
-		$entities = $entityManager->getRepository(Poem::class)->findIndexSearch($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
-		$iTotal = $entityManager->getRepository(Poem::class)->findIndexSearch($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
+		$entities = $em->getRepository(Poem::class)->findIndexSearch($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
+		$iTotal = $em->getRepository(Poem::class)->findIndexSearch($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -136,7 +132,7 @@ class IndexPoeticusController extends AbstractController
 			$row = array();
 			$show = $this->generateUrl('app_indexpoeticus_read', array('id' => $entity->getId(), 'slug' => $entity->getSlug()));
 			$row[] = '<a href="'.$show.'" alt="Show">'.$entity->getTitle().'</a>';
-			$row[] =$entity->getBiography()->getTitle();
+			$row[] = $entity->getBiography()->getTitle();
 
 			$country = $entity->getCountry();
 			$row[] = '<img src="'.$request->getBaseUrl().'/'.Country::PATH_FILE.$country->getFlag().'" class="flag">';
@@ -150,17 +146,15 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/read/{id}/{slug}", defaults={"slug": null})
      */
-	public function readAction(Request $request, $id)
+	public function readAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Poem::class)->find($id);
+		$entity = $em->getRepository(Poem::class)->find($id);
 		
 		if(empty($entity))
 			throw $this->createNotFoundException('404');
 
-		$image = (!empty($idImage)) ? $entityManager->getRepository(PoemImage::class)->find($idImage) : null;
-		
-		$params = array();
+		$image = (!empty($idImage)) ? $em->getRepository(PoemImage::class)->find($idImage) : null;
+		$params = [];
 		
 		if($entity->isBiography()) {
 			$biography = $entity->getBiography();
@@ -172,7 +166,7 @@ class IndexPoeticusController extends AbstractController
 			$params["field"] = "user";			
 		}
 
-		$browsingPoems = $entityManager->getRepository(Poem::class)->browsingPoemShow($params, $id);
+		$browsingPoems = $em->getRepository(Poem::class)->browsingPoemShow($params, $id);
 
 		return $this->render('IndexPoeticus/read.html.twig', ['entity' => $entity, 'browsingPoems' => $browsingPoems, 'image' => $image]);
 	}
@@ -180,10 +174,9 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/byimages", defaults={"page": 1})
      */
-	public function byImagesAction(Request $request, PaginatorInterface $paginator, $page)
+	public function byImagesAction(EntityManagerInterface $em, Request $request, PaginatorInterface $paginator, $page)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$query = $entityManager->getRepository(PoemImage::class)->getPaginator($request->getLocale());
+		$query = $em->getRepository(PoemImage::class)->getPaginator($request->getLocale());
 
 		$pagination = $paginator->paginate(
 			$query, /* query NOT result */
@@ -199,10 +192,9 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/read_pdf/{id}/{slug}", defaults={"slug": null})
      */
-	public function readPDFAction(Request $request, $id)
+	public function readPDFAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Poem::class)->find($id);
+		$entity = $em->getRepository(Poem::class)->find($id);
 		
 		if(empty($entity))
 			throw $this->createNotFoundException('404');
@@ -222,11 +214,10 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/author/{id}/{slug}", defaults={"slug": null})
      */
-	public function authorAction(Request $request, $id)
+	public function authorAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Biography::class)->find($id);
-		$stores = $entityManager->getRepository(Store::class)->findBy(["biography" => $entity]);
+		$entity = $em->getRepository(Biography::class)->find($id);
+		$stores = $em->getRepository(Store::class)->findBy(["biography" => $entity]);
 
 		return $this->render('IndexPoeticus/author.html.twig', array('entity' => $entity, "stores" => $stores));
 	}
@@ -234,7 +225,7 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/author_datatables/{authorId}")
      */
-	public function authorDatatablesAction(Request $request, $authorId)
+	public function authorDatatablesAction(EntityManagerInterface $em, Request $request, $authorId)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -252,9 +243,8 @@ class IndexPoeticusController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Poem::class)->getPoemByAuthorDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $authorId);
-		$iTotal = $entityManager->getRepository(Poem::class)->getPoemByAuthorDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $authorId, true);
+		$entities = $em->getRepository(Poem::class)->getPoemByAuthorDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $authorId);
+		$iTotal = $em->getRepository(Poem::class)->getPoemByAuthorDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $authorId, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -284,18 +274,16 @@ class IndexPoeticusController extends AbstractController
 		return new JsonResponse($output);
 	}
 	
-	public function lastAction(Request $request)
+	public function lastAction(EntityManagerInterface $em, Request $request)
     {
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Poem::class)->getLastEntries($request->getLocale());
+		$entities = $em->getRepository(Poem::class)->getLastEntries($request->getLocale());
 
 		return $this->render('IndexPoeticus/lastPoem.html.twig', array('entities' => $entities));
     }
 
-	public function statAction(Request $request)
+	public function statAction(EntityManagerInterface $em, Request $request)
     {
-		$entityManager = $this->getDoctrine()->getManager();
-		$statistics = $entityManager->getRepository(Poem::class)->getStat($request->getLocale());
+		$statistics = $em->getRepository(Poem::class)->getStat($request->getLocale());
 
 		return $this->render('IndexPoeticus/statPoem.html.twig', array('statistics' => $statistics));
     }
@@ -311,9 +299,8 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/byauthors_datatables")
      */
-	public function byAuthorsDatatablesAction(Request $request)
+	public function byAuthorsDatatablesAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 		$sSearch = $request->query->get('sSearch');
@@ -330,8 +317,8 @@ class IndexPoeticusController extends AbstractController
 			}
 		}
 
-		$entities = $entityManager->getRepository(Poem::class)->findPoemByAuthor($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
-		$iTotal = $entityManager->getRepository(Poem::class)->findPoemByAuthor($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
+		$entities = $em->getRepository(Poem::class)->findPoemByAuthor($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
+		$iTotal = $em->getRepository(Poem::class)->findPoemByAuthor($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -363,10 +350,9 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/tag/{id}/{slug}", defaults={"slug": null})
      */
-	public function tagAction(Request $request, $id)
+	public function tagAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Tag::class)->find($id);
+		$entity = $em->getRepository(Tag::class)->find($id);
 
 		return $this->render('IndexPoeticus/tag.html.twig', array('entity' => $entity));
 	}
@@ -374,7 +360,7 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/tag_datatables/{tagId}")
      */
-	public function tagDatatablesAction(Request $request, $tagId)
+	public function tagDatatablesAction(EntityManagerInterface $em, Request $request, $tagId)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -392,9 +378,8 @@ class IndexPoeticusController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Poem::class)->getPoemByTagDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $tagId);
-		$iTotal = $entityManager->getRepository(Poem::class)->getPoemByTagDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $tagId, true);
+		$entities = $em->getRepository(Poem::class)->getPoemByTagDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $tagId);
+		$iTotal = $em->getRepository(Poem::class)->getPoemByTagDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $tagId, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -427,10 +412,9 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/poeticform/{id}/{slug}", defaults={"slug": null})
      */
-	public function poeticFormAction($id)
+	public function poeticFormAction(EntityManagerInterface $em, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(PoeticForm::class)->find($id);
+		$entity = $em->getRepository(PoeticForm::class)->find($id);
 		
 		return $this->render('IndexPoeticus/poeticForm.html.twig', array('entity' => $entity));
 	}
@@ -438,9 +422,8 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/poeticform_datatables/{poeticformId}")
      */
-	public function poeticFormDatatablesAction(Request $request, $poeticformId)
+	public function poeticFormDatatablesAction(EntityManagerInterface $em, Request $request, $poeticformId)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 		$sSearch = $request->query->get('sSearch');
@@ -457,8 +440,8 @@ class IndexPoeticusController extends AbstractController
 			}
 		}
 
-		$entities = $entityManager->getRepository(Poem::class)->getPoemByPoeticFormDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $poeticformId);
-		$iTotal = $entityManager->getRepository(Poem::class)->getPoemByPoeticFormDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $poeticformId, true);
+		$entities = $em->getRepository(Poem::class)->getPoemByPoeticFormDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $poeticformId);
+		$iTotal = $em->getRepository(Poem::class)->getPoemByPoeticFormDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $poeticformId, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -490,9 +473,8 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/bypoeticforms_datatables")
      */
-	public function byPoeticFormsDatatablesAction(Request $request)
+	public function byPoeticFormsDatatablesAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 		$sSearch = $request->query->get('sSearch');
@@ -509,8 +491,8 @@ class IndexPoeticusController extends AbstractController
 			}
 		}
 
-		$entities = $entityManager->getRepository(Poem::class)->findPoemByPoeticForm($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
-		$iTotal = $entityManager->getRepository(Poem::class)->findPoemByPoeticForm($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
+		$entities = $em->getRepository(Poem::class)->findPoemByPoeticForm($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
+		$iTotal = $em->getRepository(Poem::class)->findPoemByPoeticForm($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -542,10 +524,9 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/collection/{id}/{slug}", defaults={"slug": null})
      */
-	public function collectionAction(Request $request, $id)
+	public function collectionAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Source::class)->find($id);
+		$entity = $em->getRepository(Source::class)->find($id);
 
 		return $this->render('IndexPoeticus/collection.html.twig', array('entity' => $entity));
 	}
@@ -553,9 +534,8 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/collection_datatables/{collectionId}")
      */
-	public function collectionDatatablesAction(Request $request, $collectionId)
+	public function collectionDatatablesAction(EntityManagerInterface $em, Request $request, $collectionId)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 		$sSearch = $request->query->get('sSearch');
@@ -572,8 +552,8 @@ class IndexPoeticusController extends AbstractController
 			}
 		}
 
-		$entities = $entityManager->getRepository(Poem::class)->getPoemByCollectionDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $collectionId);
-		$iTotal = $entityManager->getRepository(Poem::class)->getPoemByCollectionDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $collectionId, true);
+		$entities = $em->getRepository(Poem::class)->getPoemByCollectionDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $collectionId);
+		$iTotal = $em->getRepository(Poem::class)->getPoemByCollectionDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $collectionId, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -605,9 +585,8 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/bycollections_datatables")
      */
-	public function byCollectionsDatatablesAction(Request $request)
+	public function byCollectionsDatatablesAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 		$sSearch = $request->query->get('sSearch');
@@ -624,8 +603,8 @@ class IndexPoeticusController extends AbstractController
 			}
 		}
 
-		$entities = $entityManager->getRepository(Poem::class)->findPoemByCollection($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
-		$iTotal = $entityManager->getRepository(Poem::class)->findPoemByCollection($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
+		$entities = $em->getRepository(Poem::class)->findPoemByCollection($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
+		$iTotal = $em->getRepository(Poem::class)->findPoemByCollection($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -665,12 +644,11 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/collection_pdf/{collectionId}")
      */
-	public function readCollectionPDFAction(Request $request, $collectionId)
+	public function readCollectionPDFAction(EntityManagerInterface $em, Request $request, $collectionId)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$collection = $entityManager->getRepository(Source::class)->find($collectionId);
+		$collection = $em->getRepository(Source::class)->find($collectionId);
 		$biography = $collection->getAuthors()->first();
-		$entities = $entityManager->getRepository(Poem::class)->getAllPoemsByCollectionAndAuthorForPdf($collectionId);
+		$entities = $em->getRepository(Poem::class)->getAllPoemsByCollectionAndAuthorForPdf($collectionId);
 
 		$content = $this->renderView('IndexPoeticus/pdf_poem_collection.html.twig', array('biography' => $biography, 'collection' => $collection, 'entities' => $entities));
 
@@ -689,10 +667,9 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/country/{id}/{slug}", defaults={"slug": null})
      */
-	public function countryAction(Request $request, $id)
+	public function countryAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Country::class)->find($id);
+		$entity = $em->getRepository(Country::class)->find($id);
 
 		return $this->render('IndexPoeticus/country.html.twig', array('entity' => $entity));
 	}
@@ -700,9 +677,8 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/country_datatables/{countryId}")
      */
-	public function countryDatatablesAction(Request $request, $countryId)
+	public function countryDatatablesAction(EntityManagerInterface $em, Request $request, $countryId)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 		$sSearch = $request->query->get('sSearch');
@@ -719,8 +695,8 @@ class IndexPoeticusController extends AbstractController
 			}
 		}
 
-		$entities = $entityManager->getRepository(Poem::class)->getPoemByCountryDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $countryId);
-		$iTotal = $entityManager->getRepository(Poem::class)->getPoemByCountryDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $countryId, true);
+		$entities = $em->getRepository(Poem::class)->getPoemByCountryDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $countryId);
+		$iTotal = $em->getRepository(Poem::class)->getPoemByCountryDatatables($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $countryId, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -755,9 +731,8 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/bycountries_datatables")
      */
-	public function byCountriesDatatablesAction(Request $request)
+	public function byCountriesDatatablesAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 		$sSearch = $request->query->get('sSearch');
@@ -774,8 +749,8 @@ class IndexPoeticusController extends AbstractController
 			}
 		}
 
-		$entities = $entityManager->getRepository(Poem::class)->findPoemByCountry($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
-		$iTotal = $entityManager->getRepository(Poem::class)->findPoemByCountry($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
+		$entities = $em->getRepository(Poem::class)->findPoemByCountry($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
+		$iTotal = $em->getRepository(Poem::class)->findPoemByCountry($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -810,9 +785,8 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/bypoemusers_datatables")
      */
-	public function byPoemUsersDatatablesAction(Request $request)
+	public function byPoemUsersDatatablesAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 		$sSearch = $request->query->get('sSearch');
@@ -829,8 +803,8 @@ class IndexPoeticusController extends AbstractController
 			}
 		}
 
-		$entities = $entityManager->getRepository(Poem::class)->findPoemByPoemUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
-		$iTotal = $entityManager->getRepository(Poem::class)->findPoemByPoemUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
+		$entities = $em->getRepository(Poem::class)->findPoemByPoemUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale());
+		$iTotal = $em->getRepository(Poem::class)->findPoemByPoemUser($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $request->getLocale(), true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -871,7 +845,7 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/poemuser/create")
      */
-	public function poemUserCreateAction(Request $request, TokenStorageInterface $tokenStorage)
+	public function poemUserCreateAction(EntityManagerInterface $em, Request $request, TokenStorageInterface $tokenStorage)
 	{
 		$entity = new Poem();
 		$form = $this->createForm(PoemUserType::class, $entity);
@@ -889,15 +863,14 @@ class IndexPoeticusController extends AbstractController
 			$entity->setUser($user);
 			$entity->setAuthorType("user");
 			$entity->setCountry($user->getCountry());
-			
+
 			$now = new \DateTime();
 			$entity->setReleasedDate($now->format('Y'));
-			$entityManager = $this->getDoctrine()->getManager();
-			$entity->setLanguage($entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
+			$entity->setLanguage($em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
 			$entity->setText(nl2br($entity->getText()));
 
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			return $this->redirect($this->generateUrl('app_user_show', array('id' => $user->getId())));
 		}
@@ -908,10 +881,9 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/poemuser/edit/{id}")
      */
-	public function poemUserEditAction(Request $request, $id)
+	public function poemUserEditAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Poem::class)->find($id);
+		$entity = $em->getRepository(Poem::class)->find($id);
 		$entity->setText(strip_tags($entity->getText()));
 		
 		$form = $this->createForm(PoemUserType::class, $entity);
@@ -922,10 +894,9 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/poemuser/update/{id}")
      */
-	public function poemUserUpdateAction(Request $request, TokenStorageInterface $tokenStorage, $id)
+	public function poemUserUpdateAction(EntityManagerInterface $em, Request $request, TokenStorageInterface $tokenStorage, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Poem::class)->find($id);
+		$entity = $em->getRepository(Poem::class)->find($id);
 		$form = $this->createForm(PoemUserType::class, $entity);
 		$form->handleRequest($request);
 
@@ -943,12 +914,12 @@ class IndexPoeticusController extends AbstractController
 			$entity->setUser($user);
 			$entity->setCountry($user->getCountry());
 			
-			$language = $entityManager->getRepository(Language::class)->findOneBy(['abbreviation' => $request->getLocale()]);
+			$language = $em->getRepository(Language::class)->findOneBy(['abbreviation' => $request->getLocale()]);
 
 			$entity->setLanguage($language->getId());
 			
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			return $this->redirect($this->generateUrl('app_user_show', array('id' => $user->getId())));
 		}
@@ -959,12 +930,11 @@ class IndexPoeticusController extends AbstractController
     /**
      * @Route("/poemuser/delete")
      */
-	public function poemUserDeleteAction(Request $request, TokenStorageInterface $tokenStorage)
+	public function poemUserDeleteAction(EntityManagerInterface $em, Request $request, TokenStorageInterface $tokenStorage)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$id = $request->query->get("id");
 		
-		$entity = $entityManager->getRepository(Poem::class)->find($id, false);
+		$entity = $em->getRepository(Poem::class)->find($id, false);
 		$entity->setState(2);
 		
 		$entity->setText(nl2br($entity->getText()));
@@ -972,8 +942,8 @@ class IndexPoeticusController extends AbstractController
 
 		$entity->setUser($user);
 
-		$entityManager->persist($entity);
-		$entityManager->flush();
+		$em->persist($entity);
+		$em->flush();
 		
 		return new Response();
 	}

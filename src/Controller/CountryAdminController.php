@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/admin/country")
@@ -30,7 +31,7 @@ class CountryAdminController extends AbstractController
     /**
      * @Route("/datatables")
      */
-	public function indexDatatablesAction(Request $request, TranslatorInterface $translator)
+	public function indexDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -48,9 +49,8 @@ class CountryAdminController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Country::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
-		$iTotal = $entityManager->getRepository(Country::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
+		$entities = $em->getRepository(Country::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
+		$iTotal = $em->getRepository(Country::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -91,12 +91,12 @@ class CountryAdminController extends AbstractController
     /**
      * @Route("/create")
      */
-	public function createAction(Request $request, TranslatorInterface $translator)
+	public function createAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$entity = new Country();
         $form = $this->createForm(CountryType::class, $entity);
 		$form->handleRequest($request);
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 
 		if($entity->getFlag() == null or empty($entity->getFlag()["title"]) or empty($entity->getFlag()["content"]))
 			$form->get("flag")["name"]->addError(new FormError($translator->trans("This value should not be blank.", array(), "validators")));
@@ -106,9 +106,8 @@ class CountryAdminController extends AbstractController
 			file_put_contents(Country::PATH_FILE.$entity->getFlag()["title"], $entity->getFlag()["content"]);
 			$entity->setFlag($entity->getFlag()["title"]);
 
-			$entityManager = $this->getDoctrine()->getManager();
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			$redirect = $this->generateUrl('app_countryadmin_show', array('id' => $entity->getId()));
 
@@ -121,10 +120,9 @@ class CountryAdminController extends AbstractController
     /**
      * @Route("/show/{id}")
      */
-	public function showAction(Request $request, $id)
+	public function showAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Country::class)->find($id);
+		$entity = $em->getRepository(Country::class)->find($id);
 	
 		return $this->render('Country/show.html.twig', array('entity' => $entity));
 	}
@@ -132,10 +130,9 @@ class CountryAdminController extends AbstractController
     /**
      * @Route("/edit/{id}")
      */
-	public function editAction(Request $request, $id)
+	public function editAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Country::class)->find($id);
+		$entity = $em->getRepository(Country::class)->find($id);
 		$form = $this->createForm(CountryType::class, $entity);
 	
 		return $this->render('Country/edit.html.twig', array('form' => $form->createView(), 'entity' => $entity));
@@ -144,14 +141,13 @@ class CountryAdminController extends AbstractController
     /**
      * @Route("/update/{id}")
      */
-	public function updateAction(Request $request, TranslatorInterface $translator, $id)
+	public function updateAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Country::class)->find($id);
+		$entity = $em->getRepository(Country::class)->find($id);
 		$currentImage = $entity->getFlag();
 		$form = $this->createForm(CountryType::class, $entity);
 		$form->handleRequest($request);
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 		
 		if($form->isValid())
 		{
@@ -163,8 +159,8 @@ class CountryAdminController extends AbstractController
 				$image = $currentImage;
 
 			$entity->setFlag($entity->getFlag()["title"]);
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			$redirect = $this->generateUrl('app_countryadmin_show', array('id' => $entity->getId()));
 
@@ -177,10 +173,9 @@ class CountryAdminController extends AbstractController
     /**
      * @Route("/countries")
      */
-	public function countriesAction(Request $request)
+	public function countriesAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Country::class)->findAllByLanguage($request->query->get("locale"));
+		$entities = $em->getRepository(Country::class)->findAllByLanguage($request->query->get("locale"));
 		
 		$res = [];
 
@@ -190,12 +185,11 @@ class CountryAdminController extends AbstractController
 		return new JsonResponse($res);
 	}
 
-	private function checkForDoubloon(TranslatorInterface $translator, $entity, $form)
+	private function checkForDoubloon(EntityManagerInterface $em, TranslatorInterface $translator, $entity, $form)
 	{
 		if($entity->getTitle() != null)
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$checkForDoubloon = $entityManager->getRepository(Country::class)->checkForDoubloon($entity);
+			$checkForDoubloon = $em->getRepository(Country::class)->checkForDoubloon($entity);
 
 			if($checkForDoubloon > 0)
 				$form->get("title")->addError(new FormError($translator->trans("admin.index.ThisEntryAlreadyExists")));

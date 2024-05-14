@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/admin/biography")
@@ -33,7 +34,7 @@ class BiographyAdminController extends AbstractController
     /**
      * @Route("/datatables")
      */
-	public function indexDatatablesAction(Request $request, TranslatorInterface $translator)
+	public function indexDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -52,10 +53,8 @@ class BiographyAdminController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		
-		$entities = $entityManager->getRepository(Biography::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $state);
-		$iTotal = $entityManager->getRepository(Biography::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $state, true);
+		$entities = $em->getRepository(Biography::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $state);
+		$iTotal = $em->getRepository(Biography::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $state, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -88,11 +87,10 @@ class BiographyAdminController extends AbstractController
     /**
      * @Route("/new")
      */
-    public function newAction(Request $request)
+    public function newAction(EntityManagerInterface $em, Request $request)
     {
-		$entityManager = $this->getDoctrine()->getManager();
 		$entity = new Biography();
-		$entity->setLanguage($entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
+		$entity->setLanguage($em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
 
         $form = $this->genericCreateForm($request->getLocale(), $entity);
 
@@ -102,47 +100,44 @@ class BiographyAdminController extends AbstractController
     /**
      * @Route("/create")
      */
-	public function createAction(Request $request, TranslatorInterface $translator)
+	public function createAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$entity = new Biography();
 		$locale = $request->request->get($this->formName)["language"];
-		$language = $this->getDoctrine()->getManager()->getRepository(Language::class)->find($locale);
+		$language = $em->getRepository(Language::class)->find($locale);
 
         $form = $this->genericCreateForm($language->getAbbreviation(), $entity);
 		$form->handleRequest($request);
-		
-		$this->checkForDoubloon($translator, $entity, $form);
+
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 
 		if($form->isValid())
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			return $this->redirect($this->generateUrl('app_biographyadmin_show', array('id' => $entity->getId())));
 		}
-		
+
 		return $this->render('Biography/new.html.twig', array('form' => $form->createView()));
 	}
 
     /**
      * @Route("/show/{id}")
      */
-	public function showAction(Request $request, $id)
+	public function showAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Biography::class)->find($id);
-	
+		$entity = $em->getRepository(Biography::class)->find($id);
+
 		return $this->render('Biography/show.html.twig', array('entity' => $entity));
 	}
 
     /**
      * @Route("/edit/{id}")
      */
-	public function editAction(Request $request, $id)
+	public function editAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Biography::class)->find($id);
+		$entity = $em->getRepository(Biography::class)->find($id);
 		$form = $this->genericCreateForm($entity->getLanguage()->getAbbreviation(), $entity);
 	
 		return $this->render('Biography/edit.html.twig', array('form' => $form->createView(), 'entity' => $entity));
@@ -151,23 +146,22 @@ class BiographyAdminController extends AbstractController
     /**
      * @Route("/update/{id}")
      */
-	public function updateAction(Request $request, TranslatorInterface $translator, $id)
+	public function updateAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Biography::class)->find($id);
+		$entity = $em->getRepository(Biography::class)->find($id);
 		
 		$locale = $request->request->get($this->formName)["language"];
-		$language = $entityManager->getRepository(Language::class)->find($locale);
+		$language = $em->getRepository(Language::class)->find($locale);
 
 		$form = $this->genericCreateForm($language->getAbbreviation(), $entity);
 		$form->handleRequest($request);
 		
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 		
 		if($form->isValid())
 		{
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			return $this->redirect($this->generateUrl('app_biographyadmin_show', array('id' => $entity->getId())));
 		}
@@ -178,11 +172,9 @@ class BiographyAdminController extends AbstractController
     /**
      * @Route("/biographies")
      */
-	public function getBiographiesByAjaxAction(Request $request)
+	public function getBiographiesByAjaxAction(EntityManagerInterface $em, Request $request)
 	{
 		$rq = $request->getMethod() == Request::METHOD_GET ? $request->query : $request->request;
-
-		$entityManager = $this->getDoctrine()->getManager();
 		$locale = $rq->get("language");
 		
 		$rsp = new Response();
@@ -198,7 +190,7 @@ class BiographyAdminController extends AbstractController
 			}
 
 			$parameters = array("pkey_val" => $rq->get("pkey_val"));
-			$response =  $entityManager->getRepository(Biography::class)->getDatasCombobox($parameters, $locale);
+			$response =  $em->getRepository(Biography::class)->getDatasCombobox($parameters, $locale);
 
 			$resObj = new \stdClass();
 			$resObj->id = $response["id"];
@@ -222,8 +214,8 @@ class BiographyAdminController extends AbstractController
 			);
 		}
 
-		$response =  $entityManager->getRepository(Biography::class)->getDatasCombobox($parameters, $locale);
-		$count =  $entityManager->getRepository(Biography::class)->getDatasCombobox($parameters, $locale, true);
+		$response =  $em->getRepository(Biography::class)->getDatasCombobox($parameters, $locale);
+		$count =  $em->getRepository(Biography::class)->getDatasCombobox($parameters, $locale, true);
 
 		if($rq->has("q_word")) {
 			$results = [];
@@ -258,12 +250,11 @@ class BiographyAdminController extends AbstractController
 		return $this->createForm(BiographyType::class, $entity, array("locale" => $locale));
 	}
 	
-	private function checkForDoubloon(TranslatorInterface $translator, $entity, $form)
+	private function checkForDoubloon(EntityManagerInterface $em, TranslatorInterface $translator, $entity, $form)
 	{
 		if($entity->getTitle() != null)
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$checkForDoubloon = $entityManager->getRepository(Biography::class)->checkForDoubloon($entity);
+			$checkForDoubloon = $em->getRepository(Biography::class)->checkForDoubloon($entity);
 
 			if($checkForDoubloon > 0)
 				$form->get("title")->addError(new FormError($translator->trans("admin.index.ThisEntryAlreadyExists")));

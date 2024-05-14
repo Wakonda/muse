@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 use App\Entity\Poem;
 use App\Entity\Proverb;
@@ -33,20 +34,18 @@ class SendController extends AbstractController
     /**
      * @Route("/send/{id}", requirements={"id"="\d+"})
      */
-	public function sendAction(Request $request, \Swift_Mailer $mailer, $id)
+	public function sendAction(EntityManagerInterface $em, Request $request, \Swift_Mailer $mailer, $id)
 	{
 		list($className, $subDomain) = $this->selectEntity();
 		parse_str($request->request->get('form'), $form_array);
 
         $form = $this->createForm(SendType::class, $form_array);
-		
 		$form->handleRequest($request);
 
 		if($form->isSubmitted() && $form->isValid())
 		{
 			$data = (object)($request->request->get($form->getName()));
-			$entityManager = $this->getDoctrine()->getManager();
-			$entity = $entityManager->getRepository($className)->find($id);
+			$entity = $em->getRepository($className)->find($id);
 		
 			$content = $this->renderView('Index/send_message_content.html.twig', array(
 				"data" => $data,

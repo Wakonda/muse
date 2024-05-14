@@ -7,26 +7,29 @@ use App\Service\GenericFunction;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Core\Annotation\ApiProperty;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GetCollection;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\TagRepository")
- * @ApiResource(
- *     itemOperations={
- *          "get"={"security"="is_granted('ROLE_ADMIN')"},
- *          "put"={"security"="is_granted('ROLE_ADMIN')"},
- *          "delete"={"security"="is_granted('ROLE_ADMIN')"}
- *      },
- *     collectionOperations={
- *          "get"={"security"="is_granted('ROLE_ADMIN')"},
- *          "post"={"security"="is_granted('ROLE_ADMIN')"}
- *      },
- *     normalizationContext={"groups"={"read"}},
- *     denormalizationContext={"groups"={"write"}}
- * )
  */
+#[ApiResource(
+    operations: [
+        new Get(security: "is_granted('ROLE_ADMIN')"),
+        new Put(security: "is_granted('ROLE_ADMIN')"),
+		new Delete(security: "is_granted('ROLE_ADMIN')"),
+		new Post(security: "is_granted('ROLE_ADMIN')"),
+        new GetCollection(security: "is_granted('ROLE_ADMIN')")
+    ],
+    normalizationContext: ['groups' => ['read']],
+    denormalizationContext: ['groups' => ['write']]
+)]
 class Tag
 {
 	const FOLDER = "tag";
@@ -36,7 +39,7 @@ class Tag
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
-     * @ApiProperty(identifier=false)
+     * #[ApiProperty(identifier: false)]
      */
     protected $id;
 
@@ -76,7 +79,7 @@ class Tag
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
-     * @ApiProperty(identifier=true)
+     * #[ApiProperty(identifier: true)]
      * @Groups({"read", "write"})
      */
     protected $identifier;

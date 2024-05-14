@@ -4,35 +4,32 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
-use ApiPlatform\Core\Annotation\ApiProperty;
-use ApiPlatform\Core\Annotation\ApiSubresource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\ApiProperty;
 
 use App\Service\GenericFunction;
 
  /**
  * @ORM\Entity(repositoryClass="App\Repository\ProverbImageRepository")
- * @ApiResource(
- *     itemOperations={
- *          "get"={"security"="is_granted('ROLE_ADMIN')"},
- *          "put"={"security"="is_granted('ROLE_ADMIN')"}
- *      },
- *     collectionOperations={
- *          "get"={"security"="is_granted('ROLE_ADMIN')"},
- *          "post"={"security"="is_granted('ROLE_ADMIN')"}
- *      },
- *     normalizationContext={"groups"={"read"}},
- *     denormalizationContext={"groups"={"write"}}
- * )
  */
+#[ApiResource(
+    operations: [
+        new Get(security: "is_granted('ROLE_ADMIN')"),
+        new GetCollection(security: "is_granted('ROLE_ADMIN')")
+    ],
+    normalizationContext: ['groups' => ['read']],
+    denormalizationContext: ['groups' => ['write']]
+)]
 class ProverbImage
 {
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @ApiProperty(identifier=false)
+     * #[ApiProperty(identifier: false)]
      */
     protected $id;
 
@@ -56,7 +53,7 @@ class ProverbImage
     /**
      * @ORM\Column(type="string", length=255)
      * @Groups({"read", "write"})
-     * @ApiProperty(identifier=true)
+     * #[ApiProperty(identifier: true)]
      */
     protected $identifier;
 

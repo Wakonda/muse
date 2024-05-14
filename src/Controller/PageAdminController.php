@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/admin/page")
@@ -29,7 +30,7 @@ class PageAdminController extends AbstractController
     /**
      * @Route("/datatables")
      */
-	public function indexDatatablesAction(Request $request, TranslatorInterface $translator)
+	public function indexDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -47,9 +48,8 @@ class PageAdminController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Page::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
-		$iTotal = $entityManager->getRepository(Page::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
+		$entities = $em->getRepository(Page::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
+		$iTotal = $em->getRepository(Page::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -93,23 +93,22 @@ class PageAdminController extends AbstractController
     /**
      * @Route("/create")
      */
-	public function createAction(Request $request, TranslatorInterface $translator)
+	public function createAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$entity = new Page();
         $form = $this->genericCreateForm($entity);
 		$form->handleRequest($request);
 		
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 		if($entity->getPhoto() == null or empty($entity->getPhoto()["title"]) or empty($entity->getPhoto()["content"]))
 			$form->get("photo")["name"]->addError(new FormError($translator->trans("This value should not be blank.", array(), "validators")));
 
 		if($form->isValid())
 		{
-			$entityManager = $this->getDoctrine()->getManager();
 			file_put_contents(Page::PATH_FILE.$entity->getPhoto()["title"], $entity->getPhoto()["content"]);
 			$entity->setPhoto($entity->getPhoto()["title"]);
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			$redirect = $this->generateUrl('app_pageadmin_show', array('id' => $entity->getId()));
 
@@ -122,10 +121,9 @@ class PageAdminController extends AbstractController
     /**
      * @Route("/show/{id}")
      */
-	public function showAction(Request $request, $id)
+	public function showAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Page::class)->find($id);
+		$entity = $em->getRepository(Page::class)->find($id);
 	
 		return $this->render('Page/show.html.twig', array('entity' => $entity));
 	}
@@ -133,10 +131,9 @@ class PageAdminController extends AbstractController
     /**
      * @Route("/edit/{id}")
      */
-	public function editAction(Request $request, $id)
+	public function editAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Page::class)->find($id);
+		$entity = $em->getRepository(Page::class)->find($id);
 		$form = $this->genericCreateForm($entity);
 	
 		return $this->render('Page/edit.html.twig', array('form' => $form->createView(), 'entity' => $entity));
@@ -145,15 +142,14 @@ class PageAdminController extends AbstractController
     /**
      * @Route("/update/{id}")
      */
-	public function updateAction(Request $request, TranslatorInterface $translator, $id)
+	public function updateAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Page::class)->find($id);
+		$entity = $em->getRepository(Page::class)->find($id);
 		$currentImage = $entity->getPhoto();
 		$form = $this->genericCreateForm($entity);
 		$form->handleRequest($request);
 		
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 		
 		if($form->isValid())
 		{
@@ -166,8 +162,8 @@ class PageAdminController extends AbstractController
 				$title = $currentImage;
 
 			$entity->setPhoto($title);
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			return $this->redirect($this->generateUrl('app_pageadmin_show', array('id' => $entity->getId())));
 		}
@@ -193,12 +189,11 @@ class PageAdminController extends AbstractController
 		return $this->createForm(PageType::class, $entity);
 	}
 	
-	private function checkForDoubloon(TranslatorInterface $translator, $entity, $form)
+	private function checkForDoubloon(EntityManagerInterface $em, TranslatorInterface $translator, $entity, $form)
 	{
 		if($entity->getTitle() != null)
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$checkForDoubloon = $entityManager->getRepository(Page::class)->checkForDoubloon($entity);
+			$checkForDoubloon = $em->getRepository(Page::class)->checkForDoubloon($entity);
 
 			if($checkForDoubloon > 0)
 				$form->get("title")->addError(new FormError($translator->trans("admin.index.ThisEntryAlreadyExists")));

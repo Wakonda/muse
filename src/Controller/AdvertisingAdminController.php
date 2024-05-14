@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/admin/advertising")
@@ -33,7 +34,7 @@ class AdvertisingAdminController extends AbstractController
     /**
      * @Route("/datatables")
      */
-	public function indexDatatablesAction(Request $request, TranslatorInterface $translator)
+	public function indexDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -52,10 +53,8 @@ class AdvertisingAdminController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		
-		$entities = $entityManager->getRepository(Advertising::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $state);
-		$iTotal = $entityManager->getRepository(Advertising::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $state, true);
+		$entities = $em->getRepository(Advertising::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $state);
+		$iTotal = $em->getRepository(Advertising::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $state, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -88,11 +87,10 @@ class AdvertisingAdminController extends AbstractController
     /**
      * @Route("/new")
      */
-    public function newAction(Request $request)
+    public function newAction(EntityManagerInterface $em, Request $request)
     {
-		$entityManager = $this->getDoctrine()->getManager();
 		$entity = new Advertising();
-		$entity->setLanguage($entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
+		$entity->setLanguage($em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
 
         $form = $this->genericCreateForm($request->getLocale(), $entity);
 
@@ -102,20 +100,19 @@ class AdvertisingAdminController extends AbstractController
     /**
      * @Route("/create")
      */
-	public function createAction(Request $request, TranslatorInterface $translator)
+	public function createAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$entity = new Advertising();
 		$locale = $request->request->get($this->formName)["language"];
-		$language = $this->getDoctrine()->getManager()->getRepository(Language::class)->find($locale);
+		$language = $em->getRepository(Language::class)->find($locale);
 
         $form = $this->genericCreateForm($language->getAbbreviation(), $entity);
 		$form->handleRequest($request);
 
 		if($form->isValid())
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			return $this->redirect($this->generateUrl('app_advertisingadmin_show', array('id' => $entity->getId())));
 		}
@@ -126,10 +123,9 @@ class AdvertisingAdminController extends AbstractController
     /**
      * @Route("/show/{id}")
      */
-	public function showAction(Request $request, $id)
+	public function showAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Advertising::class)->find($id);
+		$entity = $em->getRepository(Advertising::class)->find($id);
 	
 		return $this->render('Advertising/show.html.twig', array('entity' => $entity));
 	}
@@ -137,10 +133,9 @@ class AdvertisingAdminController extends AbstractController
     /**
      * @Route("/edit/{id}")
      */
-	public function editAction(Request $request, $id)
+	public function editAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Advertising::class)->find($id);
+		$entity = $em->getRepository(Advertising::class)->find($id);
 		$form = $this->genericCreateForm($entity->getLanguage()->getAbbreviation(), $entity);
 	
 		return $this->render('Advertising/edit.html.twig', array('form' => $form->createView(), 'entity' => $entity));
@@ -149,21 +144,20 @@ class AdvertisingAdminController extends AbstractController
     /**
      * @Route("/update/{id}")
      */
-	public function updateAction(Request $request, TranslatorInterface $translator, $id)
+	public function updateAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Advertising::class)->find($id);
+		$entity = $em->getRepository(Advertising::class)->find($id);
 		
 		$locale = $request->request->get($this->formName)["language"];
-		$language = $entityManager->getRepository(Language::class)->find($locale);
+		$language = $em->getRepository(Language::class)->find($locale);
 
 		$form = $this->genericCreateForm($language->getAbbreviation(), $entity);
 		$form->handleRequest($request);
 		
 		if($form->isValid())
 		{
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			return $this->redirect($this->generateUrl('app_advertisingadmin_show', array('id' => $entity->getId())));
 		}
@@ -186,6 +180,6 @@ class AdvertisingAdminController extends AbstractController
 	
 	private function genericCreateForm($locale, $entity)
 	{
-		return $this->createForm(AdvertisingType::class, $entity, array("locale" => $locale));
+		return $this->createForm(AdvertisingType::class, $entity, ["locale" => $locale]);
 	}
 }

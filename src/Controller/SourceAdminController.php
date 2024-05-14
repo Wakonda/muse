@@ -19,6 +19,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/admin/source")
@@ -38,9 +39,8 @@ class SourceAdminController extends AbstractController
     /**
      * @Route("/datatables")
      */
-	public function indexDatatablesAction(Request $request, TranslatorInterface $translator)
+	public function indexDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 		$sSearch = $request->query->get('sSearch');
@@ -58,8 +58,8 @@ class SourceAdminController extends AbstractController
 			}
 		}
 		
-		$entities = $entityManager->getRepository(Source::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $state);
-		$iTotal = $entityManager->getRepository(Source::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $state, true);
+		$entities = $em->getRepository(Source::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $state);
+		$iTotal = $em->getRepository(Source::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, $state, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -89,12 +89,11 @@ class SourceAdminController extends AbstractController
     /**
      * @Route("/new")
      */
-    public function newAction(Request $request)
+    public function newAction(EntityManagerInterface $em, Request $request)
     {
 		$entity = new Source();
-		
-		$entityManager = $this->getDoctrine()->getManager();
-		$language = $entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
+
+		$language = $em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
 		
 		$entity->setLanguage($language);
 
@@ -106,22 +105,21 @@ class SourceAdminController extends AbstractController
     /**
      * @Route("/create")
      */
-	public function createAction(Request $request, TranslatorInterface $translator)
+	public function createAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$entity = new Source();
-		$entityManager = $this->getDoctrine()->getManager();
 		$locale = $request->request->get($this->formName)["language"];
-		$language = $entityManager->getRepository(Language::class)->find($locale);
+		$language = $em->getRepository(Language::class)->find($locale);
 
         $form = $this->genericCreateForm($language->getAbbreviation(), $entity);
 		$form->handleRequest($request);
 
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 
 		if($form->isValid())
 		{
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			$redirect = $this->generateUrl('app_sourceadmin_show', array('id' => $entity->getId()));
 
@@ -134,10 +132,9 @@ class SourceAdminController extends AbstractController
     /**
      * @Route("/show/{id}")
      */
-	public function showAction(Request $request, $id)
+	public function showAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Source::class)->find($id);
+		$entity = $em->getRepository(Source::class)->find($id);
 	
 		return $this->render('Source/show.html.twig', array('entity' => $entity));
 	}
@@ -145,10 +142,9 @@ class SourceAdminController extends AbstractController
     /**
      * @Route("/edit/{id}")
      */
-	public function editAction(Request $request, $id)
+	public function editAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Source::class)->find($id);
+		$entity = $em->getRepository(Source::class)->find($id);
 		$form = $this->genericCreateForm($entity->getLanguage()->getAbbreviation(), $entity);
 
 		return $this->render('Source/edit.html.twig', array('form' => $form->createView(), 'entity' => $entity));
@@ -157,24 +153,23 @@ class SourceAdminController extends AbstractController
     /**
      * @Route("/update/{id}")
      */
-	public function updateAction(Request $request, TranslatorInterface $translator, $id)
+	public function updateAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Source::class)->find($id);
+		$entity = $em->getRepository(Source::class)->find($id);
 		
 		$locale = $request->request->get($this->formName)["language"];
-		$language = $entityManager->getRepository(Language::class)->find($locale);
+		$language = $em->getRepository(Language::class)->find($locale);
 
 		$form = $this->genericCreateForm($language->getAbbreviation(), $entity);
 		$form->handleRequest($request);
 		
 		$entity->setSlug(true);
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 
 		if($form->isValid())
 		{
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			return $this->redirect($this->generateUrl('app_sourceadmin_show', array('id' => $entity->getId())));
 		}
@@ -185,24 +180,21 @@ class SourceAdminController extends AbstractController
     /**
      * @Route("/biographies")
      */
-	public function getBiographiesByAjaxAction(Request $request)
+	public function getBiographiesByAjaxAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$locale = $request->query->get("locale", null);
 		$type = $request->query->get("type", null);
 		$query = $request->query->get("q", null);
 		
-		$datas =  $entityManager->getRepository(Biography::class)->getDatasSelect($type, $locale, $query, null);
+		$datas =  $em->getRepository(Biography::class)->getDatasSelect($type, $locale, $query, null);
 		
 		$res = [];
 		
 		foreach($datas as $data)
 		{
 			$row = [];
-			
 			$row["id"] = $data->getId();
 			$row["text"] = $data->getTitle();
-			
 			$res["results"][] = $row;
 		}
 
@@ -212,23 +204,20 @@ class SourceAdminController extends AbstractController
     /**
      * @Route("/sources")
      */
-	public function getSourcesByAjaxAction(Request $request)
+	public function getSourcesByAjaxAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$locale = $request->query->get("locale", null);
 		$query = $request->query->get("q", null);
-		
-		$datas =  $entityManager->getRepository(Source::class)->getDatasSelect($locale, $query);
-		
+
+		$datas =  $em->getRepository(Source::class)->getDatasSelect($locale, $query);
+
 		$res = [];
 		
 		foreach($datas as $data)
 		{
 			$row = [];
-			
 			$row["id"] = $data->getId();
 			$row["text"] = $data->getTitle();
-			
 			$res["results"][] = $row;
 		}
 
@@ -240,12 +229,11 @@ class SourceAdminController extends AbstractController
 		return $this->createForm(SourceType::class, $entity, array('locale' => $locale));
 	}
 
-	private function checkForDoubloon(TranslatorInterface $translator, $entity, $form)
+	private function checkForDoubloon(EntityManagerInterface $em, TranslatorInterface $translator, $entity, $form)
 	{
 		if($entity->getTitle() != null)
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$checkForDoubloon = $entityManager->getRepository(Source::class)->checkForDoubloon($entity);
+			$checkForDoubloon = $em->getRepository(Source::class)->checkForDoubloon($entity);
 
 			if($checkForDoubloon > 0)
 				$form->get("title")->addError(new FormError($translator->trans("admin.index.ThisEntryAlreadyExists")));

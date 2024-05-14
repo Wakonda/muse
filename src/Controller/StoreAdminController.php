@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/admin/store")
@@ -34,7 +35,7 @@ class StoreAdminController extends AbstractController
 	/**
 	 * @Route("/datatables")
 	 */
-	public function indexDatatablesAction(Request $request, TranslatorInterface $translator)
+	public function indexDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -52,9 +53,8 @@ class StoreAdminController extends AbstractController
 			}
 		}
 
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Store::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
-		$iTotal = $entityManager->getRepository(Store::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
+		$entities = $em->getRepository(Store::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
+		$iTotal = $em->getRepository(Store::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -84,11 +84,10 @@ class StoreAdminController extends AbstractController
 	/**
 	 * @Route("/new")
 	 */
-    public function newAction(Request $request)
+    public function newAction(EntityManagerInterface $em, Request $request)
     {
-		$entityManager = $this->getDoctrine()->getManager();
 		$entity = new Store();
-		$entity->setLanguage($entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
+		$entity->setLanguage($em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
 
         $form = $this->genericCreateForm($request->getLocale(), $entity);
 
@@ -98,16 +97,16 @@ class StoreAdminController extends AbstractController
 	/**
 	 * @Route("/create")
 	 */
-	public function createAction(Request $request, TranslatorInterface $translator)
+	public function createAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$entity = new Store();
 		$locale = $request->request->get($this->formName)["language"];
-		$language = $this->getDoctrine()->getManager()->getRepository(Language::class)->find($locale);
+		$language = $em->getRepository(Language::class)->find($locale);
 
         $form = $this->genericCreateForm($language->getAbbreviation(), $entity);
 		$form->handleRequest($request);
 		
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 
 		if($form->has("photo") and ($entity->getPhoto() == null or empty($entity->getPhoto()["title"]) or empty($entity->getPhoto()["content"])))
 			$form->get("photo")["name"]->addError(new FormError($translator->trans("This value should not be blank.", array(), "validators")));
@@ -117,18 +116,16 @@ class StoreAdminController extends AbstractController
 			if(!empty($title = $entity->getPhoto()["title"]) and !empty($content = $entity->getPhoto()["content"]))
 				file_put_contents(Store::PATH_FILE.$title, $content);
 
-			$entityManager = $this->getDoctrine()->getManager();
-			
 			if(empty($entity->getBiography()) and !empty($form->get("newBiography")->getData())) {
 				$biography = new Biography();
 				$biography->setTitle($form->get("newBiography")->getData());
-				$biography->setLanguage($entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $entity->getLanguage()->getAbbreviation()]));
-				$entityManager->persist($biography);
+				$biography->setLanguage($em->getRepository(Language::class)->findOneBy(["abbreviation" => $entity->getLanguage()->getAbbreviation()]));
+				$em->persist($biography);
 				$entity->setBiography($biography);
 			}
 
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			$redirect = $this->generateUrl('storeadmin_show', array('id' => $entity->getId()));
 
@@ -141,10 +138,9 @@ class StoreAdminController extends AbstractController
 	/**
 	 * @Route("/show/{id}")
 	 */
-	public function showAction(Request $request, $id)
+	public function showAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Store::class)->find($id);
+		$entity = $em->getRepository(Store::class)->find($id);
 	
 		return $this->render('Store/show.html.twig', array('entity' => $entity));
 	}
@@ -152,10 +148,9 @@ class StoreAdminController extends AbstractController
 	/**
 	 * @Route("/edit/{id}")
 	 */
-	public function editAction(Request $request, $id)
+	public function editAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Store::class)->find($id);
+		$entity = $em->getRepository(Store::class)->find($id);
 		$form = $this->genericCreateForm($entity->getLanguage()->getAbbreviation(), $entity);
 	
 		return $this->render('Store/edit.html.twig', array('form' => $form->createView(), 'entity' => $entity));
@@ -164,20 +159,19 @@ class StoreAdminController extends AbstractController
 	/**
 	 * @Route("/update/{id}")
 	 */
-	public function updateAction(Request $request, TranslatorInterface $translator, $id)
+	public function updateAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Store::class)->find($id);
+		$entity = $em->getRepository(Store::class)->find($id);
 
 		$locale = $request->request->get($this->formName)["language"];
-		$language = $entityManager->getRepository(Language::class)->find($locale);
+		$language = $em->getRepository(Language::class)->find($locale);
 		
 		$currentImage = $entity->getPhoto();
 		$form = $this->genericCreateForm($language->getAbbreviation(), $entity);
 		$form->handleRequest($request);
 		
-		$this->checkForDoubloon($translator, $entity, $form);
-		
+		$this->checkForDoubloon($em, $translator, $entity, $form);
+
 		if($form->isValid())
 		{
 			if(!is_null($entity->getPhoto()) and (!empty($entity->getPhoto()["title"]) or !empty($entity->getPhoto()["content"])))
@@ -190,18 +184,16 @@ class StoreAdminController extends AbstractController
 
 			$entity->setPhoto($title);
 
-			$entityManager = $this->getDoctrine()->getManager();
-			
 			if(empty($entity->getBiography())) {
 				$biography = new Biography();
 				$biography->setTitle($form->get("newBiography")->getData());
-				$biography->setLanguage($entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $entity->getLanguage()->getAbbreviation()]));
-				$entityManager->persist($biography);
+				$biography->setLanguage($em->getRepository(Language::class)->findOneBy(["abbreviation" => $entity->getLanguage()->getAbbreviation()]));
+				$em->persist($biography);
 				$entity->setBiography($biography);
 			}
 			
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			$redirect = $this->generateUrl('storeadmin_show', array('id' => $entity->getId()));
 
@@ -216,12 +208,11 @@ class StoreAdminController extends AbstractController
 		return $this->createForm(StoreType::class, $entity, array("locale" => $locale));
 	}
 
-	private function checkForDoubloon($translator, $entity, $form)
+	private function checkForDoubloon(EntityManagerInterface $em, $translator, $entity, $form)
 	{
 		if($entity->getTitle() != null)
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$checkForDoubloon = $entityManager->getRepository(Store::class)->checkForDoubloon($entity);
+			$checkForDoubloon = $em->getRepository(Store::class)->checkForDoubloon($entity);
 
 			if($checkForDoubloon > 0)
 				$form->get("title")->addError(new FormError($translator->trans("admin.index.ThisEntryAlreadyExists")));

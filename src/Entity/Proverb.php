@@ -5,29 +5,32 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GetCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
-use ApiPlatform\Core\Annotation\ApiProperty;
-use ApiPlatform\Core\Annotation\ApiSubresource;
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiSubresource;
 
 use App\Service\GenericFunction;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ProverbRepository")
- * @ApiResource(
- *     itemOperations={
- *          "get"={"security"="is_granted('ROLE_ADMIN')"},
- *          "put"={"security"="is_granted('ROLE_ADMIN')"},
- *          "delete"={"security"="is_granted('ROLE_ADMIN')"}
- *      },
- *     collectionOperations={
- *          "get"={"security"="is_granted('ROLE_ADMIN')"},
- *          "post"={"security"="is_granted('ROLE_ADMIN')"}
- *      },
- *     normalizationContext={"groups"={"read"}},
- *     denormalizationContext={"groups"={"write"}}
- * )
  */
+#[ApiResource(
+    operations: [
+        new Get(security: "is_granted('ROLE_ADMIN')"),
+        new Put(security: "is_granted('ROLE_ADMIN')"),
+		new Delete(security: "is_granted('ROLE_ADMIN')"),
+		new Post(security: "is_granted('ROLE_ADMIN')"),
+        new GetCollection(security: "is_granted('ROLE_ADMIN')")
+    ],
+    normalizationContext: ['groups' => ['read']],
+    denormalizationContext: ['groups' => ['write']]
+)]
 class Proverb
 {
 	const FOLDER = "proverb";
@@ -37,7 +40,7 @@ class Proverb
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @ApiProperty(identifier=false)
+     * #[ApiProperty(identifier: false)]
      */
     protected $id;
 
@@ -61,7 +64,7 @@ class Proverb
    /**
     * @ORM\OneToMany(targetEntity=ProverbImage::class, cascade={"persist", "remove"}, mappedBy="proverb", orphanRemoval=true)
     * @Groups({"write"})
-	* @ApiSubresource(maxDepth=1)
+	* #[ApiSubresource(maxDepth: 1)]
     */
     protected $images;
 
@@ -79,7 +82,7 @@ class Proverb
 
     /**
      * @ORM\Column(type="string", length=500, unique=true, nullable=true)
-     * @ApiProperty(identifier=true)
+     * #[ApiProperty(identifier: true)]
      * @Groups({"read", "write"})
      */
     protected $identifier;

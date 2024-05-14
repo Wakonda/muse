@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Doctrine\ORM\EntityManagerInterface;
 
 use App\Service\Captcha;
 use App\Service\Gravatar;
@@ -61,11 +62,10 @@ class IndexController extends AbstractController
     /**
      * @Route("/page/{name}")
      */
-	public function pageAction(Request $request, $name)
+	public function pageAction(EntityManagerInterface $em, Request $request, $name)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$language = $entityManager->getRepository(Language::class)->findOneBy(['abbreviation' => $request->getLocale()]);
-		$entity = $entityManager->getRepository(Page::class)->findOneBy(["internationalName" => $name.ucfirst((new GenericFunction())->getSubDomain()), "language" => $language]);
+		$language = $em->getRepository(Language::class)->findOneBy(['abbreviation' => $request->getLocale()]);
+		$entity = $em->getRepository(Page::class)->findOneBy(["internationalName" => $name.ucfirst((new GenericFunction())->getSubDomain()), "language" => $language]);
 		
 		return $this->render('Index/page.html.twig', array("entity" => $entity));
 	}
@@ -73,11 +73,10 @@ class IndexController extends AbstractController
     /**
      * @Route("/store/{page}", defaults={"page": 1})
      */
-    public function storeAction(Request $request, PaginatorInterface $paginator, $page)
+    public function storeAction(EntityManagerInterface $em, Request $request, PaginatorInterface $paginator, $page)
     {
-		$entityManager = $this->getDoctrine()->getManager();
 		$querySearch = $request->request->get("query", null);
-		$query = $entityManager->getRepository(Store::class)->getProducts($querySearch, $request->getLocale());
+		$query = $em->getRepository(Store::class)->getProducts($querySearch, $request->getLocale());
 
 		$pagination = $paginator->paginate(
 			$query, /* query NOT result */
@@ -93,9 +92,8 @@ class IndexController extends AbstractController
     /**
      * @Route("/read_store/{id}/{slug}", defaults={"slug": null})
      */
-	public function readStoreAction($id)
+	public function readStoreAction(EntityManagerInterface $em, $id)
 	{
-		$em = $this->getDoctrine()->getManager();
 		$entity = $em->getRepository(Store::class)->find($id);
 		
 		return $this->render('Index/readStore.html.twig', [
@@ -106,11 +104,10 @@ class IndexController extends AbstractController
     /**
      * @Route("/version")
      */
-	public function versionAction(Request $request)
+	public function versionAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$language = $entityManager->getRepository(Language::class)->findOneBy(['abbreviation' => $request->getLocale()]);
-		$entities = $entityManager->getRepository(Version::class)->findBy(["language" => $language]);
+		$language = $em->getRepository(Language::class)->findOneBy(['abbreviation' => $request->getLocale()]);
+		$entities = $em->getRepository(Version::class)->findBy(["language" => $language]);
 
 		return $this->render('Index/version.html.twig', array('entities' => $entities));
 	}

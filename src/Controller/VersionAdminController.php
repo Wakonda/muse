@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @Route("/admin/version")
@@ -30,7 +31,7 @@ class VersionAdminController extends AbstractController
     /**
      * @Route("/datatables")
      */
-	public function indexDatatablesAction(Request $request, TranslatorInterface $translator)
+	public function indexDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
@@ -47,10 +48,9 @@ class VersionAdminController extends AbstractController
 				$sortDirColumn[] = $request->query->get('sSortDir_'.$i);
 			}
 		}
-		
-		$entityManager = $this->getDoctrine()->getManager();
-		$entities = $entityManager->getRepository(Version::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
-		$iTotal = $entityManager->getRepository(Version::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
+
+		$entities = $em->getRepository(Version::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
+		$iTotal = $em->getRepository(Version::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -92,26 +92,25 @@ class VersionAdminController extends AbstractController
     /**
      * @Route("/create")
      */
-	public function createAction(Request $request, TranslatorInterface $translator)
+	public function createAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$entity = new Version();
         $form = $this->genericCreateForm($request->getLocale(), $entity);
 		
 		$form->handleRequest($request);
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 		
 		if($entity->getFile() == null)
 			$form->get("file")->addError(new FormError($translator->trans("This value should not be blank.", array(), "validators")));
 
 		if($form->isValid())
 		{
-			$entityManager = $this->getDoctrine()->getManager();
 			$gf = new GenericFunction();
 			$image = $gf->getUniqCleanNameForFile($entity->getFile());
 			$entity->getFile()->move(Version::PATH_FILE, $image);
 			$entity->setFile($image);
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			$redirect = $this->generateUrl('versionadmin_show', array('id' => $entity->getId()));
 
@@ -124,10 +123,9 @@ class VersionAdminController extends AbstractController
     /**
      * @Route("/show/{id}")
      */
-	public function showAction(Request $request, $id)
+	public function showAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Version::class)->find($id);
+		$entity = $em->getRepository(Version::class)->find($id);
 
 		return $this->render('Version/show.html.twig', array('entity' => $entity));
 	}
@@ -135,10 +133,9 @@ class VersionAdminController extends AbstractController
     /**
      * @Route("/edit/{id}")
      */
-	public function editAction(Request $request, $id)
+	public function editAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Version::class)->find($id);
+		$entity = $em->getRepository(Version::class)->find($id);
 		$form = $this->genericCreateForm($request->getLocale(), $entity);
 	
 		return $this->render('Version/edit.html.twig', array('form' => $form->createView(), 'entity' => $entity));
@@ -147,15 +144,14 @@ class VersionAdminController extends AbstractController
     /**
      * @Route("/update/{id}")
      */
-	public function updateAction(Request $request, TranslatorInterface $translator, $id)
+	public function updateAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Version::class)->find($id);
+		$entity = $em->getRepository(Version::class)->find($id);
 		$currentImage = $entity->getFile();
 		$form = $this->genericCreateForm($request->getLocale(), $entity);
 		$form->handleRequest($request);
 		
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 		
 		if($form->isValid())
 		{
@@ -169,8 +165,8 @@ class VersionAdminController extends AbstractController
 				$image = $currentImage;
 
 			$entity->setFile($image);
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 
 			$redirect = $this->generateUrl('versionadmin_show', array('id' => $entity->getId()));
 
@@ -185,12 +181,11 @@ class VersionAdminController extends AbstractController
 		return $this->createForm(VersionType::class, $entity, array('locale' => $locale));
 	}
 	
-	private function checkForDoubloon(TranslatorInterface $translator, $entity, $form)
+	private function checkForDoubloon(EntityManagerInterface $em, TranslatorInterface $translator, $entity, $form)
 	{
 		if($entity->getVersionNumber() != null)
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$checkForDoubloon = $entityManager->getRepository(Version::class)->checkForDoubloon($entity);
+			$checkForDoubloon = $em->getRepository(Version::class)->checkForDoubloon($entity);
 
 			if($checkForDoubloon > 0)
 				$form->get("versionNumber")->addError(new FormError($translator->trans("admin.index.ThisEntryAlreadyExists")));

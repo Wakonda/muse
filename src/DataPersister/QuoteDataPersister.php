@@ -18,11 +18,11 @@ use App\Service\GenericFunction;
 
 final class QuoteDataPersister implements ContextAwareDataPersisterInterface
 {
-    private $entityManager;
+    private $em;
     
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $em)
     {
-        $this->entityManager = $entityManager;
+        $this->em = $em;
     }
 
     public function supports($data, array $context = []): bool
@@ -32,7 +32,7 @@ final class QuoteDataPersister implements ContextAwareDataPersisterInterface
 
     public function persist($data, array $context = [])
     {
-		$language = $this->entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $data->getLanguage()->getAbbreviation()]);
+		$language = $this->em->getRepository(Language::class)->findOneBy(["abbreviation" => $data->getLanguage()->getAbbreviation()]);
 
 		if(empty($language))
 			throw new NotFoundHttpException();
@@ -40,12 +40,12 @@ final class QuoteDataPersister implements ContextAwareDataPersisterInterface
 		if(empty($data->getText()))
 			throw new BadRequestHttpException();
 
-		$country = !empty($c = $data->getBiography()->getCountry()->getInternationalName()) ? $this->entityManager->getRepository(Country::class)->findOneBy(["internationalName" => $c, "language" => $language]) : null;
+		$country = !empty($c = $data->getBiography()->getCountry()->getInternationalName()) ? $this->em->getRepository(Country::class)->findOneBy(["internationalName" => $c, "language" => $language]) : null;
 
 		$currentTags = [];
 
 		foreach($data->getTags() as $tag) {
-			$currentTag = $this->entityManager->getRepository(Tag::class)->findOneBy(["identifier" => $tag->getIdentifier(), "language" => $language]);
+			$currentTag = $this->em->getRepository(Tag::class)->findOneBy(["identifier" => $tag->getIdentifier(), "language" => $language]);
 
 			if(!empty($currentTag))
 				$currentTags[] = $currentTag;
@@ -57,7 +57,7 @@ final class QuoteDataPersister implements ContextAwareDataPersisterInterface
 
 		$data->setTags($currentTags);
 
-		$biography = $this->entityManager->getRepository(Biography::class)->findOneBy(["wikidata" => $data->getBiography()->getWikidata(), "language" => $language]);
+		$biography = $this->em->getRepository(Biography::class)->findOneBy(["wikidata" => $data->getBiography()->getWikidata(), "language" => $language]);
 
 		if(empty($biography)) {
 			$biography = $data->getBiography();
@@ -84,13 +84,13 @@ final class QuoteDataPersister implements ContextAwareDataPersisterInterface
 				$biography->setFileManagement(null);
 		}
 
-		/*$source = null; //$this->entityManager->getRepository(Source::class)->findOneBy(["identifier" => $data->getSource()->getIdentifier(), "language" => $language]);
+		/*$source = null; //$this->em->getRepository(Source::class)->findOneBy(["identifier" => $data->getSource()->getIdentifier(), "language" => $language]);
 		
 		$data->setSource($source);
 		
 		if(!empty($source)) {
 			if($biography->isAuthor()) {
-				$sa = $this->entityManager->getRepository(Source::class)->getSourceByBiographyAndTitle($biography, $source->getTitle(), Biography::AUTHOR, $source->getIdentifier());
+				$sa = $this->em->getRepository(Source::class)->getSourceByBiographyAndTitle($biography, $source->getTitle(), Biography::AUTHOR, $source->getIdentifier());
 			
 				if(empty($sa)) {
 					$source->addAuthor($biography);
@@ -98,27 +98,27 @@ final class QuoteDataPersister implements ContextAwareDataPersisterInterface
 				}
 			}
 			if($biography->isFictionalCharacter()) {
-				$sa = $this->entityManager->getRepository(Source::class)->getSourceByBiographyAndTitle($biography, $source->getTitle(), Biography::FICTIONAL_CHARACTER, $source->getIdentifier());
+				$sa = $this->em->getRepository(Source::class)->getSourceByBiographyAndTitle($biography, $source->getTitle(), Biography::FICTIONAL_CHARACTER, $source->getIdentifier());
 			
 				if(empty($sa)) {
 					$source->addFictionalCharacter($biography);
 					$biography->addArtwork($source);
 				}
 			}
-			$this->entityManager->persist($source);
-			$this->entityManager->persist($biography);
+			$this->em->persist($source);
+			$this->em->persist($biography);
 		}*/
 		
 		$data->setLanguage($language);
 		$data->getBiography()->setCountry($country);
 		$data->getBiography()->setLanguage($language);
 		
-		$this->entityManager->persist($data);
-        $this->entityManager->flush();
+		$this->em->persist($data);
+        $this->em->flush();
 
 		$data->setIdentifier("muse-".$data->getId());
 		
-		$this->entityManager->flush();
+		$this->em->flush();
 
 		if(!empty($imgBase64))
 			file_put_contents("photo/".$data->getBiography()->getFileManagement()->getFolder()."/".$data->getBiography()->getFileManagement()->getPhoto(), base64_decode($imgBase64));

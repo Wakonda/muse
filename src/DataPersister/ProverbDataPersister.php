@@ -18,11 +18,11 @@ use App\Service\GenericFunction;
 
 final class ProverbDataPersister implements ContextAwareDataPersisterInterface
 {
-    private $entityManager;
+    private $em;
     
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $em)
     {
-        $this->entityManager = $entityManager;
+        $this->em = $em;
     }
 
     public function supports($data, array $context = []): bool
@@ -32,7 +32,7 @@ final class ProverbDataPersister implements ContextAwareDataPersisterInterface
 
     public function persist($data, array $context = [])
     {
-		$language = $this->entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $data->getLanguage()->getAbbreviation()]);
+		$language = $this->em->getRepository(Language::class)->findOneBy(["abbreviation" => $data->getLanguage()->getAbbreviation()]);
 
 		if(empty($language))
 			throw new NotFoundHttpException();
@@ -40,13 +40,13 @@ final class ProverbDataPersister implements ContextAwareDataPersisterInterface
 		if(empty($data->getText()))
 			throw new BadRequestHttpException();
 
-		$country = !empty($c = $data->getCountry()->getInternationalName()) ? $this->entityManager->getRepository(Country::class)->findOneBy(["internationalName" => $c, "language" => $language]) : null;
+		$country = !empty($c = $data->getCountry()->getInternationalName()) ? $this->em->getRepository(Country::class)->findOneBy(["internationalName" => $c, "language" => $language]) : null;
 
 		$currentTags = [];
 
 		if(!empty($data->getTags())) {
 			foreach($data->getTags() as $tag) {
-				$currentTag = $this->entityManager->getRepository(Tag::class)->findOneBy(["identifier" => $tag->getIdentifier(), "language" => $language]);
+				$currentTag = $this->em->getRepository(Tag::class)->findOneBy(["identifier" => $tag->getIdentifier(), "language" => $language]);
 
 				if(!empty($currentTag))
 					$currentTags[] = $currentTag;
@@ -64,12 +64,12 @@ final class ProverbDataPersister implements ContextAwareDataPersisterInterface
 		$data->setLanguage($language);
 		$data->setCountry($country);
 		
-		$this->entityManager->persist($data);
-        $this->entityManager->flush();
+		$this->em->persist($data);
+        $this->em->flush();
 
 		$data->setIdentifier("muse-".$data->getId());
 		
-		$this->entityManager->flush();
+		$this->em->flush();
 
 		if(!empty($imgBase64))
 			file_put_contents("photo/".$data->getBiography()->getFileManagement()->getFolder()."/".$data->getBiography()->getFileManagement()->getPhoto(), base64_decode($imgBase64));

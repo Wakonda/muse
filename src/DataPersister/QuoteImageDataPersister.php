@@ -16,15 +16,15 @@ use App\Service\Mastodon;
 
 final class QuoteImageDataPersister implements ContextAwareDataPersisterInterface
 {
-    private $entityManager;
+    private $em;
 	private $router;
 	private $facebook;
 	private $twitter;
 	private $mastodon;
     
-    public function __construct(EntityManagerInterface $entityManager, UrlGeneratorInterface $router, Facebook $facebook, Twitter $twitter, Mastodon $mastodon)
+    public function __construct(EntityManagerInterface $em, UrlGeneratorInterface $router, Facebook $facebook, Twitter $twitter, Mastodon $mastodon)
     {
-        $this->entityManager = $entityManager;
+        $this->em = $em;
 		$this->router = $router;
 		$this->facebook = $facebook;
 		$this->twitter = $twitter;
@@ -38,13 +38,13 @@ final class QuoteImageDataPersister implements ContextAwareDataPersisterInterfac
 
     public function persist($data, array $context = [])
     {
-		$quote = $this->entityManager->getRepository(Quote::class)->findOneBy(["identifier" => $data->getQuote()->getIdentifier()]);
+		$quote = $this->em->getRepository(Quote::class)->findOneBy(["identifier" => $data->getQuote()->getIdentifier()]);
 
 		file_put_contents("photo/quote/".$data->getImage(), base64_decode($data->imgBase64));
 		$data->setQuote($quote);
 
-		$this->entityManager->persist($data);
-        $this->entityManager->flush();
+		$this->em->persist($data);
+        $this->em->flush();
 
 		// Publish on social network
 		$text = $quote->getText();
@@ -75,8 +75,8 @@ final class QuoteImageDataPersister implements ContextAwareDataPersisterInterfac
 		if(property_exists($res, "error"))
 			$data->addSocialNetwork("Facebook");
 
-		$this->entityManager->persist($data);
-        $this->entityManager->flush();
+		$this->em->persist($data);
+        $this->em->flush();
 
         return $data;
     }

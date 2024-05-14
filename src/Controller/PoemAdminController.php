@@ -29,8 +29,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Doctrine\ORM\EntityManagerInterface;
 
-use seregazhuk\PinterestBot\Factories\PinterestBot;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\Twitter;
 
@@ -57,9 +57,8 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/datatables")
      */
-	public function indexDatatablesAction(Request $request, TranslatorInterface $translator)
+	public function indexDatatablesAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$iDisplayStart = $request->query->get('iDisplayStart');
 		$iDisplayLength = $request->query->get('iDisplayLength');
 		$sSearch = $request->query->get('sSearch');
@@ -76,8 +75,8 @@ class PoemAdminController extends AbstractController
 			}
 		}
 		
-		$entities = $entityManager->getRepository(Poem::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
-		$iTotal = $entityManager->getRepository(Poem::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
+		$entities = $em->getRepository(Poem::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch);
+		$iTotal = $em->getRepository(Poem::class)->getDatatablesForIndex($iDisplayStart, $iDisplayLength, $sortByColumn, $sortDirColumn, $sSearch, true);
 
 		$output = array(
 			"sEcho" => $request->query->get('sEcho'),
@@ -108,20 +107,18 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/new/{biographyId}/{collectionId}", defaults={"biographyId": null, "collectionId": null}, requirements={"biographyId"="\d+", "collectionId"="\d+"})
      */
-    public function newAction(Request $request, $biographyId, $collectionId)
+    public function newAction(EntityManagerInterface $em, Request $request, $biographyId, $collectionId)
     {
 		$entity = new Poem();
-		
-		$entityManager = $this->getDoctrine()->getManager();
-		$language = $entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
+		$language = $em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
 		
 		$entity->setLanguage($language);
 
 		if(!empty($biographyId))
-			$entity->setBiography($entityManager->getRepository(Biography::class)->find($biographyId));
+			$entity->setBiography($em->getRepository(Biography::class)->find($biographyId));
 		
 		if(!empty($collectionId))
-			$entity->setCollection($entityManager->getRepository(Source::class)->find($collectionId));
+			$entity->setCollection($em->getRepository(Source::class)->find($collectionId));
 
         $form = $this->genericCreateForm($request->getLocale(), $entity);
 
@@ -131,17 +128,16 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/create")
      */
-	public function createAction(Request $request, TranslatorInterface $translator)
+	public function createAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator)
 	{
 		$entity = new Poem();
-		$entityManager = $this->getDoctrine()->getManager();
 		$locale = $request->request->get($this->formName)["language"];
-		$language = $entityManager->getRepository(Language::class)->find($locale);
+		$language = $em->getRepository(Language::class)->find($locale);
 
         $form = $this->genericCreateForm($language->getAbbreviation(), $entity);
 		$form->handleRequest($request);
 
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 
 		$poeticForm = $entity->getPoeticForm();
 		
@@ -155,7 +151,7 @@ class PoemAdminController extends AbstractController
 				$form->get("text")->addError(new FormError($translator->trans("This value should not be blank.", array(), "validators")));
 		}
 		
-		$userForms = $entityManager->getRepository(User::class)->findAllForChoice($request->getLocale());
+		$userForms = $em->getRepository(User::class)->findAllForChoice($request->getLocale());
 
 		if(($entity->isBiography() and $entity->getBiography() == null) or ($entity->isUser() and $entity->getUser() == null))
 			$form->get($entity->getAuthorType())->addError(new FormError($translator->trans("This value should not be blank.", array(), "validators")));
@@ -163,9 +159,9 @@ class PoemAdminController extends AbstractController
 		if($form->isValid())
 		{
 			$entity->setState(0);
-			$entity->setCountry($entityManager->getRepository(Biography::class)->find($entity->getBiography())->getCountry());
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$entity->setCountry($em->getRepository(Biography::class)->find($entity->getBiography())->getCountry());
+			$em->persist($entity);
+			$em->flush();
 
 			$redirect = $this->generateUrl('app_poemadmin_show', array('id' => $entity->getId()));
 
@@ -178,11 +174,9 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/show/{id}")
      */
-	public function showAction(Request $request, $id)
+	public function showAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Poem::class)->find($id);
-		
+		$entity = $em->getRepository(Poem::class)->find($id);
 		$imageGeneratorForm = $this->createForm(ImagePoemGeneratorType::class);
 	
 		return $this->render('Poem/show.html.twig', array('entity' => $entity, 'imageGeneratorForm' => $imageGeneratorForm->createView()));
@@ -191,10 +185,9 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/edit/{id}")
      */
-	public function editAction(Request $request, $id)
+	public function editAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Poem::class)->find($id);
+		$entity = $em->getRepository(Poem::class)->find($id);
 		$form = $this->genericCreateForm($entity->getLanguage()->getAbbreviation(), $entity);
 
 		return $this->render('Poem/edit.html.twig', array('form' => $form->createView(), 'entity' => $entity));
@@ -203,18 +196,17 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/update/{id}")
      */
-	public function updateAction(Request $request, TranslatorInterface $translator, $id)
+	public function updateAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Poem::class)->find($id);
+		$entity = $em->getRepository(Poem::class)->find($id);
 		
 		$locale = $request->request->get($this->formName)["language"];
-		$language = $entityManager->getRepository(Language::class)->find($locale);
+		$language = $em->getRepository(Language::class)->find($locale);
 		
 		$form = $this->genericCreateForm($language->getAbbreviation(), $entity);
 		$form->handleRequest($request);
 		
-		$this->checkForDoubloon($translator, $entity, $form);
+		$this->checkForDoubloon($em, $translator, $entity, $form);
 
 		$poeticForm = $entity->getPoeticForm();
 
@@ -233,9 +225,9 @@ class PoemAdminController extends AbstractController
 		
 		if($form->isValid())
 		{
-			$entity->setCountry( $entityManager->getRepository(Biography::class)->find($entity->getBiography())->getCountry());
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$entity->setCountry( $em->getRepository(Biography::class)->find($entity->getBiography())->getCountry());
+			$em->persist($entity);
+			$em->flush();
 
 			return $this->redirect($this->generateUrl('app_poemadmin_show', array('id' => $entity->getId())));
 		}
@@ -246,11 +238,10 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/edit_multiple")
      */
-	public function editMultipleAction(Request $request)
+	public function editMultipleAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$ids = json_decode($request->query->get("ids"));
-		$locale = $entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
+		$locale = $em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
 		$form = $this->createForm(PoemEditMultipleType::class, null, array("locale" => $locale->getId()));
 
 		return $this->render('Poem/editMultiple.html.twig', array('form' => $form->createView(), 'ids' => $ids));
@@ -259,11 +250,10 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/update_multiple/{ids}")
      */
-	public function updateMultipleAction(Request $request, SessionInterface $session, TranslatorInterface $translator, $ids)
+	public function updateMultipleAction(EntityManagerInterface $em, Request $request, SessionInterface $session, TranslatorInterface $translator, $ids)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$ids = json_decode($ids);
-		$locale = $entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
+		$locale = $em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]);
 		$form = $this->createForm(PoemEditMultipleType::class, null, array("locale" => $locale->getId()));
 		$form->handleRequest($request);
 
@@ -271,27 +261,27 @@ class PoemAdminController extends AbstractController
 
 		foreach($ids as $id)
 		{
-			$entity = $entityManager->getRepository(Poem::class)->find($id);
+			$entity = $em->getRepository(Poem::class)->find($id);
 			$tagsId = $req["tags"];
 
 			foreach($tagsId as $tagId)
 			{
-				$tag = $entityManager->getRepository(Tag::class)->find($tagId);
-				$realTag = $entityManager->getRepository(Tag::class)->findOneBy(["internationalName" => $tag->getInternationalName(), "language" => $entity->getLanguage()]);
+				$tag = $em->getRepository(Tag::class)->find($tagId);
+				$realTag = $em->getRepository(Tag::class)->findOneBy(["internationalName" => $tag->getInternationalName(), "language" => $entity->getLanguage()]);
 				
 				if(!empty($realTag))
 				{
 					if(!$entity->isTagExisted($realTag))
 					{
 						$entity->addTag($realTag);
-						$entityManager->persist($entity);
+						$em->persist($entity);
 					}
 				}
 			}
-			
-			$entityManager->flush();
+
+			$em->flush();
 		}
-		
+
 		$session->getFlashBag()->add('message', $translator->trans("admin.index.ChangesMadeSuccessfully"));
 
 		return $this->redirect($this->generateUrl('app_poemadmin_index'));
@@ -300,9 +290,8 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/new_fast/{biographyId}/{collectionId}", defaults={"biographyId": null, "collectionId": null}, requirements={"biographyId"="\d+", "collectionId"="\d+"})
      */
-	public function newFastAction(Request $request, $biographyId, $collectionId)
+	public function newFastAction(EntityManagerInterface $em, Request $request, $biographyId, $collectionId)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$entity = new Poem();
 
 		$datas = $request->query->all();
@@ -312,27 +301,27 @@ class PoemAdminController extends AbstractController
 		$ipProxy = null;
 
 		if(!empty($datas)) {
-			$entity->setLanguage($entityManager->getRepository(Language::class)->find($datas["language"]));
-			$entity->setBiography($entityManager->getRepository(Biography::class)->find($datas["biography"]));
+			$entity->setLanguage($em->getRepository(Language::class)->find($datas["language"]));
+			$entity->setBiography($em->getRepository(Biography::class)->find($datas["biography"]));
 			
 			if(!empty($datas["collection"]))
-				$entity->setCollection($entityManager->getRepository(Source::class)->find($datas["collection"]));
+				$entity->setCollection($em->getRepository(Source::class)->find($datas["collection"]));
 
 			if(!empty($datas["poetic_form"]))
-				$entity->setPoeticForm($entityManager->getRepository(PoeticForm::class)->find($datas["poetic_form"]));
+				$entity->setPoeticForm($em->getRepository(PoeticForm::class)->find($datas["poetic_form"]));
 			
 			$url = $datas["url"];
 			$ipProxy = $datas["ipProxy"];
 		} else {
-			$entity->setLanguage($entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
+			$entity->setLanguage($em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
 
 			if(!empty($biographyId))
 			{
-				$entity->setBiography($entityManager->getRepository(Biography::class)->find($biographyId));
-				$entity->setLanguage($entityManager->getRepository(Language::class)->find($entity->getBiography()->getLanguage()->getId()));
+				$entity->setBiography($em->getRepository(Biography::class)->find($biographyId));
+				$entity->setLanguage($em->getRepository(Language::class)->find($entity->getBiography()->getLanguage()->getId()));
 			}
 			if(!empty($collectionId))
-				$entity->setCollection($entityManager->getRepository(Source::class)->find($collectionId));
+				$entity->setCollection($em->getRepository(Source::class)->find($collectionId));
 		}
 		$form = $this->createForm(PoemFastType::class, $entity, array("locale" => $request->getLocale(), "url" => $url, "ipProxy" => $ipProxy));
 	
@@ -342,9 +331,8 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/add_fast")
      */
-	public function addFastAction(Request $request, TranslatorInterface $translator, SessionInterface $session)
+	public function addFastAction(EntityManagerInterface $em, Request $request, TranslatorInterface $translator, SessionInterface $session)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$entity = new Poem();
 		
 		$form = $this->createForm(PoemFastType::class, $entity, array("locale" => $request->getLocale()));
@@ -368,7 +356,7 @@ class PoemAdminController extends AbstractController
 			$dom->load($html);
 
 			$entity->setAuthorType("biography");
-			$entity->setCountry( $entityManager->getRepository(Biography::class)->find($entity->getBiography())->getCountry());
+			$entity->setCountry( $em->getRepository(Biography::class)->find($entity->getBiography())->getCountry());
 			$poemArray = array();
 
 			switch(base64_encode($url_array['host']))
@@ -524,12 +512,12 @@ class PoemAdminController extends AbstractController
 				$entityPoem->setText($poem['text']);
 				$entityPoem->setState(0);
 
-				if($entityManager->getRepository(Poem::class)->checkForDoubloon($entityPoem) >= 1)
+				if($em->getRepository(Poem::class)->checkForDoubloon($entityPoem) >= 1)
 					$numberDoubloons++;
 				else
 				{
-					$entityManager->persist($entityPoem);
-					$entityManager->flush();
+					$em->persist($entityPoem);
+					$em->flush();
 					$id = $entity->getId();
 					$numberAdded++;
 				}
@@ -548,10 +536,8 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/new_fast_multiple")
      */
-	public function newFastMultipleAction(Request $request)
+	public function newFastMultipleAction(EntityManagerInterface $em, Request $request)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-
 		$entity = new Poem();
 		$datas = $request->query->all();
 		$datas = !empty($datas) ? json_decode($datas["datas"], true) : null;
@@ -560,20 +546,20 @@ class PoemAdminController extends AbstractController
 		$ipProxy = null;
 
 		if(!empty($datas)) {
-			$entity->setLanguage($entityManager->getRepository(Language::class)->find($datas["language"]));
-			$entity->setBiography($entityManager->getRepository(Biography::class)->find($datas["biography"]));
+			$entity->setLanguage($em->getRepository(Language::class)->find($datas["language"]));
+			$entity->setBiography($em->getRepository(Biography::class)->find($datas["biography"]));
 			$entity->setReleasedDate($datas["releasedDate"]);
 			
 			if(!empty($datas["collection"]))
-				$entity->setCollection($entityManager->getRepository(Source::class)->find($datas["collection"]));
+				$entity->setCollection($em->getRepository(Source::class)->find($datas["collection"]));
 
 			if(!empty($datas["poetic_form"]))
-				$entity->setPoeticForm($entityManager->getRepository(PoeticForm::class)->find($datas["poetic_form"]));
+				$entity->setPoeticForm($em->getRepository(PoeticForm::class)->find($datas["poetic_form"]));
 
 			$url = $datas["url"];
 			$ipProxy = $datas["ipProxy"];
 		} else
-			$entity->setLanguage($entityManager->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
+			$entity->setLanguage($em->getRepository(Language::class)->findOneBy(["abbreviation" => $request->getLocale()]));
 
 		$form = $this->createForm(PoemFastMultipleType::class, $entity, array("locale" => $request->getLocale(), "url" => $url, "ipProxy" => $ipProxy));
 
@@ -583,9 +569,8 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/add_fast_multiple")
      */
-	public function addFastMultipleAction(Request $request, SessionInterface $session, TranslatorInterface $translator)
+	public function addFastMultipleAction(EntityManagerInterface $em, Request $request, SessionInterface $session, TranslatorInterface $translator)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
 		$entity = new Poem();
 		
 		$form = $this->createForm(PoemFastMultipleType::class, $entity, array("locale" => $request->getLocale()));
@@ -606,7 +591,7 @@ class PoemAdminController extends AbstractController
 		{
 			$numberDoubloons = 0;
 			$entity->setAuthorType("biography");
-			$entity->setCountry( $entityManager->getRepository(Biography::class)->find($entity->getBiography())->getCountry());
+			$entity->setCountry( $em->getRepository(Biography::class)->find($entity->getBiography())->getCountry());
 			$number = $req['number'];
 			$i = 0;
 			$gf = new GenericFunction();
@@ -645,9 +630,9 @@ class PoemAdminController extends AbstractController
 						$entityPoem->setTitle($title);
 						$entityPoem->setText($text);
 						$entityPoem->setState(0);
-						$entityPoem->setLanguage($entityManager->getRepository(Language::class)->findOneByAbbreviation('fr'));
+						$entityPoem->setLanguage($em->getRepository(Language::class)->findOneByAbbreviation('fr'));
 					
-						if($entityManager->getRepository(Poem::class)->checkForDoubloon($entityPoem) >= 1) {
+						if($em->getRepository(Poem::class)->checkForDoubloon($entityPoem) >= 1) {
 							$numberDoubloons++;
 							continue;
 						}
@@ -657,8 +642,8 @@ class PoemAdminController extends AbstractController
 	
 						$i++;
 
-						$entityManager->persist($entityPoem);
-						$entityManager->flush();
+						$em->persist($entityPoem);
+						$em->flush();
 						$id = $entity->getId();
 					}
 					break;
@@ -678,9 +663,9 @@ class PoemAdminController extends AbstractController
 						$entityPoem->setText($content);
 						$entityPoem->setState(0);
 						
-						$entityPoem->setLanguage($entityManager->getRepository(Language::class)->findOneByAbbreviation('it'));
+						$entityPoem->setLanguage($em->getRepository(Language::class)->findOneByAbbreviation('it'));
 						
-						if($entityManager->getRepository(Poem::class)->checkForDoubloon($entityPoem) >= 1) {
+						if($em->getRepository(Poem::class)->checkForDoubloon($entityPoem) >= 1) {
 							$numberDoubloons++;
 							continue;
 						}
@@ -690,8 +675,8 @@ class PoemAdminController extends AbstractController
 	
 						$i++;
 
-						$entityManager->persist($entityPoem);
-						$entityManager->flush();
+						$em->persist($entityPoem);
+						$em->flush();
 						$id = $entity->getId();
 					}
 				break;
@@ -710,16 +695,15 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/select_biographies")
      */
-	public function listSelectedBiographyAction(Request $request)
+	public function listSelectedBiographyAction(EntityManagerInterface $em, Request $request)
 	{
 		$id = $request->request->get("id");
 
 		if($id != "")
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$entity =  $entityManager->getRepository(Biography::class)->find($id);
+			$entity =  $em->getRepository(Biography::class)->find($id);
 
-			$collections = $entityManager->getRepository(Source::class)->findAllByAuthor($id);
+			$collections = $em->getRepository(Source::class)->findAllByAuthor($id);
 			$collectionArray = array();
 			
 			foreach($collections as $collection)
@@ -742,14 +726,13 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/select_collections")
      */
-	public function listSelectedCollectionAction(Request $request)
+	public function listSelectedCollectionAction(EntityManagerInterface $em, Request $request)
 	{
 		$id = $request->request->get("id");
 		
 		if($id != "")
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$entity = $entityManager->getRepository(Source::class)->find($id);
+			$entity = $em->getRepository(Source::class)->find($id);
 			$finalArray = array("releasedDate" => $entity->getReleasedDate());
 		}
 		else
@@ -761,14 +744,13 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/select_poeticforms")
      */
-	public function selectPoeticFormAction(Request $request)
+	public function selectPoeticFormAction(EntityManagerInterface $em, Request $request)
 	{
 		$id = $request->request->get("id");
 		
 		if($id != "")
 		{
-			$entityManager = $this->getDoctrine()->getManager();
-			$entity = $entityManager->getRepository(PoeticForm::class)->find($id);
+			$entity = $em->getRepository(PoeticForm::class)->find($id);
 			$finalArray = array("typeContentPoem" => $entity->getTypeContentPoem());
 		}
 		else
@@ -780,22 +762,19 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/twitter/{id}")
      */
-	public function twitterAction(Request $request, SessionInterface $session, TranslatorInterface $translator, $id)
+	public function twitterAction(EntityManagerInterface $em, Request $request, SessionInterface $session, TranslatorInterface $translator, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Poem::class)->find($id);
-
+		$entity = $em->getRepository(Poem::class)->find($id);
 		$locale = $entity->getLanguage()->getAbbreviation();
-		
-		$message = $request->request->get("twitter_area")." ".$this->generateUrl("app_indexpoeticus_read", array("id" => $id, 'slug' => $entity->getSlug()), UrlGeneratorInterface::ABSOLUTE_URL);
 
+		$message = $request->request->get("twitter_area")." ".$this->generateUrl("app_indexpoeticus_read", array("id" => $id, 'slug' => $entity->getSlug()), UrlGeneratorInterface::ABSOLUTE_URL);
 		$imageId = $request->request->get('image_id_tweet');
 
 		$poemImage = null;
 		$image = null;
 
 		if(!empty($imageId)) {
-			$poemImage = $entityManager->getRepository(PoemImage::class)->find($imageId);
+			$poemImage = $em->getRepository(PoemImage::class)->find($imageId);
 			$image = Poem::PATH_FILE.$poemImage->getImage();
 		}
 		
@@ -806,8 +785,8 @@ class PoemAdminController extends AbstractController
 		else {
 			if(!empty($poemImage)) {
 				$poemImage->addSocialNetwork("Twitter");
-				$entityManager->persist($poemImage);
-				$entityManager->flush();
+				$em->persist($poemImage);
+				$em->flush();
 			}
 		
 			$session->getFlashBag()->add('message', "Twitter - ".$translator->trans("admin.index.SentSuccessfully"));
@@ -817,53 +796,11 @@ class PoemAdminController extends AbstractController
 	}
 
     /**
-     * @Route("/pinterest/{id}")
-     */
-	public function pinterestAction(Request $request, SessionInterface $session, TranslatorInterface $translator, $id)
-	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Poem::class)->find($id);
-		
-		$mail = $_ENV["PINTEREST_MAIL"];
-		$pwd = $_ENV["PINTEREST_PASSWORD"];
-		$username = $_ENV["PINTEREST_USERNAME"];
-
-		$bot = PinterestBot::create();
-		$bot->auth->login($mail, $pwd);
-		
-		$boards = $bot->boards->forUser($username);
-		
-		$imageId = $request->request->get('image_id_pinterest');
-		
-		$poemImage = $entityManager->getRepository(PoemImage::class)->find($imageId);
-		
-		if(empty($poemImage)) {
-			$session->getFlashBag()->add('message', "Pinterest - ".$translator->trans("admin.index.YouMustSelectAnImage"));
-			return $this->redirect($this->generateUrl("app_poemadmin_show", array("id" => $id)));
-		}
-
-		$bot->pins->create($request->getUriForPath('/'.Poem::PATH_FILE.$poemImage->getImage()), $boards[0]['id'], $request->request->get("pinterest_area"), $this->generateUrl("read", ["id" => $entity->getId(), "slug" => $entity->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL));
-		
-		if(empty($bot->getLastError())) {
-			$session->getFlashBag()->add('message', "Pinterest - ".$translator->trans("admin.index.SentSuccessfully"));
-			
-			$poemImage->addSocialNetwork("Pinterest");
-			$entityManager->persist($poemImage);
-			$entityManager->flush();
-		}
-		else
-			$session->getFlashBag()->add('message', $bot->getLastError());
-	
-		return $this->redirect($this->generateUrl("app_poemadmin_show", array("id" => $id)));
-	}
-
-    /**
      * @Route("/save_image/{id}")
      */
-	public function saveImageAction(Request $request, $id)
+	public function saveImageAction(EntityManagerInterface $em, Request $request, $id)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Poem::class)->find($id);
+		$entity = $em->getRepository(Poem::class)->find($id);
 		
         $imageGeneratorForm = $this->createForm(ImagePoemGeneratorType::class);
         $imageGeneratorForm->handleRequest($request);
@@ -967,8 +904,8 @@ class PoemAdminController extends AbstractController
 
 			$entity->addImage(new PoemImage($fileName));
 			
-			$entityManager->persist($entity);
-			$entityManager->flush();
+			$em->persist($entity);
+			$em->flush();
 			
 			$redirect = $this->generateUrl('app_poemadmin_show', array('id' => $entity->getId()));
 
@@ -981,19 +918,17 @@ class PoemAdminController extends AbstractController
     /**
      * @Route("/remove_image/{id}/{poemImageId}")
      */
-	public function removeImageAction(Request $request, $id, $poemImageId)
+	public function removeImageAction(EntityManagerInterface $em, Request $request, $id, $poemImageId)
 	{
-		$entityManager = $this->getDoctrine()->getManager();
-		$entity = $entityManager->getRepository(Poem::class)->find($id);
-		
-		$poemImage = $entityManager->getRepository(PoemImage::class)->find($poemImageId);
+		$entity = $em->getRepository(Poem::class)->find($id);
+		$poemImage = $em->getRepository(PoemImage::class)->find($poemImageId);
 		
 		$fileName = $poemImage->getImage();
 		
 		$entity->removeImage($poemImage);
 		
-		$entityManager->persist($entity);
-		$entityManager->flush();
+		$em->persist($entity);
+		$em->flush();
 		
 		$filesystem = new Filesystem();
 		$filesystem->remove(Poem::PATH_FILE.$fileName);
@@ -1008,12 +943,11 @@ class PoemAdminController extends AbstractController
 		return $this->createForm(PoemType::class, $entity, array('locale' => $locale));
 	}
 
-	private function checkForDoubloon(TranslatorInterface $translator, $entity, $form)
+	private function checkForDoubloon(EntityManagerInterface $em, TranslatorInterface $translator, $entity, $form)
 	{
 		if($entity->getTitle() != null)
 		{
-		$entityManager = $this->getDoctrine()->getManager();
-			$checkForDoubloon = $entityManager->getRepository(Poem::class)->checkForDoubloon($entity);
+			$checkForDoubloon = $em->getRepository(Poem::class)->checkForDoubloon($entity);
 
 			if($checkForDoubloon > 0)
 				$form->get("title")->addError(new FormError($translator->trans("admin.index.ThisEntryAlreadyExists")));
