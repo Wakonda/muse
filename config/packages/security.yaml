@@ -2,6 +2,7 @@ security:
     password_hashers:
         App\Entity\User:
             algorithm: sha512
+            iterations: 5000
     # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
     providers:
         # in_memory: { memory: ~ }
