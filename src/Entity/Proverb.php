@@ -23,9 +23,6 @@ use App\Service\GenericFunction;
 #[ApiResource(
     operations: [
         new Get(security: "is_granted('ROLE_ADMIN')"),
-        new Put(security: "is_granted('ROLE_ADMIN')"),
-		new Delete(security: "is_granted('ROLE_ADMIN')"),
-		new Post(security: "is_granted('ROLE_ADMIN')"),
         new GetCollection(security: "is_granted('ROLE_ADMIN')")
     ],
     normalizationContext: ['groups' => ['read']],
