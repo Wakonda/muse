@@ -15,7 +15,7 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         api:
-            pattern: ^/api/
+            pattern: ^/webservices/
             stateless: true
             # anonymous: true
             provider: our_db_provider
@@ -56,3 +56,5 @@ security:
     access_control:
          - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
+         # - { path: ^/webservices/login, roles: PUBLIC_ACCESS }
+         # - { path: ^/webservices,       roles: IS_AUTHENTICATED_FULLY }

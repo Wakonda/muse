@@ -101,6 +101,11 @@ class Poem
     */
 	protected $tags;
 
+    /**
+     * @ORM\Column(type="string", length=500)
+     */
+    protected $identifier;
+
     public function __construct()
     {
         $this->images = new ArrayCollection();
@@ -388,5 +393,15 @@ class Poem
 	public function setFileManagement($fileManagement)
 	{
 		$this->fileManagement = $fileManagement;
+	}
+
+	public function getIdentifier()
+	{
+		return $this->identifier;
+	}
+	
+	public function setIdentifier($identifier)
+	{
+		$this->identifier = $identifier;
 	}
 }
