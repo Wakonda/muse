@@ -78,12 +78,17 @@ class APIController extends AbstractController
 
 		if(empty($biography)) {
 			$biography = new Biography();
-			$fileManagement = new FileManagement();
-			$biography->setFileManagement($fileManagement);
+			
+			if(!empty($data->biography->fileManagement)) {
+				$fileManagement = new FileManagement();
+				$biography->setFileManagement($fileManagement);
+			}
 		}
 		else {
 			$fileManagement = $biography->getFileManagement();
 		}
+
+		$imgBase64 = null;
 
 		if(!empty($data->biography->fileManagement)) {
 			$fileManagement->setPhoto($data->biography->fileManagement->photo);
@@ -169,7 +174,10 @@ class APIController extends AbstractController
 				$entity = $em->getRepository(Quote::class)->findOneBy(["identifier" => $data->identifier]);
 				file_put_contents("photo/quote/".$data->image, base64_decode($data->imgBase64));
 
-				$newEntity = new QuoteImage();
+				$newEntity = $em->getRepository(QuoteImage::class)->findOneBy(["identifier" => $data->image_identifier]);
+
+				if(empty($newEntity))
+					$newEntity = new QuoteImage();
 
 				$newEntity->setQuote($entity);
 				$newEntity->setImage($data->image);
@@ -180,7 +188,10 @@ class APIController extends AbstractController
 				$entity = $em->getRepository(Proverb::class)->findOneBy(["identifier" => $data->identifier]);
 				file_put_contents("photo/proverb/".$data->image, base64_decode($data->imgBase64));
 
-				$newEntity = new ProverbImage();
+				$newEntity = $em->getRepository(ProverbImage::class)->findOneBy(["identifier" => $data->image_identifier]);
+
+				if(empty($newEntity))
+					$newEntity = new ProverbImage();
 
 				$newEntity->setProverb($entity);
 				$newEntity->setImage($data->image);
@@ -202,7 +213,7 @@ class APIController extends AbstractController
 		$tags = implode(" ", array_map(function($e) { return "#".$e->getSlug(); }, $entity->getTags()))." ".$biography;
 
 		$message = $text." ".$tags." ".$url;
-		$image = $path.$data->getImage();
+		$image = $path.$newEntity->getImage();
 
 		$statues = $mastodon->postMessage($message, $image, $locale);
 
@@ -290,7 +301,7 @@ class APIController extends AbstractController
 		$entity->setText($data->text);
 
 		$country = !empty($c = $data->biography->country->internationalName) ? $em->getRepository(Country::class)->findOneBy(["internationalName" => $c, "language" => $language]) : null;
-// die(", ".$country->getId());
+
 		$currentTags = [];
 
 		foreach($data->tags as $tag) {
